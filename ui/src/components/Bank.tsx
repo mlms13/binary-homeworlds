@@ -33,7 +33,7 @@ const Bank: React.FC<BankProps> = ({
 
   // Define color order for consistent display
   const colorOrder: Color[] = ['red', 'yellow', 'green', 'blue'];
-  const sizeOrder = [1, 2, 3];
+  const sizeOrder = [3, 2, 1]; // Reversed: large to small
 
   return (
     <div className="bank">
@@ -44,7 +44,6 @@ const Bank: React.FC<BankProps> = ({
       <div className="bank-pieces">
         {colorOrder.map(color => (
           <div key={color} className="color-row">
-            <div className="color-label">{color}</div>
             <div className="size-pieces">
               {sizeOrder.map(size => {
                 const piecesOfType = groupedByColor[color]?.[size] || [];

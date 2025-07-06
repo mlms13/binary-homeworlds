@@ -30,31 +30,25 @@
 .bank-pieces {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px; /* Increased spacing between rows */
 }
 
 .color-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* Align pieces to bottom of row */
   gap: 8px;
-}
-
-.color-label {
-  font-size: 12px;
-  color: #94a3b8;
-  font-weight: bold;
-  min-width: 50px;
-  text-transform: capitalize;
 }
 
 .size-pieces {
   display: flex;
   gap: 6px;
+  align-items: flex-end; /* Align pieces to bottom within row */
 }
 
 .piece-group {
   display: flex;
   justify-content: center;
+  align-items: flex-end; /* Align pieces to bottom */
   min-width: 60px; /* Further increased for larger pieces */
 }
 
