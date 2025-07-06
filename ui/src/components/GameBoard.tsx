@@ -11,6 +11,8 @@ import ActionLog from './ActionLog';
 import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
 import SettingsMenu from './SettingsMenu';
+import ConfirmationDialog from './ConfirmationDialog';
+import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
 // Setup state management
@@ -37,6 +39,12 @@ const GameBoard: React.FC = () => {
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsPosition, setSettingsPosition] = useState({ x: 0, y: 0 });
+  const [pendingAction, setPendingAction] = useState<ReturnType<
+    typeof createSetupAction
+  > | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const { confirmTurnActions } = useTheme();
   const [setupState, setSetupState] = useState<SetupState>({
     player1Stars: [],
     player2Stars: [],
@@ -46,6 +54,30 @@ const GameBoard: React.FC = () => {
   });
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
+
+  // Wrapper for applyAction that handles confirmation
+  const handleAction = (action: any) => {
+    if (confirmTurnActions && gameState.getPhase() === 'normal') {
+      setPendingAction(action);
+      setShowConfirmation(true);
+      return { valid: true, message: 'Action pending confirmation' }; // Return success for now, actual validation happens on confirm
+    } else {
+      return applyAction(action);
+    }
+  };
+
+  const confirmAction = () => {
+    if (pendingAction) {
+      applyAction(pendingAction);
+      setPendingAction(null);
+    }
+    setShowConfirmation(false);
+  };
+
+  const cancelAction = () => {
+    setPendingAction(null);
+    setShowConfirmation(false);
+  };
 
   // Update game state when engine changes
   useEffect(() => {
@@ -235,7 +267,7 @@ const GameBoard: React.FC = () => {
                 gameState.getPhase() === 'normal' && currentPlayer === 'player2'
               }
               isOpponent={true} // Top area is always opponent from human perspective
-              onAction={applyAction}
+              onAction={handleAction}
               getAvailableActions={getAvailableActions}
             />
           ) : (
@@ -290,7 +322,7 @@ const GameBoard: React.FC = () => {
                 gameState.getPhase() === 'normal' && currentPlayer === 'player1'
               }
               isOpponent={false} // Bottom area is always you from human perspective
-              onAction={applyAction}
+              onAction={handleAction}
               getAvailableActions={getAvailableActions}
             />
           ) : (
@@ -314,6 +346,17 @@ const GameBoard: React.FC = () => {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
+      />
+
+      {/* Confirmation dialog */}
+      <ConfirmationDialog
+        isOpen={showConfirmation}
+        title="Confirm Action"
+        message="Are you sure you want to perform this action? This will end your turn."
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onConfirm={confirmAction}
+        onCancel={cancelAction}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { useTheme } from '../contexts/ThemeContext';
 import './SettingsMenu.css';
 
 interface SettingsMenuProps {
@@ -13,6 +14,15 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
   onClose,
   position,
 }) => {
+  const {
+    theme,
+    colorScheme,
+    confirmTurnActions,
+    setTheme,
+    setColorScheme,
+    setConfirmTurnActions,
+  } = useTheme();
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -38,7 +48,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           {/* Theme Setting */}
           <div className="setting-group">
             <label className="setting-label">Theme</label>
-            <select className="setting-select">
+            <select
+              className="setting-select"
+              value={theme}
+              onChange={e => setTheme(e.target.value as any)}
+            >
               <option value="system">System</option>
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -48,7 +62,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           {/* Color Scheme Setting */}
           <div className="setting-group">
             <label className="setting-label">Color Scheme</label>
-            <select className="setting-select">
+            <select
+              className="setting-select"
+              value={colorScheme}
+              onChange={e => setColorScheme(e.target.value as any)}
+            >
               <option value="default">Default</option>
               <option value="colorblind">Colorblind Friendly</option>
             </select>
@@ -60,7 +78,8 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
               <input
                 type="checkbox"
                 className="setting-checkbox"
-                defaultChecked={false}
+                checked={confirmTurnActions}
+                onChange={e => setConfirmTurnActions(e.target.checked)}
               />
               Confirm turn actions before passing to opponent
             </label>

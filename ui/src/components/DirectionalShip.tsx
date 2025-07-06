@@ -1,5 +1,6 @@
 import React from 'react';
 import { Color, Size } from '../../../src/types';
+import { getColorValue } from '../utils/colors';
 import './DirectionalShip.css';
 
 interface DirectionalShipProps {
@@ -23,21 +24,6 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
   direction,
   isCurrentPlayer = false,
 }) => {
-  const getColorValue = (color: Color): string => {
-    switch (color) {
-      case 'red':
-        return '#dc2626';
-      case 'yellow':
-        return '#eab308';
-      case 'green':
-        return '#16a34a';
-      case 'blue':
-        return '#2563eb';
-      default:
-        return '#6b7280';
-    }
-  };
-
   const getSizeMultiplier = (size: Size): number => {
     switch (size) {
       case 1:

@@ -1,0 +1,118 @@
+/* Theme Variables */
+:root {
+  /* Default (Dark) Theme */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-primary: rgba(255, 255, 255, 0.1);
+  --border-secondary: rgba(255, 255, 255, 0.2);
+  --accent-primary: #4ade80;
+  --accent-secondary: #3b82f6;
+  --overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Default Colors */
+  --color-red: #ef4444;
+  --color-yellow: #eab308;
+  --color-green: #22c55e;
+  --color-blue: #3b82f6;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-primary: rgba(0, 0, 0, 0.1);
+  --border-secondary: rgba(0, 0, 0, 0.2);
+  --accent-primary: #16a34a;
+  --accent-secondary: #2563eb;
+  --overlay: rgba(255, 255, 255, 0.8);
+}
+
+/* Colorblind-Friendly Color Scheme */
+[data-color-scheme="colorblind"] {
+  --color-red: #d73027;    /* More distinct red */
+  --color-yellow: #fee08b;  /* Lighter yellow */
+  --color-green: #4575b4;   /* Blue-green */
+  --color-blue: #762a83;    /* Purple-blue */
+}
+
+/* Apply theme variables to existing components */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.game-board {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.current-player-indicator {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.settings-menu {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.settings-menu-header {
+  border-bottom-color: var(--border-primary);
+}
+
+.setting-select {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.setting-select:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-secondary);
+}
+
+.setting-select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+}
+
+.log-toggle-btn,
+.settings-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.log-toggle-btn:hover,
+.settings-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+.action-menu {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.no-system {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+/* Color-specific overrides */
+.red { color: var(--color-red) !important; }
+.yellow { color: var(--color-yellow) !important; }
+.green { color: var(--color-green) !important; }
+.blue { color: var(--color-blue) !important; }

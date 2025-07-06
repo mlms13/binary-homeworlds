@@ -54,6 +54,7 @@ export default [
         Node: 'readonly',
         MouseEvent: 'readonly',
         KeyboardEvent: 'readonly',
+        localStorage: 'readonly',
       },
     },
     plugins: {
