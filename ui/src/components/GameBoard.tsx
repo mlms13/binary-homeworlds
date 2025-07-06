@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GameEngine } from '../../../src/game-engine';
 import { BinaryHomeworldsGameState } from '../../../src/game-state';
 import { createSetupAction } from '../../../src/action-builders';
-import { createShip, createStar } from '../../../src/utils';
+
 import { useGameActions } from '../hooks/useGameActions';
 import { Piece } from '../../../src/types';
 import Bank from './Bank';
@@ -59,17 +59,28 @@ const GameBoard: React.FC = () => {
         step: 'waiting',
       }));
 
-      // Apply setup action
-      const stars = setupState.selectedStars.map(p =>
-        createStar(p.color, p.size)
+      // Apply setup actions one by one
+      const star1Action = createSetupAction(
+        'player1',
+        setupState.selectedStars[0].id,
+        'star1'
       );
-      const ship = createShip(piece.color, piece.size, 'player1');
-      const setupAction = createSetupAction('player1', stars, ship);
+      const star2Action = createSetupAction(
+        'player1',
+        setupState.selectedStars[1].id,
+        'star2'
+      );
+      const shipAction = createSetupAction('player1', piece.id, 'ship');
 
-      const result = applyAction(setupAction);
-      if (result.valid) {
+      const result1 = applyAction(star1Action);
+      const result2 = applyAction(star2Action);
+      const result3 = applyAction(shipAction);
+
+      if (result1.valid && result2.valid && result3.valid) {
         setGameState(gameEngine.getGameState());
         setSetupState(prev => ({ ...prev, step: 'complete' }));
+      } else {
+        console.error('Setup actions failed:', { result1, result2, result3 });
       }
     }
   };

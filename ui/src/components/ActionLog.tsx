@@ -26,7 +26,7 @@ const ActionLog: React.FC<ActionLogProps> = ({ isOpen, onClose, actions }) => {
       case 'overpopulation':
         return `${action.player} declared overpopulation`;
       default:
-        return `${action.player} performed an action`;
+        return `${(action as GameAction).player} performed an action`;
     }
   };
 

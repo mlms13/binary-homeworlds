@@ -54,7 +54,7 @@ const Bank: React.FC<BankProps> = ({
                       <div className="piece-stack">
                         <TrianglePiece
                           color={color}
-                          size={size}
+                          size={size as 1 | 2 | 3}
                           displaySize="small"
                           onClick={() =>
                             onPieceClick && onPieceClick(piecesOfType[0])
