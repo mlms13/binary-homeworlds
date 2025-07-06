@@ -12,15 +12,20 @@ The game uses 36 pyramid-shaped pieces stored in a shared bank:
 
 ## Gameplay
 
-### Initial Phase
+### Initial Phase (Setup)
 
 1. **Determine turn order** (by any agreed method)
-2. **Each player creates their home system** in turn order:
-   - Choose any piece from the bank as their first star
-   - Choose any remaining piece from the bank as their second star
-   - Choose any remaining piece from the bank as their starting ship (placed at their home system)
+2. **Players alternate choosing pieces** to create their home systems:
+   - **Player 1** chooses any piece from the bank as their first star
+   - **Player 2** chooses any piece from the bank as their first star
+   - **Player 1** chooses any remaining piece from the bank as their second star
+   - **Player 2** chooses any remaining piece from the bank as their second star
+   - **Player 1** chooses any remaining piece from the bank as their starting ship
+   - **Player 2** chooses any remaining piece from the bank as their starting ship
 
-The two stars form the player's binary home system. The starting ship must be placed at this home system.
+Each player's two stars form their binary home system. Each starting ship is placed at its respective player's home system.
+
+**Setup Summary**: The setup phase consists of 6 alternating choices, with each player making 3 selections total (2 stars + 1 ship).
 
 ### Normal Turns
 

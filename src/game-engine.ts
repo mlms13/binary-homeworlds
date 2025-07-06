@@ -77,16 +77,26 @@ export class GameEngine {
       this.gameState.addActionToHistory(action);
 
       // Switch players (except for overpopulation which can be called by either player)
-      // For setup, only switch after completing a full setup sequence
       if (action.type !== 'overpopulation') {
         if (action.type === 'setup') {
-          // Only switch players when a player completes their setup
-          const currentPlayer = this.gameState.getCurrentPlayer();
-          const homeSystem = this.gameState.getHomeSystem(currentPlayer);
+          // For setup, switch players after each action (alternating setup)
+          this.gameState.switchPlayer();
 
-          // If this player has completed their setup (has home system with ships), switch
-          if (homeSystem && homeSystem.ships.length > 0) {
-            this.gameState.switchPlayer();
+          // Check if setup is complete after player switch
+          const player1Home = this.gameState.getHomeSystem('player1');
+          const player2Home = this.gameState.getHomeSystem('player2');
+
+          if (
+            player1Home &&
+            player2Home &&
+            player1Home.ships.length > 0 &&
+            player2Home.ships.length > 0
+          ) {
+            this.gameState.setPhase('normal');
+            // Setup is complete, ensure player1 starts normal play
+            if (this.gameState.getCurrentPlayer() !== 'player1') {
+              this.gameState.switchPlayer();
+            }
           }
         } else {
           this.gameState.switchPlayer();
@@ -140,21 +150,6 @@ export class GameEngine {
       const ship = createShip(piece.color, piece.size, currentPlayer);
       ship.id = piece.id; // Keep the same ID
       homeSystem.ships.push(ship);
-
-      // Check if setup is complete after this ship placement
-      const player1Home = this.gameState.getHomeSystem('player1');
-      const player2Home = this.gameState.getHomeSystem('player2');
-
-      if (
-        player1Home &&
-        player2Home &&
-        player1Home.ships.length > 0 &&
-        player2Home.ships.length > 0
-      ) {
-        this.gameState.setPhase('normal');
-        // Setup is complete, make sure player1 starts normal play
-        // The switch logic above will handle making it player1's turn
-      }
     }
   }
 

@@ -13,9 +13,18 @@ import './GameBoard.css';
 
 // Setup state management
 interface SetupState {
-  selectedStars: Piece[];
-  selectedShip: Piece | null;
-  step: 'select-stars' | 'select-ship' | 'waiting' | 'complete';
+  player1Stars: Piece[];
+  player2Stars: Piece[];
+  player1Ship: Piece | null;
+  player2Ship: Piece | null;
+  currentStep:
+    | 'p1-star1'
+    | 'p2-star1'
+    | 'p1-star2'
+    | 'p2-star2'
+    | 'p1-ship'
+    | 'p2-ship'
+    | 'complete';
 }
 
 const GameBoard: React.FC = () => {
@@ -25,9 +34,11 @@ const GameBoard: React.FC = () => {
   );
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [setupState, setSetupState] = useState<SetupState>({
-    selectedStars: [],
-    selectedShip: null,
-    step: 'select-stars',
+    player1Stars: [],
+    player2Stars: [],
+    player1Ship: null,
+    player2Ship: null,
+    currentStep: 'p1-star1',
   });
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
@@ -40,47 +51,91 @@ const GameBoard: React.FC = () => {
   // Handle bank piece clicks during setup
   const handleBankPieceClick = (piece: Piece) => {
     if (gameState.getPhase() !== 'setup') return;
-    if (gameState.getCurrentPlayer() !== 'player1') return; // Only allow player1 to set up for now
 
-    if (
-      setupState.step === 'select-stars' &&
-      setupState.selectedStars.length < 2
-    ) {
-      // Only allow star pieces (ships can be stars in setup)
-      setSetupState(prev => ({
-        ...prev,
-        selectedStars: [...prev.selectedStars, piece],
-        step: prev.selectedStars.length === 1 ? 'select-ship' : 'select-stars',
-      }));
-    } else if (setupState.step === 'select-ship' && !setupState.selectedShip) {
-      setSetupState(prev => ({
-        ...prev,
-        selectedShip: piece,
-        step: 'waiting',
-      }));
+    const currentPlayer = gameState.getCurrentPlayer();
+    const { currentStep } = setupState;
 
-      // Apply setup actions one by one
-      const star1Action = createSetupAction(
-        'player1',
-        setupState.selectedStars[0].id,
-        'star1'
-      );
-      const star2Action = createSetupAction(
-        'player1',
-        setupState.selectedStars[1].id,
-        'star2'
-      );
-      const shipAction = createSetupAction('player1', piece.id, 'ship');
+    // Determine the action based on current step
+    let action: any = null;
+    let nextStep: SetupState['currentStep'] = currentStep;
 
-      const result1 = applyAction(star1Action);
-      const result2 = applyAction(star2Action);
-      const result3 = applyAction(shipAction);
+    switch (currentStep) {
+      case 'p1-star1':
+        if (currentPlayer === 'player1') {
+          action = createSetupAction('player1', piece.id, 'star1');
+          nextStep = 'p2-star1';
+          setSetupState(prev => ({
+            ...prev,
+            player1Stars: [piece],
+            currentStep: nextStep,
+          }));
+        }
+        break;
+      case 'p2-star1':
+        if (currentPlayer === 'player2') {
+          action = createSetupAction('player2', piece.id, 'star1');
+          nextStep = 'p1-star2';
+          setSetupState(prev => ({
+            ...prev,
+            player2Stars: [piece],
+            currentStep: nextStep,
+          }));
+        }
+        break;
+      case 'p1-star2':
+        if (currentPlayer === 'player1') {
+          action = createSetupAction('player1', piece.id, 'star2');
+          nextStep = 'p2-star2';
+          setSetupState(prev => ({
+            ...prev,
+            player1Stars: [...prev.player1Stars, piece],
+            currentStep: nextStep,
+          }));
+        }
+        break;
+      case 'p2-star2':
+        if (currentPlayer === 'player2') {
+          action = createSetupAction('player2', piece.id, 'star2');
+          nextStep = 'p1-ship';
+          setSetupState(prev => ({
+            ...prev,
+            player2Stars: [...prev.player2Stars, piece],
+            currentStep: nextStep,
+          }));
+        }
+        break;
+      case 'p1-ship':
+        if (currentPlayer === 'player1') {
+          action = createSetupAction('player1', piece.id, 'ship');
+          nextStep = 'p2-ship';
+          setSetupState(prev => ({
+            ...prev,
+            player1Ship: piece,
+            currentStep: nextStep,
+          }));
+        }
+        break;
+      case 'p2-ship':
+        if (currentPlayer === 'player2') {
+          action = createSetupAction('player2', piece.id, 'ship');
+          nextStep = 'complete';
+          setSetupState(prev => ({
+            ...prev,
+            player2Ship: piece,
+            currentStep: nextStep,
+          }));
+        }
+        break;
+    }
 
-      if (result1.valid && result2.valid && result3.valid) {
+    if (action) {
+      const result = applyAction(action);
+      if (result.valid) {
         setGameState(gameEngine.getGameState());
-        setSetupState(prev => ({ ...prev, step: 'complete' }));
       } else {
-        console.error('Setup actions failed:', { result1, result2, result3 });
+        console.error('Setup action failed:', result.error);
+        // Revert the state change if action failed
+        setSetupState(prev => ({ ...prev, currentStep }));
       }
     }
   };
@@ -127,8 +182,10 @@ const GameBoard: React.FC = () => {
             onPieceClick={handleBankPieceClick}
             isSetupPhase={gameState.getPhase() === 'setup'}
             selectedPieces={[
-              ...setupState.selectedStars,
-              ...(setupState.selectedShip ? [setupState.selectedShip] : []),
+              ...setupState.player1Stars,
+              ...setupState.player2Stars,
+              ...(setupState.player1Ship ? [setupState.player1Ship] : []),
+              ...(setupState.player2Ship ? [setupState.player2Ship] : []),
             ]}
           />
         </div>
@@ -138,9 +195,11 @@ const GameBoard: React.FC = () => {
           {gameState.getPhase() === 'setup' ? (
             <SetupInstructions
               currentPlayer={currentPlayer}
-              step={setupState.step}
-              selectedStars={setupState.selectedStars.length}
-              selectedShip={setupState.selectedShip !== null}
+              currentStep={setupState.currentStep}
+              player1Stars={setupState.player1Stars.length}
+              player2Stars={setupState.player2Stars.length}
+              player1Ship={setupState.player1Ship !== null}
+              player2Ship={setupState.player2Ship !== null}
             />
           ) : (
             <>

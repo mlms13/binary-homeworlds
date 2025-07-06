@@ -54,40 +54,43 @@ describe('Edge Cases and Error Conditions', () => {
       }
     });
 
-    it('should handle complete setup sequence', () => {
+    it('should handle complete setup sequence (legacy test)', () => {
+      // This test verifies the old behavior still works for backward compatibility
+      // but the new alternating setup is the preferred method
       const engine = new GameEngine();
       const gameState = engine.getGameState();
       const bankPieces = gameState.getBankPieces();
 
-      // Player 1 setup
+      // Player 1 setup (all at once)
       let result = engine.applyAction(
         createSetupAction('player1', bankPieces[0].id, 'star1')
       );
       expect(result.valid).toBe(true);
-      expect(gameState.getCurrentPlayer()).toBe('player1');
+      expect(gameState.getCurrentPlayer()).toBe('player2'); // Now switches after each action
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[1].id, 'star2')
+        createSetupAction('player2', bankPieces[1].id, 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[2].id, 'ship')
+        createSetupAction('player1', bankPieces[2].id, 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
-      // Player 2 setup
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[3].id, 'star1')
+        createSetupAction('player2', bankPieces[3].id, 'star2')
       );
       expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[4].id, 'star2')
+        createSetupAction('player1', bankPieces[4].id, 'ship')
       );
       expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
         createSetupAction('player2', bankPieces[5].id, 'ship')
@@ -98,6 +101,70 @@ describe('Edge Cases and Error Conditions', () => {
       expect(gameState.getPhase()).toBe('normal');
       expect(gameState.getCurrentPlayer()).toBe('player1');
       expect(gameState.getSystems().length).toBe(2);
+    });
+
+    it('should handle alternating setup sequence', () => {
+      const engine = new GameEngine();
+      const gameState = engine.getGameState();
+      const bankPieces = gameState.getBankPieces();
+
+      // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
+
+      // Player 1 chooses first star
+      let result = engine.applyAction(
+        createSetupAction('player1', bankPieces[0].id, 'star1')
+      );
+      expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player2');
+
+      // Player 2 chooses first star
+      result = engine.applyAction(
+        createSetupAction('player2', bankPieces[1].id, 'star1')
+      );
+      expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player1');
+
+      // Player 1 chooses second star
+      result = engine.applyAction(
+        createSetupAction('player1', bankPieces[2].id, 'star2')
+      );
+      expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player2');
+
+      // Player 2 chooses second star
+      result = engine.applyAction(
+        createSetupAction('player2', bankPieces[3].id, 'star2')
+      );
+      expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player1');
+
+      // Player 1 chooses ship
+      result = engine.applyAction(
+        createSetupAction('player1', bankPieces[4].id, 'ship')
+      );
+      expect(result.valid).toBe(true);
+      expect(gameState.getCurrentPlayer()).toBe('player2');
+
+      // Player 2 chooses ship
+      result = engine.applyAction(
+        createSetupAction('player2', bankPieces[5].id, 'ship')
+      );
+      expect(result.valid).toBe(true);
+
+      // Should now be in normal phase with player1's turn
+      expect(gameState.getPhase()).toBe('normal');
+      expect(gameState.getCurrentPlayer()).toBe('player1');
+
+      // Verify both players have home systems
+      const player1Home = gameState.getHomeSystem('player1');
+      const player2Home = gameState.getHomeSystem('player2');
+
+      expect(player1Home).toBeDefined();
+      expect(player2Home).toBeDefined();
+      expect(player1Home!.stars.length).toBe(2);
+      expect(player1Home!.ships.length).toBe(1);
+      expect(player2Home!.stars.length).toBe(2);
+      expect(player2Home!.ships.length).toBe(1);
     });
   });
 

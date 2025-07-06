@@ -55,12 +55,12 @@
 .piece-group {
   display: flex;
   justify-content: center;
-  min-width: 32px;
+  min-width: 48px; /* Increased to accommodate larger pieces */
 }
 
 .empty-piece-slot {
-  width: 24px;
-  height: 24px;
+  width: 32px; /* Increased from 24px */
+  height: 32px; /* Increased from 24px */
   border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }

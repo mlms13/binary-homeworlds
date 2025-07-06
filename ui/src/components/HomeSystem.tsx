@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { System, GameAction, ActionValidationResult } from '../../../src/types';
-import Piece from './Piece';
+import DiamondStar from './DiamondStar';
+import DirectionalShip from './DirectionalShip';
 import ActionMenu from './ActionMenu';
 import './HomeSystem.css';
 
@@ -67,9 +68,14 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       <div className="system-content">
         {/* Stars */}
         <div className="stars-container">
-          {system.stars.map(star => (
+          {system.stars.map((star, index) => (
             <div key={star.id} className="star-wrapper">
-              <Piece piece={star} size="large" />
+              <DiamondStar
+                color={star.color}
+                size={star.size}
+                displaySize="large"
+                isBinary={system.stars.length === 2 && index === 1}
+              />
             </div>
           ))}
         </div>
@@ -78,12 +84,14 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
         <div className="ships-container">
           {system.ships.map(ship => (
             <div key={ship.id} className="ship-wrapper">
-              <Piece
-                piece={ship}
-                size="medium"
+              <DirectionalShip
+                color={ship.color}
+                size={ship.size}
+                displaySize="medium"
                 onClick={event => handleShipClick(ship.id, event)}
                 isSelected={selectedShipId === ship.id}
                 isClickable={isCurrentPlayer}
+                isCurrentPlayer={isCurrentPlayer}
               />
               {isCurrentPlayer && (
                 <div className="clickable-hint">Click to act</div>

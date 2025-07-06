@@ -1,23 +1,25 @@
 import React from 'react';
 import { Color, Size } from '../../../src/types';
-import './TrianglePiece.css';
+import './DiamondStar.css';
 
-interface TrianglePieceProps {
+interface DiamondStarProps {
   color: Color;
   size: Size;
   displaySize?: 'small' | 'medium' | 'large';
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
   isClickable?: boolean;
+  isBinary?: boolean; // For binary stars (nested diamonds)
 }
 
-const TrianglePiece: React.FC<TrianglePieceProps> = ({
+const DiamondStar: React.FC<DiamondStarProps> = ({
   color,
   size,
   displaySize = 'medium',
   onClick,
   isSelected = false,
   isClickable = false,
+  isBinary = false,
 }) => {
   const getColorValue = (color: Color): string => {
     switch (color) {
@@ -50,20 +52,19 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   const getDisplaySize = (displaySize: string): number => {
     switch (displaySize) {
       case 'small':
-        return 32; // Increased from 20
+        return 24;
       case 'medium':
-        return 40; // Increased from 28
+        return 32;
       case 'large':
-        return 48; // Increased from 36
-      default:
         return 40;
+      default:
+        return 32;
     }
   };
 
   const baseSize = getDisplaySize(displaySize);
   const sizeMultiplier = getSizeMultiplier(size);
-  const triangleSize = baseSize * sizeMultiplier;
-  const triangleHeight = triangleSize * 0.866; // Height of equilateral triangle
+  const diamondSize = baseSize * sizeMultiplier;
 
   const handleClick = (event: React.MouseEvent) => {
     if (isClickable && onClick) {
@@ -71,22 +72,27 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
     }
   };
 
+  const createDiamondPath = (size: number, offset: number = 0) => {
+    const half = size / 2;
+    return `M${half + offset},${offset} L${size + offset},${half + offset} L${half + offset},${size + offset} L${offset},${half + offset} Z`;
+  };
+
   return (
     <div
-      className={`triangle-piece ${isClickable ? 'clickable' : ''} ${
+      className={`diamond-star ${isClickable ? 'clickable' : ''} ${
         isSelected ? 'selected' : ''
       }`}
       onClick={handleClick}
       style={{
-        width: triangleSize,
-        height: triangleHeight,
+        width: diamondSize,
+        height: diamondSize,
         cursor: isClickable ? 'pointer' : 'default',
       }}
     >
       <svg
-        width={triangleSize}
-        height={triangleHeight}
-        viewBox={`0 0 ${triangleSize} ${triangleHeight}`}
+        width={diamondSize}
+        height={diamondSize}
+        viewBox={`0 0 ${diamondSize} ${diamondSize}`}
         style={{
           filter: isSelected
             ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.8))'
@@ -94,18 +100,28 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
           transition: 'all 0.2s ease',
         }}
       >
-        <polygon
-          points={`${triangleSize / 2},2 ${triangleSize - 2},${
-            triangleHeight - 2
-          } 2,${triangleHeight - 2}`}
+        {/* Main diamond */}
+        <path
+          d={createDiamondPath(diamondSize)}
           fill={getColorValue(color)}
-          stroke="rgba(255, 255, 255, 0.3)"
+          stroke="rgba(255, 255, 255, 0.4)"
           strokeWidth="1"
         />
+
+        {/* Inner diamond for binary stars */}
+        {isBinary && (
+          <path
+            d={createDiamondPath(diamondSize * 0.6, diamondSize * 0.2)}
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.8)"
+            strokeWidth="2"
+          />
+        )}
+
         {/* Size indicator */}
         <text
-          x={triangleSize / 2}
-          y={triangleHeight - 8}
+          x={diamondSize / 2}
+          y={diamondSize / 2 + 4}
           textAnchor="middle"
           fill="white"
           fontSize="10"
@@ -119,4 +135,4 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   );
 };
 
-export default TrianglePiece;
+export default DiamondStar;

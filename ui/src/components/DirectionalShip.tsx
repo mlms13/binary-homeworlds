@@ -1,23 +1,27 @@
 import React from 'react';
 import { Color, Size } from '../../../src/types';
-import './TrianglePiece.css';
+import './DirectionalShip.css';
 
-interface TrianglePieceProps {
+interface DirectionalShipProps {
   color: Color;
   size: Size;
   displaySize?: 'small' | 'medium' | 'large';
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
   isClickable?: boolean;
+  direction?: 'up' | 'down'; // up = pointing toward opponent, down = pointing toward player
+  isCurrentPlayer?: boolean; // Used to determine direction automatically
 }
 
-const TrianglePiece: React.FC<TrianglePieceProps> = ({
+const DirectionalShip: React.FC<DirectionalShipProps> = ({
   color,
   size,
   displaySize = 'medium',
   onClick,
   isSelected = false,
   isClickable = false,
+  direction,
+  isCurrentPlayer = false,
 }) => {
   const getColorValue = (color: Color): string => {
     switch (color) {
@@ -50,20 +54,23 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   const getDisplaySize = (displaySize: string): number => {
     switch (displaySize) {
       case 'small':
-        return 32; // Increased from 20
+        return 24;
       case 'medium':
-        return 40; // Increased from 28
+        return 32;
       case 'large':
-        return 48; // Increased from 36
-      default:
         return 40;
+      default:
+        return 32;
     }
   };
 
   const baseSize = getDisplaySize(displaySize);
   const sizeMultiplier = getSizeMultiplier(size);
-  const triangleSize = baseSize * sizeMultiplier;
-  const triangleHeight = triangleSize * 0.866; // Height of equilateral triangle
+  const shipSize = baseSize * sizeMultiplier;
+  const shipHeight = shipSize * 0.866; // Height of equilateral triangle
+
+  // Determine direction: if not specified, use isCurrentPlayer
+  const pointDirection = direction || (isCurrentPlayer ? 'up' : 'down');
 
   const handleClick = (event: React.MouseEvent) => {
     if (isClickable && onClick) {
@@ -71,22 +78,36 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
     }
   };
 
+  const createTrianglePoints = (
+    size: number,
+    height: number,
+    direction: string
+  ) => {
+    if (direction === 'up') {
+      // Triangle pointing up (toward opponent)
+      return `${size / 2},2 ${size - 2},${height - 2} 2,${height - 2}`;
+    } else {
+      // Triangle pointing down (toward current player)
+      return `2,2 ${size - 2},2 ${size / 2},${height - 2}`;
+    }
+  };
+
   return (
     <div
-      className={`triangle-piece ${isClickable ? 'clickable' : ''} ${
+      className={`directional-ship ${isClickable ? 'clickable' : ''} ${
         isSelected ? 'selected' : ''
-      }`}
+      } direction-${pointDirection}`}
       onClick={handleClick}
       style={{
-        width: triangleSize,
-        height: triangleHeight,
+        width: shipSize,
+        height: shipHeight,
         cursor: isClickable ? 'pointer' : 'default',
       }}
     >
       <svg
-        width={triangleSize}
-        height={triangleHeight}
-        viewBox={`0 0 ${triangleSize} ${triangleHeight}`}
+        width={shipSize}
+        height={shipHeight}
+        viewBox={`0 0 ${shipSize} ${shipHeight}`}
         style={{
           filter: isSelected
             ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.8))'
@@ -95,17 +116,15 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
         }}
       >
         <polygon
-          points={`${triangleSize / 2},2 ${triangleSize - 2},${
-            triangleHeight - 2
-          } 2,${triangleHeight - 2}`}
+          points={createTrianglePoints(shipSize, shipHeight, pointDirection)}
           fill={getColorValue(color)}
           stroke="rgba(255, 255, 255, 0.3)"
           strokeWidth="1"
         />
         {/* Size indicator */}
         <text
-          x={triangleSize / 2}
-          y={triangleHeight - 8}
+          x={shipSize / 2}
+          y={pointDirection === 'up' ? shipHeight - 8 : 16}
           textAnchor="middle"
           fill="white"
           fontSize="10"
@@ -119,4 +138,4 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   );
 };
 
-export default TrianglePiece;
+export default DirectionalShip;
