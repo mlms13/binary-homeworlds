@@ -30,7 +30,7 @@
 .bank-pieces {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Increased spacing between rows */
+  gap: 20px; /* Increased spacing between rows */
 }
 
 .color-row {
@@ -41,7 +41,7 @@
 
 .size-pieces {
   display: flex;
-  gap: 6px;
+  gap: 20px;
   align-items: flex-end; /* Align pieces to bottom within row */
 }
 
@@ -49,7 +49,6 @@
   display: flex;
   justify-content: center;
   align-items: flex-end; /* Align pieces to bottom */
-  min-width: 60px; /* Further increased for larger pieces */
 }
 
 .empty-piece-slot {

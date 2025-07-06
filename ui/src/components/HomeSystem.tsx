@@ -74,11 +74,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${isOpponent ? 'opponent' : ''}`}
     >
       <div className="system-header">
-        <h4>
-          {isCurrentPlayer ? 'Your Home System' : "Opponent's Home System"}
-        </h4>
+        <h4>{isOpponent ? "Opponent's Home System" : 'Your Home System'}</h4>
         <div className="player-indicator">
-          {isCurrentPlayer ? 'Player 1 (You)' : 'Player 2 (Opponent)'}
+          {isOpponent ? 'Player 2 (Opponent)' : 'Player 1 (You)'}
         </div>
       </div>
 
