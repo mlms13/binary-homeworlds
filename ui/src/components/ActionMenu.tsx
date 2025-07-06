@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import './ActionMenu.css';
 
 interface ActionMenuProps {
@@ -52,9 +53,10 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div
       className="action-menu-overlay"
+      onClick={onClose}
       style={{
         position: 'fixed',
         top: 0,
@@ -98,7 +100,8 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

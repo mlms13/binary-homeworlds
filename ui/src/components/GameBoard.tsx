@@ -56,7 +56,7 @@ const GameBoard: React.FC = () => {
     const { currentStep } = setupState;
 
     // Determine the action based on current step
-    let action: any = null;
+    let action: ReturnType<typeof createSetupAction> | null = null;
     let nextStep: SetupState['currentStep'] = currentStep;
 
     switch (currentStep) {
