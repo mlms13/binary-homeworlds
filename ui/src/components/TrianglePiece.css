@@ -1,0 +1,34 @@
+.triangle-piece {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.triangle-piece.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.triangle-piece.clickable:hover {
+  transform: scale(1.1);
+}
+
+.triangle-piece.clickable:hover svg {
+  filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.6)) !important;
+}
+
+.triangle-piece.selected svg {
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8)) !important;
+  animation: pulse-triangle 1.5s infinite;
+}
+
+@keyframes pulse-triangle {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1));
+  }
+}

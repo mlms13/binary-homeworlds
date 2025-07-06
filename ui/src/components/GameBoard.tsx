@@ -2,54 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { GameEngine } from '../../../src/game-engine';
 import { BinaryHomeworldsGameState } from '../../../src/game-state';
 import { createSetupAction } from '../../../src/action-builders';
-import { createShip, createStar, createSystem } from '../../../src/utils';
+import { createShip, createStar } from '../../../src/utils';
 import { useGameActions } from '../hooks/useGameActions';
+import { Piece } from '../../../src/types';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import ActionLog from './ActionLog';
+import SetupInstructions from './SetupInstructions';
 import './GameBoard.css';
 
-// Demo initialization function
-const initializeDemo = (engine: GameEngine) => {
-  // Create player 1 home system
-  const player1Ship = createShip('green', 2, 'player1');
-  const player1Star1 = createStar('red', 1);
-  const player1Star2 = createStar('blue', 3);
-  createSystem([player1Star1, player1Star2], [player1Ship]);
-
-  // Create player 2 home system
-  const player2Ship = createShip('green', 2, 'player2');
-  const player2Star1 = createStar('yellow', 1);
-  const player2Star2 = createStar('blue', 3);
-  createSystem([player2Star1, player2Star2], [player2Ship]);
-
-  // Apply setup actions
-  const setupAction1 = createSetupAction(
-    'player1',
-    [player1Star1, player1Star2],
-    player1Ship
-  );
-  const setupAction2 = createSetupAction(
-    'player2',
-    [player2Star1, player2Star2],
-    player2Ship
-  );
-
-  engine.applyAction(setupAction1);
-  engine.applyAction(setupAction2);
-};
+// Setup state management
+interface SetupState {
+  selectedStars: Piece[];
+  selectedShip: Piece | null;
+  step: 'select-stars' | 'select-ship' | 'waiting' | 'complete';
+}
 
 const GameBoard: React.FC = () => {
-  const [gameEngine] = useState(() => {
-    const engine = new GameEngine();
-    // Initialize with a basic setup for demonstration
-    initializeDemo(engine);
-    return engine;
-  });
+  const [gameEngine] = useState(() => new GameEngine());
   const [gameState, setGameState] = useState<BinaryHomeworldsGameState>(
     gameEngine.getGameState()
   );
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const [setupState, setSetupState] = useState<SetupState>({
+    selectedStars: [],
+    selectedShip: null,
+    step: 'select-stars',
+  });
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
 
@@ -57,6 +36,43 @@ const GameBoard: React.FC = () => {
   useEffect(() => {
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
+
+  // Handle bank piece clicks during setup
+  const handleBankPieceClick = (piece: Piece) => {
+    if (gameState.getPhase() !== 'setup') return;
+    if (gameState.getCurrentPlayer() !== 'player1') return; // Only allow player1 to set up for now
+
+    if (
+      setupState.step === 'select-stars' &&
+      setupState.selectedStars.length < 2
+    ) {
+      // Only allow star pieces (ships can be stars in setup)
+      setSetupState(prev => ({
+        ...prev,
+        selectedStars: [...prev.selectedStars, piece],
+        step: prev.selectedStars.length === 1 ? 'select-ship' : 'select-stars',
+      }));
+    } else if (setupState.step === 'select-ship' && !setupState.selectedShip) {
+      setSetupState(prev => ({
+        ...prev,
+        selectedShip: piece,
+        step: 'waiting',
+      }));
+
+      // Apply setup action
+      const stars = setupState.selectedStars.map(p =>
+        createStar(p.color, p.size)
+      );
+      const ship = createShip(piece.color, piece.size, 'player1');
+      const setupAction = createSetupAction('player1', stars, ship);
+
+      const result = applyAction(setupAction);
+      if (result.valid) {
+        setGameState(gameEngine.getGameState());
+        setSetupState(prev => ({ ...prev, step: 'complete' }));
+      }
+    }
+  };
 
   // Get home systems for both players
   const systems = gameState.getSystems();
@@ -95,20 +111,39 @@ const GameBoard: React.FC = () => {
       <div className="main-area">
         {/* Bank in top-left */}
         <div className="bank-container">
-          <Bank pieces={gameState.getBankPieces()} />
+          <Bank
+            pieces={gameState.getBankPieces()}
+            onPieceClick={handleBankPieceClick}
+            isSetupPhase={gameState.getPhase() === 'setup'}
+            selectedPieces={[
+              ...setupState.selectedStars,
+              ...(setupState.selectedShip ? [setupState.selectedShip] : []),
+            ]}
+          />
         </div>
 
         {/* Central play area */}
         <div className="play-area">
-          <div className="current-player-indicator">
-            Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
-          </div>
-          <div className="game-phase">Phase: {gameState.getPhase()}</div>
-          <div className="player-info">
-            <div className="player-label">
-              You are <strong>Player 1</strong> (bottom)
-            </div>
-          </div>
+          {gameState.getPhase() === 'setup' ? (
+            <SetupInstructions
+              currentPlayer={currentPlayer}
+              step={setupState.step}
+              selectedStars={setupState.selectedStars.length}
+              selectedShip={setupState.selectedShip !== null}
+            />
+          ) : (
+            <>
+              <div className="current-player-indicator">
+                Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
+              </div>
+              <div className="game-phase">Phase: {gameState.getPhase()}</div>
+              <div className="player-info">
+                <div className="player-label">
+                  You are <strong>Player 1</strong> (bottom)
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Action log toggle */}

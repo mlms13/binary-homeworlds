@@ -1,13 +1,21 @@
 import React from 'react';
 import { Piece, Color } from '../../../src/types';
-import PieceComponent from './Piece';
+import TrianglePiece from './TrianglePiece';
 import './Bank.css';
 
 interface BankProps {
   pieces: Piece[];
+  onPieceClick?: (piece: Piece) => void;
+  isSetupPhase?: boolean;
+  selectedPieces?: Piece[];
 }
 
-const Bank: React.FC<BankProps> = ({ pieces }) => {
+const Bank: React.FC<BankProps> = ({
+  pieces,
+  onPieceClick,
+  isSetupPhase = false,
+  selectedPieces = [],
+}) => {
   // Group pieces by color first, then by size
   const groupedByColor = pieces.reduce(
     (acc, piece) => {
@@ -44,10 +52,17 @@ const Bank: React.FC<BankProps> = ({ pieces }) => {
                   <div key={`${color}-${size}`} className="piece-group">
                     {piecesOfType.length > 0 ? (
                       <div className="piece-stack">
-                        <PieceComponent
-                          piece={piecesOfType[0]}
-                          size="small"
-                          isTriangle={true}
+                        <TrianglePiece
+                          color={color}
+                          size={size}
+                          displaySize="small"
+                          onClick={() =>
+                            onPieceClick && onPieceClick(piecesOfType[0])
+                          }
+                          isClickable={isSetupPhase}
+                          isSelected={selectedPieces.some(
+                            p => p.color === color && p.size === size
+                          )}
                         />
                         <span className="piece-count-badge">
                           {piecesOfType.length}
