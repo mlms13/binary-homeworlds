@@ -5,9 +5,13 @@ node_modules/
 
 # Production builds
 dist/
+dist-ui/
 build/
 .next/
 out/
+
+# SSL certificates
+*.pem
 
 # Environment variables
 .env
