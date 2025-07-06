@@ -12,17 +12,8 @@ import {
   System,
   Bank,
   GamePhase,
-} from "./types";
-import {
-  createPiece,
-  createSystem,
-  generateId,
-  cloneGameState,
-  checkGameEnd,
-  findSystem,
-  hasShipsAtHome,
-  hasStarsAtHome,
-} from "./utils";
+} from './types';
+import { createPiece, cloneGameState, checkGameEnd, findSystem } from './utils';
 
 export class BinaryHomeworldsGameState {
   private state: GameState;
@@ -40,7 +31,7 @@ export class BinaryHomeworldsGameState {
     // Create the bank with all 36 pieces
     const bank: Bank = { pieces: [] };
 
-    const colors: Color[] = ["yellow", "green", "blue", "red"];
+    const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
     const sizes: Size[] = [1, 2, 3];
 
     // 3 pieces of each color-size combination
@@ -53,14 +44,14 @@ export class BinaryHomeworldsGameState {
     }
 
     return {
-      phase: "setup",
-      currentPlayer: "player1",
+      phase: 'setup',
+      currentPlayer: 'player1',
       turnNumber: 1,
       systems: [],
       bank,
       players: {
-        player1: { homeSystemId: "" },
-        player2: { homeSystemId: "" },
+        player1: { homeSystemId: '' },
+        player2: { homeSystemId: '' },
       },
       gameHistory: [],
     };
@@ -88,7 +79,7 @@ export class BinaryHomeworldsGameState {
 
   // Check if game has ended
   isGameEnded(): boolean {
-    return this.state.phase === "ended";
+    return this.state.phase === 'ended';
   }
 
   // Get available pieces in bank
@@ -98,7 +89,7 @@ export class BinaryHomeworldsGameState {
 
   // Get all systems (copies)
   getSystems(): System[] {
-    return this.state.systems.map((system) => ({ ...system }));
+    return this.state.systems.map(system => ({ ...system }));
   }
 
   // Get direct reference to systems (for internal use)
@@ -130,8 +121,8 @@ export class BinaryHomeworldsGameState {
   // Switch to next player
   switchPlayer(): void {
     this.state.currentPlayer =
-      this.state.currentPlayer === "player1" ? "player2" : "player1";
-    if (this.state.currentPlayer === "player1") {
+      this.state.currentPlayer === 'player1' ? 'player2' : 'player1';
+    if (this.state.currentPlayer === 'player1') {
       this.state.turnNumber++;
     }
   }
@@ -144,7 +135,7 @@ export class BinaryHomeworldsGameState {
   // Set winner and end game
   setWinner(winner: Player): void {
     this.state.winner = winner;
-    this.state.phase = "ended";
+    this.state.phase = 'ended';
   }
 
   // Add a new system
@@ -155,7 +146,7 @@ export class BinaryHomeworldsGameState {
   // Remove a system
   removeSystem(systemId: string): void {
     this.state.systems = this.state.systems.filter(
-      (system) => system.id !== systemId
+      system => system.id !== systemId
     );
   }
 
@@ -167,7 +158,7 @@ export class BinaryHomeworldsGameState {
   // Remove piece from bank
   removePieceFromBank(pieceId: string): Piece | null {
     const index = this.state.bank.pieces.findIndex(
-      (piece) => piece.id === pieceId
+      piece => piece.id === pieceId
     );
     if (index === -1) return null;
 
@@ -206,7 +197,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Create a new game state from action history (replay)
-  static fromHistory(actions: GameAction[]): BinaryHomeworldsGameState {
+  static fromHistory(_actions: GameAction[]): BinaryHomeworldsGameState {
     const gameState = new BinaryHomeworldsGameState();
 
     // This would be implemented by the GameEngine
@@ -220,7 +211,7 @@ export class BinaryHomeworldsGameState {
     const errors: string[] = [];
 
     // Check that all systems have at least one star (except during setup)
-    if (this.state.phase !== "setup") {
+    if (this.state.phase !== 'setup') {
       for (const system of this.state.systems) {
         if (system.stars.length === 0) {
           errors.push(`System ${system.id} has no stars`);
@@ -229,12 +220,12 @@ export class BinaryHomeworldsGameState {
     }
 
     // Check that home systems are set after setup
-    if (this.state.phase !== "setup") {
+    if (this.state.phase !== 'setup') {
       if (!this.state.players.player1.homeSystemId) {
-        errors.push("Player 1 home system not set");
+        errors.push('Player 1 home system not set');
       }
       if (!this.state.players.player2.homeSystemId) {
-        errors.push("Player 2 home system not set");
+        errors.push('Player 2 home system not set');
       }
     }
 

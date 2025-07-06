@@ -20,7 +20,7 @@ export interface Ship extends Piece {
 }
 
 // Star is just a piece (no owner)
-export interface Star extends Piece {}
+export type Star = Piece;
 
 // System represents a star system with stars and ships
 export interface System {
@@ -58,7 +58,14 @@ export interface GameState {
 }
 
 // Action types
-export type ActionType = 'setup' | 'move' | 'capture' | 'grow' | 'trade' | 'sacrifice' | 'overpopulation';
+export type ActionType =
+  | 'setup'
+  | 'move'
+  | 'capture'
+  | 'grow'
+  | 'trade'
+  | 'sacrifice'
+  | 'overpopulation';
 
 // Base action interface
 export interface BaseAction {
@@ -120,13 +127,13 @@ export interface OverpopulationAction extends BaseAction {
 }
 
 // Union type for all actions
-export type GameAction = 
-  | SetupAction 
-  | MoveAction 
-  | CaptureAction 
-  | GrowAction 
-  | TradeAction 
-  | SacrificeAction 
+export type GameAction =
+  | SetupAction
+  | MoveAction
+  | CaptureAction
+  | GrowAction
+  | TradeAction
+  | SacrificeAction
   | OverpopulationAction;
 
 // Action validation result

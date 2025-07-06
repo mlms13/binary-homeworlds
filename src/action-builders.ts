@@ -3,7 +3,6 @@
  */
 
 import {
-  GameAction,
   SetupAction,
   MoveAction,
   CaptureAction,
@@ -12,7 +11,7 @@ import {
   SacrificeAction,
   OverpopulationAction,
   Player,
-  Color
+  Color,
 } from './types';
 
 // Helper functions to create actions with proper timestamps
@@ -27,7 +26,7 @@ export function createSetupAction(
     player,
     timestamp: Date.now(),
     pieceId,
-    role
+    role,
   };
 }
 
@@ -45,7 +44,7 @@ export function createMoveAction(
     shipId,
     fromSystemId,
     toSystemId,
-    newStarPieceId
+    newStarPieceId,
   };
 }
 
@@ -61,7 +60,7 @@ export function createCaptureAction(
     timestamp: Date.now(),
     attackingShipId,
     targetShipId,
-    systemId
+    systemId,
   };
 }
 
@@ -77,7 +76,7 @@ export function createGrowAction(
     timestamp: Date.now(),
     actingShipId,
     systemId,
-    newShipPieceId
+    newShipPieceId,
   };
 }
 
@@ -93,7 +92,7 @@ export function createTradeAction(
     timestamp: Date.now(),
     shipId,
     systemId,
-    newPieceId
+    newPieceId,
   };
 }
 
@@ -109,7 +108,7 @@ export function createSacrificeAction(
     timestamp: Date.now(),
     sacrificedShipId,
     systemId,
-    followupActions
+    followupActions,
   };
 }
 
@@ -123,6 +122,6 @@ export function createOverpopulationAction(
     player,
     timestamp: Date.now(),
     systemId,
-    color
+    color,
   };
 }

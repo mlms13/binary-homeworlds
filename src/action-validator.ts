@@ -13,19 +13,15 @@ import {
   TradeAction,
   SacrificeAction,
   OverpopulationAction,
-  Player,
   Color,
-  Size,
-} from "./types";
+} from './types';
 import {
   findSystem,
   findShip,
   isColorAvailable,
   hasOverpopulation,
   getSmallestAvailableSize,
-  isPieceAvailableInBank,
-  getPiecesOfColor,
-} from "./utils";
+} from './utils';
 
 export class ActionValidator {
   static validate(
@@ -33,32 +29,32 @@ export class ActionValidator {
     gameState: GameState
   ): ActionValidationResult {
     // Check if game has ended first
-    if (gameState.phase === "ended") {
-      return { valid: false, error: "Game has ended" };
+    if (gameState.phase === 'ended') {
+      return { valid: false, error: 'Game has ended' };
     }
 
     // Check if it's the correct player's turn
     if (action.player !== gameState.currentPlayer) {
-      return { valid: false, error: "Not your turn" };
+      return { valid: false, error: 'Not your turn' };
     }
 
     switch (action.type) {
-      case "setup":
+      case 'setup':
         return this.validateSetupAction(action, gameState);
-      case "move":
+      case 'move':
         return this.validateMoveAction(action, gameState);
-      case "capture":
+      case 'capture':
         return this.validateCaptureAction(action, gameState);
-      case "grow":
+      case 'grow':
         return this.validateGrowAction(action, gameState);
-      case "trade":
+      case 'trade':
         return this.validateTradeAction(action, gameState);
-      case "sacrifice":
+      case 'sacrifice':
         return this.validateSacrificeAction(action, gameState);
-      case "overpopulation":
+      case 'overpopulation':
         return this.validateOverpopulationAction(action, gameState);
       default:
-        return { valid: false, error: "Unknown action type" };
+        return { valid: false, error: 'Unknown action type' };
     }
   }
 
@@ -66,17 +62,17 @@ export class ActionValidator {
     action: SetupAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "setup") {
+    if (gameState.phase !== 'setup') {
       return {
         valid: false,
-        error: "Setup actions only allowed during setup phase",
+        error: 'Setup actions only allowed during setup phase',
       };
     }
 
     // Check if piece exists in bank
-    const piece = gameState.bank.pieces.find((p) => p.id === action.pieceId);
+    const piece = gameState.bank.pieces.find(p => p.id === action.pieceId);
     if (!piece) {
-      return { valid: false, error: "Piece not found in bank" };
+      return { valid: false, error: 'Piece not found in bank' };
     }
 
     // Additional setup validation would depend on the specific setup step
@@ -88,31 +84,31 @@ export class ActionValidator {
     action: MoveAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "normal") {
+    if (gameState.phase !== 'normal') {
       return {
         valid: false,
-        error: "Move actions only allowed during normal play",
+        error: 'Move actions only allowed during normal play',
       };
     }
 
     // Find the ship and its current system
     const shipResult = findShip(gameState, action.shipId);
     if (!shipResult) {
-      return { valid: false, error: "Ship not found" };
+      return { valid: false, error: 'Ship not found' };
     }
 
     const { ship, system: fromSystem } = shipResult;
 
     // Check if player owns the ship
     if (ship.owner !== action.player) {
-      return { valid: false, error: "You do not own this ship" };
+      return { valid: false, error: 'You do not own this ship' };
     }
 
     // Check if yellow (move) is available at the origin system
-    if (!isColorAvailable(fromSystem, "yellow", action.player)) {
+    if (!isColorAvailable(fromSystem, 'yellow', action.player)) {
       return {
         valid: false,
-        error: "Yellow (move) action not available at this system",
+        error: 'Yellow (move) action not available at this system',
       };
     }
 
@@ -121,22 +117,22 @@ export class ActionValidator {
       // Moving to existing system
       const toSystem = findSystem(gameState, action.toSystemId);
       if (!toSystem) {
-        return { valid: false, error: "Destination system not found" };
+        return { valid: false, error: 'Destination system not found' };
       }
 
       // Check size restriction: destination star must be different size than origin stars
-      const originSizes = fromSystem.stars.map((star) => star.size);
-      const destinationSizes = toSystem.stars.map((star) => star.size);
+      const originSizes = fromSystem.stars.map(star => star.size);
+      const destinationSizes = toSystem.stars.map(star => star.size);
 
       const hasValidDestination = destinationSizes.some(
-        (destSize) => !originSizes.includes(destSize)
+        destSize => !originSizes.includes(destSize)
       );
 
       if (!hasValidDestination) {
         return {
           valid: false,
           error:
-            "Destination system must have stars of different sizes than origin system",
+            'Destination system must have stars of different sizes than origin system',
         };
       }
     } else {
@@ -144,23 +140,23 @@ export class ActionValidator {
       if (!action.newStarPieceId) {
         return {
           valid: false,
-          error: "New star piece ID required when creating new system",
+          error: 'New star piece ID required when creating new system',
         };
       }
 
       const newStarPiece = gameState.bank.pieces.find(
-        (p) => p.id === action.newStarPieceId
+        p => p.id === action.newStarPieceId
       );
       if (!newStarPiece) {
-        return { valid: false, error: "New star piece not found in bank" };
+        return { valid: false, error: 'New star piece not found in bank' };
       }
 
       // Check size restriction for new star
-      const originSizes = fromSystem.stars.map((star) => star.size);
+      const originSizes = fromSystem.stars.map(star => star.size);
       if (originSizes.includes(newStarPiece.size)) {
         return {
           valid: false,
-          error: "New star must be different size than origin system stars",
+          error: 'New star must be different size than origin system stars',
         };
       }
     }
@@ -172,53 +168,53 @@ export class ActionValidator {
     action: CaptureAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "normal") {
+    if (gameState.phase !== 'normal') {
       return {
         valid: false,
-        error: "Capture actions only allowed during normal play",
+        error: 'Capture actions only allowed during normal play',
       };
     }
 
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     // Find attacking ship
     const attackingShip = system.ships.find(
-      (s) => s.id === action.attackingShipId
+      s => s.id === action.attackingShipId
     );
     if (!attackingShip) {
-      return { valid: false, error: "Attacking ship not found in system" };
+      return { valid: false, error: 'Attacking ship not found in system' };
     }
 
     if (attackingShip.owner !== action.player) {
-      return { valid: false, error: "You do not own the attacking ship" };
+      return { valid: false, error: 'You do not own the attacking ship' };
     }
 
     // Find target ship
-    const targetShip = system.ships.find((s) => s.id === action.targetShipId);
+    const targetShip = system.ships.find(s => s.id === action.targetShipId);
     if (!targetShip) {
-      return { valid: false, error: "Target ship not found in system" };
+      return { valid: false, error: 'Target ship not found in system' };
     }
 
     if (targetShip.owner === action.player) {
-      return { valid: false, error: "Cannot capture your own ship" };
+      return { valid: false, error: 'Cannot capture your own ship' };
     }
 
     // Check size restriction
     if (attackingShip.size < targetShip.size) {
       return {
         valid: false,
-        error: "Attacking ship must be equal or larger size than target",
+        error: 'Attacking ship must be equal or larger size than target',
       };
     }
 
     // Check if red (capture) is available
-    if (!isColorAvailable(system, "red", action.player)) {
+    if (!isColorAvailable(system, 'red', action.player)) {
       return {
         valid: false,
-        error: "Red (capture) action not available at this system",
+        error: 'Red (capture) action not available at this system',
       };
     }
 
@@ -229,49 +225,49 @@ export class ActionValidator {
     action: GrowAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "normal") {
+    if (gameState.phase !== 'normal') {
       return {
         valid: false,
-        error: "Grow actions only allowed during normal play",
+        error: 'Grow actions only allowed during normal play',
       };
     }
 
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     // Find acting ship
-    const actingShip = system.ships.find((s) => s.id === action.actingShipId);
+    const actingShip = system.ships.find(s => s.id === action.actingShipId);
     if (!actingShip) {
-      return { valid: false, error: "Acting ship not found in system" };
+      return { valid: false, error: 'Acting ship not found in system' };
     }
 
     if (actingShip.owner !== action.player) {
-      return { valid: false, error: "You do not own the acting ship" };
+      return { valid: false, error: 'You do not own the acting ship' };
     }
 
     // Check if green (grow) is available
-    if (!isColorAvailable(system, "green", action.player)) {
+    if (!isColorAvailable(system, 'green', action.player)) {
       return {
         valid: false,
-        error: "Green (grow) action not available at this system",
+        error: 'Green (grow) action not available at this system',
       };
     }
 
     // Check if new ship piece exists in bank
     const newShipPiece = gameState.bank.pieces.find(
-      (p) => p.id === action.newShipPieceId
+      p => p.id === action.newShipPieceId
     );
     if (!newShipPiece) {
-      return { valid: false, error: "New ship piece not found in bank" };
+      return { valid: false, error: 'New ship piece not found in bank' };
     }
 
     // Check if new ship has same color as acting ship
     if (newShipPiece.color !== actingShip.color) {
       return {
         valid: false,
-        error: "New ship must have same color as acting ship",
+        error: 'New ship must have same color as acting ship',
       };
     }
 
@@ -283,7 +279,7 @@ export class ActionValidator {
     if (smallestSize === null || newShipPiece.size !== smallestSize) {
       return {
         valid: false,
-        error: "New ship must be smallest available size of that color",
+        error: 'New ship must be smallest available size of that color',
       };
     }
 
@@ -294,49 +290,49 @@ export class ActionValidator {
     action: TradeAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "normal") {
+    if (gameState.phase !== 'normal') {
       return {
         valid: false,
-        error: "Trade actions only allowed during normal play",
+        error: 'Trade actions only allowed during normal play',
       };
     }
 
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     // Find ship to trade
-    const ship = system.ships.find((s) => s.id === action.shipId);
+    const ship = system.ships.find(s => s.id === action.shipId);
     if (!ship) {
-      return { valid: false, error: "Ship not found in system" };
+      return { valid: false, error: 'Ship not found in system' };
     }
 
     if (ship.owner !== action.player) {
-      return { valid: false, error: "You do not own this ship" };
+      return { valid: false, error: 'You do not own this ship' };
     }
 
     // Check if blue (trade) is available
-    if (!isColorAvailable(system, "blue", action.player)) {
+    if (!isColorAvailable(system, 'blue', action.player)) {
       return {
         valid: false,
-        error: "Blue (trade) action not available at this system",
+        error: 'Blue (trade) action not available at this system',
       };
     }
 
     // Check if new piece exists in bank
     const newPiece = gameState.bank.pieces.find(
-      (p) => p.id === action.newPieceId
+      p => p.id === action.newPieceId
     );
     if (!newPiece) {
-      return { valid: false, error: "New piece not found in bank" };
+      return { valid: false, error: 'New piece not found in bank' };
     }
 
     // Check if new piece has same size as ship being traded
     if (newPiece.size !== ship.size) {
       return {
         valid: false,
-        error: "New piece must have same size as ship being traded",
+        error: 'New piece must have same size as ship being traded',
       };
     }
 
@@ -344,7 +340,7 @@ export class ActionValidator {
     if (newPiece.color === ship.color) {
       return {
         valid: false,
-        error: "New piece must have different color than ship being traded",
+        error: 'New piece must have different color than ship being traded',
       };
     }
 
@@ -355,28 +351,28 @@ export class ActionValidator {
     action: SacrificeAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== "normal") {
+    if (gameState.phase !== 'normal') {
       return {
         valid: false,
-        error: "Sacrifice actions only allowed during normal play",
+        error: 'Sacrifice actions only allowed during normal play',
       };
     }
 
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     // Find sacrificed ship
     const sacrificedShip = system.ships.find(
-      (s) => s.id === action.sacrificedShipId
+      s => s.id === action.sacrificedShipId
     );
     if (!sacrificedShip) {
-      return { valid: false, error: "Sacrificed ship not found in system" };
+      return { valid: false, error: 'Sacrificed ship not found in system' };
     }
 
     if (sacrificedShip.owner !== action.player) {
-      return { valid: false, error: "You do not own the sacrificed ship" };
+      return { valid: false, error: 'You do not own the sacrificed ship' };
     }
 
     // Check number of followup actions matches ship size
@@ -393,20 +389,20 @@ export class ActionValidator {
       let actionColor: Color;
 
       switch (followupAction.type) {
-        case "move":
-          actionColor = "yellow";
+        case 'move':
+          actionColor = 'yellow';
           break;
-        case "capture":
-          actionColor = "red";
+        case 'capture':
+          actionColor = 'red';
           break;
-        case "grow":
-          actionColor = "green";
+        case 'grow':
+          actionColor = 'green';
           break;
-        case "trade":
-          actionColor = "blue";
+        case 'trade':
+          actionColor = 'blue';
           break;
         default:
-          return { valid: false, error: "Invalid followup action type" };
+          return { valid: false, error: 'Invalid followup action type' };
       }
 
       if (actionColor !== expectedColor) {
@@ -431,7 +427,7 @@ export class ActionValidator {
   ): ActionValidationResult {
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     // Check if the specified color actually has overpopulation
@@ -452,56 +448,56 @@ export class ActionValidator {
   ): ActionValidationResult {
     const shipResult = findShip(gameState, action.shipId);
     if (!shipResult) {
-      return { valid: false, error: "Ship not found" };
+      return { valid: false, error: 'Ship not found' };
     }
 
     const { ship, system: fromSystem } = shipResult;
 
     if (ship.owner !== action.player) {
-      return { valid: false, error: "You do not own this ship" };
+      return { valid: false, error: 'You do not own this ship' };
     }
 
     // Validate destination size restrictions
     if (action.toSystemId) {
       const toSystem = findSystem(gameState, action.toSystemId);
       if (!toSystem) {
-        return { valid: false, error: "Destination system not found" };
+        return { valid: false, error: 'Destination system not found' };
       }
 
-      const originSizes = fromSystem.stars.map((star) => star.size);
-      const destinationSizes = toSystem.stars.map((star) => star.size);
+      const originSizes = fromSystem.stars.map(star => star.size);
+      const destinationSizes = toSystem.stars.map(star => star.size);
 
       const hasValidDestination = destinationSizes.some(
-        (destSize) => !originSizes.includes(destSize)
+        destSize => !originSizes.includes(destSize)
       );
 
       if (!hasValidDestination) {
         return {
           valid: false,
           error:
-            "Destination system must have stars of different sizes than origin system",
+            'Destination system must have stars of different sizes than origin system',
         };
       }
     } else {
       if (!action.newStarPieceId) {
         return {
           valid: false,
-          error: "New star piece ID required when creating new system",
+          error: 'New star piece ID required when creating new system',
         };
       }
 
       const newStarPiece = gameState.bank.pieces.find(
-        (p) => p.id === action.newStarPieceId
+        p => p.id === action.newStarPieceId
       );
       if (!newStarPiece) {
-        return { valid: false, error: "New star piece not found in bank" };
+        return { valid: false, error: 'New star piece not found in bank' };
       }
 
-      const originSizes = fromSystem.stars.map((star) => star.size);
+      const originSizes = fromSystem.stars.map(star => star.size);
       if (originSizes.includes(newStarPiece.size)) {
         return {
           valid: false,
-          error: "New star must be different size than origin system stars",
+          error: 'New star must be different size than origin system stars',
         };
       }
     }
@@ -515,33 +511,33 @@ export class ActionValidator {
   ): ActionValidationResult {
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
     const attackingShip = system.ships.find(
-      (s) => s.id === action.attackingShipId
+      s => s.id === action.attackingShipId
     );
     if (!attackingShip) {
-      return { valid: false, error: "Attacking ship not found in system" };
+      return { valid: false, error: 'Attacking ship not found in system' };
     }
 
     if (attackingShip.owner !== action.player) {
-      return { valid: false, error: "You do not own the attacking ship" };
+      return { valid: false, error: 'You do not own the attacking ship' };
     }
 
-    const targetShip = system.ships.find((s) => s.id === action.targetShipId);
+    const targetShip = system.ships.find(s => s.id === action.targetShipId);
     if (!targetShip) {
-      return { valid: false, error: "Target ship not found in system" };
+      return { valid: false, error: 'Target ship not found in system' };
     }
 
     if (targetShip.owner === action.player) {
-      return { valid: false, error: "Cannot capture your own ship" };
+      return { valid: false, error: 'Cannot capture your own ship' };
     }
 
     if (attackingShip.size < targetShip.size) {
       return {
         valid: false,
-        error: "Attacking ship must be equal or larger size than target",
+        error: 'Attacking ship must be equal or larger size than target',
       };
     }
 
@@ -554,29 +550,29 @@ export class ActionValidator {
   ): ActionValidationResult {
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
-    const actingShip = system.ships.find((s) => s.id === action.actingShipId);
+    const actingShip = system.ships.find(s => s.id === action.actingShipId);
     if (!actingShip) {
-      return { valid: false, error: "Acting ship not found in system" };
+      return { valid: false, error: 'Acting ship not found in system' };
     }
 
     if (actingShip.owner !== action.player) {
-      return { valid: false, error: "You do not own the acting ship" };
+      return { valid: false, error: 'You do not own the acting ship' };
     }
 
     const newShipPiece = gameState.bank.pieces.find(
-      (p) => p.id === action.newShipPieceId
+      p => p.id === action.newShipPieceId
     );
     if (!newShipPiece) {
-      return { valid: false, error: "New ship piece not found in bank" };
+      return { valid: false, error: 'New ship piece not found in bank' };
     }
 
     if (newShipPiece.color !== actingShip.color) {
       return {
         valid: false,
-        error: "New ship must have same color as acting ship",
+        error: 'New ship must have same color as acting ship',
       };
     }
 
@@ -587,7 +583,7 @@ export class ActionValidator {
     if (smallestSize === null || newShipPiece.size !== smallestSize) {
       return {
         valid: false,
-        error: "New ship must be smallest available size of that color",
+        error: 'New ship must be smallest available size of that color',
       };
     }
 
@@ -600,36 +596,36 @@ export class ActionValidator {
   ): ActionValidationResult {
     const system = findSystem(gameState, action.systemId);
     if (!system) {
-      return { valid: false, error: "System not found" };
+      return { valid: false, error: 'System not found' };
     }
 
-    const ship = system.ships.find((s) => s.id === action.shipId);
+    const ship = system.ships.find(s => s.id === action.shipId);
     if (!ship) {
-      return { valid: false, error: "Ship not found in system" };
+      return { valid: false, error: 'Ship not found in system' };
     }
 
     if (ship.owner !== action.player) {
-      return { valid: false, error: "You do not own this ship" };
+      return { valid: false, error: 'You do not own this ship' };
     }
 
     const newPiece = gameState.bank.pieces.find(
-      (p) => p.id === action.newPieceId
+      p => p.id === action.newPieceId
     );
     if (!newPiece) {
-      return { valid: false, error: "New piece not found in bank" };
+      return { valid: false, error: 'New piece not found in bank' };
     }
 
     if (newPiece.size !== ship.size) {
       return {
         valid: false,
-        error: "New piece must have same size as ship being traded",
+        error: 'New piece must have same size as ship being traded',
       };
     }
 
     if (newPiece.color === ship.color) {
       return {
         valid: false,
-        error: "New piece must have different color than ship being traded",
+        error: 'New piece must have different color than ship being traded',
       };
     }
 
