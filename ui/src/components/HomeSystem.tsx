@@ -88,7 +88,11 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   };
 
   const handleActionSelect = (actionType: string) => {
-    if (actionType === 'grow' || actionType === 'trade') {
+    if (actionType === 'grow') {
+      // Grow action: automatically select smallest available piece of same color
+      handleGrowAction();
+      handleCloseActionMenu();
+    } else if (actionType === 'trade') {
       setPendingActionType(actionType);
       setShowBankSelector(true);
       handleCloseActionMenu();
@@ -99,28 +103,43 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     }
   };
 
+  const handleGrowAction = () => {
+    if (!selectedShipId) return;
+
+    const actingShip = system.ships.find(s => s.id === selectedShipId);
+    if (!actingShip) return;
+
+    // Find the smallest available piece of the same color
+    const availablePieces = bankPieces
+      .filter(piece => piece.color === actingShip.color)
+      .sort((a, b) => a.size - b.size); // Sort by size ascending
+
+    const smallestPiece = availablePieces[0];
+    if (!smallestPiece) return; // No pieces available
+
+    const action = createGrowAction(
+      currentPlayer as 'player1' | 'player2',
+      selectedShipId,
+      system.id,
+      smallestPiece.id
+    );
+
+    // Apply the action
+    onAction(action);
+
+    // Reset state
+    setSelectedShipId(null);
+  };
+
   const handleBankPieceSelect = (piece: Piece) => {
-    if (!selectedShipId || !pendingActionType) return;
+    if (!selectedShipId || pendingActionType !== 'trade') return;
 
-    let action: GameAction;
-
-    if (pendingActionType === 'grow') {
-      action = createGrowAction(
-        currentPlayer as 'player1' | 'player2',
-        selectedShipId,
-        system.id,
-        piece.id
-      );
-    } else if (pendingActionType === 'trade') {
-      action = createTradeAction(
-        currentPlayer as 'player1' | 'player2',
-        selectedShipId,
-        system.id,
-        piece.id
-      );
-    } else {
-      return;
-    }
+    const action = createTradeAction(
+      currentPlayer as 'player1' | 'player2',
+      selectedShipId,
+      system.id,
+      piece.id
+    );
 
     // Apply the action
     onAction(action);
@@ -139,22 +158,11 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   const getValidBankPieceIds = (): string[] => {
     if (!pendingActionType || !selectedShipId) return [];
 
-    // For grow actions, we need pieces that can grow the acting ship
-    // For trade actions, we need pieces of different colors
     const actingShip = system.ships.find(s => s.id === selectedShipId);
     if (!actingShip) return [];
 
-    if (pendingActionType === 'grow') {
-      // Can grow with pieces of the same color and one size larger
-      return bankPieces
-        .filter(
-          piece =>
-            piece.color === actingShip.color &&
-            piece.size === actingShip.size + 1
-        )
-        .map(piece => piece.id);
-    } else if (pendingActionType === 'trade') {
-      // Can trade for pieces of different colors (same size)
+    if (pendingActionType === 'trade') {
+      // Can trade for pieces of different colors and same size
       return bankPieces
         .filter(
           piece =>
@@ -262,11 +270,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       {/* Bank Piece Selector */}
       <BankPieceSelector
         isOpen={showBankSelector}
-        title={
-          pendingActionType === 'grow'
-            ? 'Select piece to grow'
-            : 'Select piece to trade for'
-        }
+        title="Select piece to trade for"
         bankPieces={bankPieces}
         validPieceIds={getValidBankPieceIds()}
         onPieceSelect={handleBankPieceSelect}
