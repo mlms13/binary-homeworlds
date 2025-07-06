@@ -15,9 +15,12 @@
     "clean": "rm -rf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write src/**/*.ts",
-    "format:check": "prettier --check src/**/*.ts",
-    "prepare": "husky"
+    "format": "prettier --write \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
+    "prepare": "husky",
+    "ui:dev": "vite --config vite.config.ui.ts",
+    "ui:build": "vite build --config vite.config.ui.ts",
+    "ui:preview": "vite preview --config vite.config.ui.ts"
   },
   "keywords": [
     "game",
@@ -30,6 +33,9 @@
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --fix",
+      "prettier --write"
+    ],
+    "ui/src/**/*.{ts,tsx}": [
       "prettier --write"
     ]
   },
@@ -46,5 +52,13 @@
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "vite": "^5.4.19"
   }
 }

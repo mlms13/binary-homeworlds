@@ -1,0 +1,98 @@
+.piece {
+  position: relative;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.piece-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.piece-size-indicator {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Size variants for display */
+.piece-size-small {
+  width: 24px;
+  height: 24px;
+}
+
+.piece-size-medium {
+  width: 32px;
+  height: 32px;
+}
+
+.piece-size-large {
+  width: 40px;
+  height: 40px;
+}
+
+/* Piece sizes (game logic) */
+.piece-small {
+  transform: scale(0.8);
+}
+
+.piece-medium {
+  transform: scale(1.0);
+}
+
+.piece-large {
+  transform: scale(1.2);
+}
+
+/* Colors */
+.piece-color-red {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+
+.piece-color-yellow {
+  background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
+}
+
+.piece-color-green {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.piece-color-blue {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* Interactive states */
+.piece-clickable {
+  cursor: pointer;
+}
+
+.piece-clickable:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.piece-selected {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.1);
+  }
+}

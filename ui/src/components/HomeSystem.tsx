@@ -1,0 +1,108 @@
+import React, { useState } from 'react';
+import { System, GameAction, ActionValidationResult } from '../../../src/types';
+import Piece from './Piece';
+import ActionMenu from './ActionMenu';
+import './HomeSystem.css';
+
+interface ActionOption {
+  id: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  color?: string;
+}
+
+interface HomeSystemProps {
+  system: System;
+  isCurrentPlayer: boolean;
+  isOpponent: boolean;
+  onAction: (action: GameAction) => ActionValidationResult;
+  getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
+}
+
+const HomeSystem: React.FC<HomeSystemProps> = ({
+  system,
+  isCurrentPlayer,
+  isOpponent,
+  onAction: _onAction,
+  getAvailableActions,
+}) => {
+  const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
+  const [actionMenuPosition, setActionMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleShipClick = (shipId: string, event: React.MouseEvent) => {
+    if (!isCurrentPlayer) return;
+
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setActionMenuPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+    setSelectedShipId(shipId);
+  };
+
+  const handleCloseActionMenu = () => {
+    setSelectedShipId(null);
+    setActionMenuPosition(null);
+  };
+
+  return (
+    <div
+      className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${isOpponent ? 'opponent' : ''}`}
+    >
+      <div className="system-header">
+        <h4>{isCurrentPlayer ? 'Your Home' : 'Opponent Home'}</h4>
+      </div>
+
+      <div className="system-content">
+        {/* Stars */}
+        <div className="stars-container">
+          {system.stars.map(star => (
+            <div key={star.id} className="star-wrapper">
+              <Piece piece={star} size="large" />
+            </div>
+          ))}
+        </div>
+
+        {/* Ships */}
+        <div className="ships-container">
+          {system.ships.map(ship => (
+            <div key={ship.id} className="ship-wrapper">
+              <Piece
+                piece={ship}
+                size="medium"
+                onClick={event => handleShipClick(ship.id, event)}
+                isSelected={selectedShipId === ship.id}
+                isClickable={isCurrentPlayer}
+              />
+              <div className="ship-owner">
+                {ship.owner === 'player1' ? 'P1' : 'P2'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Menu */}
+      {selectedShipId && actionMenuPosition && (
+        <ActionMenu
+          shipId={selectedShipId}
+          systemId={system.id}
+          position={actionMenuPosition}
+          availableActions={getAvailableActions(selectedShipId, system.id)}
+          onClose={handleCloseActionMenu}
+          onAction={actionType => {
+            console.log('Action selected:', actionType);
+            // TODO: Create actual action based on type and apply it
+            handleCloseActionMenu();
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default HomeSystem;
