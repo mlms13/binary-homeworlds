@@ -95,7 +95,8 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     } else if (actionType === 'trade') {
       setPendingActionType(actionType);
       setShowBankSelector(true);
-      handleCloseActionMenu();
+      // Close action menu but keep selectedShipId for bank selector
+      setActionMenuPosition(null);
     } else {
       // Handle other action types (move, capture, etc.)
       console.log('Action selected:', actionType);
@@ -153,6 +154,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   const handleCloseBankSelector = () => {
     setShowBankSelector(false);
     setPendingActionType(null);
+    setSelectedShipId(null);
   };
 
   const getValidBankPieceIds = (): string[] => {
