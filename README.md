@@ -100,6 +100,56 @@ Run tests with coverage:
 npm run test:coverage
 ```
 
+## UI Development
+
+The project includes a React-based user interface for playing Binary Homeworlds.
+
+### HTTPS Setup (Recommended)
+
+For the best development experience, set up HTTPS with locally-trusted certificates:
+
+```bash
+# Install mkcert (macOS)
+brew install mkcert
+
+# Install the local CA in your system trust store
+mkcert -install
+
+# Generate certificates (run from project root)
+mkcert localhost 127.0.0.1 ::1
+```
+
+### Starting the UI Development Server
+
+```bash
+npm run ui:dev
+```
+
+The UI will be available at:
+- **HTTPS**: `https://localhost:3001` (recommended, requires mkcert setup)
+- **HTTP**: `http://localhost:3001` (fallback if HTTPS fails)
+
+### UI Features
+
+- **Alternating Setup Phase**: Players take turns selecting stars and ships
+- **Interactive Game Board**: Click ships to see available actions
+- **Visual Piece Types**:
+  - Stars displayed as diamonds (binary stars show nested diamonds)
+  - Ships displayed as directional triangles pointing toward opponent
+- **Enhanced Bank**: Larger triangle pieces with clear count indicators
+- **Action Guidance**: Step-by-step instructions during setup
+- **Real-time Updates**: Hot reload for immediate development feedback
+
+### Building the UI
+
+```bash
+# Build for production
+npm run ui:build
+
+# Preview the built UI
+npm run ui:preview
+```
+
 ## Future Enhancements
 
 The architecture is designed to support:
