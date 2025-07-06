@@ -44,6 +44,14 @@
   align-items: center;
 }
 
+.system-objects-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .stars-container {
   display: flex;
   gap: 12px;

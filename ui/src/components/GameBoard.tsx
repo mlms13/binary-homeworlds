@@ -10,6 +10,7 @@ import HomeSystem from './HomeSystem';
 import ActionLog from './ActionLog';
 import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
+import SettingsMenu from './SettingsMenu';
 import './GameBoard.css';
 
 // Setup state management
@@ -34,6 +35,8 @@ const GameBoard: React.FC = () => {
     gameEngine.getGameState()
   );
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsPosition, setSettingsPosition] = useState({ x: 0, y: 0 });
   const [setupState, setSetupState] = useState<SetupState>({
     player1Stars: [],
     player2Stars: [],
@@ -198,6 +201,30 @@ const GameBoard: React.FC = () => {
         />
       </div>
 
+      {/* Top-right controls */}
+      <div className="top-right-controls">
+        <button
+          onClick={event => {
+            const rect = (event.target as HTMLElement).getBoundingClientRect();
+            setSettingsPosition({
+              x: rect.left,
+              y: rect.bottom + 10,
+            });
+            setIsSettingsOpen(!isSettingsOpen);
+          }}
+          className="settings-btn"
+          title="Settings"
+        >
+          ⚙️
+        </button>
+        <button
+          onClick={() => setIsLogOpen(!isLogOpen)}
+          className="log-toggle-btn"
+        >
+          {isLogOpen ? '→' : '←'} Log
+        </button>
+      </div>
+
       {/* Top area - Opponent's home system */}
       <div className="top-area">
         <div className="opponent-home">
@@ -236,27 +263,20 @@ const GameBoard: React.FC = () => {
           ) : (
             <div className="normal-play-instructions">
               <div className="current-player-indicator">
-                Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
+                <div className="turn-label">
+                  Current Turn:{' '}
+                  {currentPlayer === 'player1' ? 'You' : 'Opponent'}
+                </div>
+                {currentPlayer === 'player1' ? (
+                  <GameHint>
+                    Click on one of your ships to take an action
+                  </GameHint>
+                ) : (
+                  <GameHint icon="⏳">Waiting for opponent's move...</GameHint>
+                )}
               </div>
-              {currentPlayer === 'player1' ? (
-                <GameHint>
-                  Click on one of your ships to take an action
-                </GameHint>
-              ) : (
-                <GameHint icon="⏳">Waiting for opponent's move...</GameHint>
-              )}
             </div>
           )}
-        </div>
-
-        {/* Action log toggle */}
-        <div className="log-toggle">
-          <button
-            onClick={() => setIsLogOpen(!isLogOpen)}
-            className="log-toggle-btn"
-          >
-            {isLogOpen ? '→' : '←'} Log
-          </button>
         </div>
       </div>
 
@@ -287,6 +307,13 @@ const GameBoard: React.FC = () => {
         isOpen={isLogOpen}
         onClose={() => setIsLogOpen(false)}
         actions={actionHistory}
+      />
+
+      {/* Settings menu */}
+      <SettingsMenu
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        position={settingsPosition}
       />
     </div>
   );

@@ -81,11 +81,37 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       </div>
 
       <div className="system-content">
-        {/* Stars */}
-        <div className="stars-container">
+        {/* All system objects in single line: opponent ships (small→big), stars, player ships (big→small) */}
+        <div className="system-objects-container">
+          {/* Opponent ships (small to big) */}
+          {system.ships
+            .filter(ship => ship.owner === 'player2')
+            .slice()
+            .sort((a, b) => a.size - b.size)
+            .map(ship => (
+              <div key={ship.id} className="ship-wrapper">
+                <DirectionalShip
+                  color={ship.color}
+                  size={ship.size}
+                  displaySize="medium"
+                  onClick={event => handleShipClick(ship.id, event)}
+                  isSelected={selectedShipId === ship.id}
+                  isClickable={isCurrentPlayer}
+                  isCurrentPlayer={ship.owner === 'player1'}
+                />
+                {isCurrentPlayer && (
+                  <div className="clickable-hint">Click to act</div>
+                )}
+                <div className="ship-owner">
+                  {ship.owner === 'player1' ? 'P1' : 'P2'}
+                </div>
+              </div>
+            ))}
+
+          {/* Stars (larger first) */}
           {system.stars
             .slice()
-            .sort((a, b) => b.size - a.size) // Sort by size descending (larger first)
+            .sort((a, b) => b.size - a.size)
             .map((star, index) => (
               <div key={star.id} className="star-wrapper">
                 <DiamondStar
@@ -96,29 +122,31 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
                 />
               </div>
             ))}
-        </div>
 
-        {/* Ships */}
-        <div className="ships-container">
-          {system.ships.map(ship => (
-            <div key={ship.id} className="ship-wrapper">
-              <DirectionalShip
-                color={ship.color}
-                size={ship.size}
-                displaySize="medium"
-                onClick={event => handleShipClick(ship.id, event)}
-                isSelected={selectedShipId === ship.id}
-                isClickable={isCurrentPlayer}
-                isCurrentPlayer={ship.owner === 'player1'} // Ship direction based on owner, not current turn
-              />
-              {isCurrentPlayer && (
-                <div className="clickable-hint">Click to act</div>
-              )}
-              <div className="ship-owner">
-                {ship.owner === 'player1' ? 'P1' : 'P2'}
+          {/* Player ships (big to small) */}
+          {system.ships
+            .filter(ship => ship.owner === 'player1')
+            .slice()
+            .sort((a, b) => b.size - a.size)
+            .map(ship => (
+              <div key={ship.id} className="ship-wrapper">
+                <DirectionalShip
+                  color={ship.color}
+                  size={ship.size}
+                  displaySize="medium"
+                  onClick={event => handleShipClick(ship.id, event)}
+                  isSelected={selectedShipId === ship.id}
+                  isClickable={isCurrentPlayer}
+                  isCurrentPlayer={ship.owner === 'player1'}
+                />
+                {isCurrentPlayer && (
+                  <div className="clickable-hint">Click to act</div>
+                )}
+                <div className="ship-owner">
+                  {ship.owner === 'player1' ? 'P1' : 'P2'}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
