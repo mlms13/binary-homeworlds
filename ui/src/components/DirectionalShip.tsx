@@ -54,20 +54,20 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
   const getDisplaySize = (displaySize: string): number => {
     switch (displaySize) {
       case 'small':
-        return 24;
+        return 32; // Increased for better visibility
       case 'medium':
-        return 32;
+        return 40; // Increased for better visibility
       case 'large':
-        return 40;
+        return 50; // Increased for better visibility
       default:
-        return 32;
+        return 40;
     }
   };
 
   const baseSize = getDisplaySize(displaySize);
   const sizeMultiplier = getSizeMultiplier(size);
-  const shipSize = baseSize * sizeMultiplier;
-  const shipHeight = shipSize * 0.866; // Height of equilateral triangle
+  const shipWidth = baseSize * sizeMultiplier;
+  const shipHeight = shipWidth * 1.3; // Make ships longer than wide (taller triangles)
 
   // Determine direction: if not specified, use isCurrentPlayer
   const pointDirection = direction || (isCurrentPlayer ? 'up' : 'down');
@@ -79,16 +79,16 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
   };
 
   const createTrianglePoints = (
-    size: number,
+    width: number,
     height: number,
     direction: string
   ) => {
     if (direction === 'up') {
       // Triangle pointing up (toward opponent)
-      return `${size / 2},2 ${size - 2},${height - 2} 2,${height - 2}`;
+      return `${width / 2},2 ${width - 2},${height - 2} 2,${height - 2}`;
     } else {
       // Triangle pointing down (toward current player)
-      return `2,2 ${size - 2},2 ${size / 2},${height - 2}`;
+      return `2,2 ${width - 2},2 ${width / 2},${height - 2}`;
     }
   };
 
@@ -99,15 +99,15 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
       } direction-${pointDirection}`}
       onClick={handleClick}
       style={{
-        width: shipSize,
+        width: shipWidth,
         height: shipHeight,
         cursor: isClickable ? 'pointer' : 'default',
       }}
     >
       <svg
-        width={shipSize}
+        width={shipWidth}
         height={shipHeight}
-        viewBox={`0 0 ${shipSize} ${shipHeight}`}
+        viewBox={`0 0 ${shipWidth} ${shipHeight}`}
         style={{
           filter: isSelected
             ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.8))'
@@ -116,23 +116,23 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
         }}
       >
         <polygon
-          points={createTrianglePoints(shipSize, shipHeight, pointDirection)}
+          points={createTrianglePoints(shipWidth, shipHeight, pointDirection)}
           fill={getColorValue(color)}
           stroke="rgba(255, 255, 255, 0.3)"
           strokeWidth="1"
         />
-        {/* Size indicator */}
-        <text
-          x={shipSize / 2}
-          y={pointDirection === 'up' ? shipHeight - 8 : 16}
-          textAnchor="middle"
-          fill="white"
-          fontSize="10"
-          fontWeight="bold"
-          style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)' }}
-        >
-          {size}
-        </text>
+        {/* Size indicator dots */}
+        {Array.from({ length: size }, (_, i) => (
+          <circle
+            key={i}
+            cx={shipWidth / 2 + (i - (size - 1) / 2) * 6}
+            cy={pointDirection === 'up' ? shipHeight - 10 : 14}
+            r="2"
+            fill="rgba(255, 255, 255, 0.7)"
+            stroke="rgba(0, 0, 0, 0.3)"
+            strokeWidth="0.5"
+          />
+        ))}
       </svg>
     </div>
   );

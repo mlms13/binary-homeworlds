@@ -52,13 +52,13 @@ const DiamondStar: React.FC<DiamondStarProps> = ({
   const getDisplaySize = (displaySize: string): number => {
     switch (displaySize) {
       case 'small':
-        return 24;
+        return 32; // Increased for better visibility
       case 'medium':
-        return 32;
+        return 40; // Increased for better visibility
       case 'large':
-        return 40;
+        return 50; // Increased for better visibility
       default:
-        return 32;
+        return 40;
     }
   };
 
@@ -118,18 +118,18 @@ const DiamondStar: React.FC<DiamondStarProps> = ({
           />
         )}
 
-        {/* Size indicator */}
-        <text
-          x={diamondSize / 2}
-          y={diamondSize / 2 + 4}
-          textAnchor="middle"
-          fill="white"
-          fontSize="10"
-          fontWeight="bold"
-          style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)' }}
-        >
-          {size}
-        </text>
+        {/* Size indicator dots */}
+        {Array.from({ length: size }, (_, i) => (
+          <circle
+            key={i}
+            cx={diamondSize / 2 + (i - (size - 1) / 2) * 6}
+            cy={diamondSize * 0.75}
+            r="2"
+            fill="rgba(255, 255, 255, 0.7)"
+            stroke="rgba(0, 0, 0, 0.3)"
+            strokeWidth="0.5"
+          />
+        ))}
       </svg>
     </div>
   );

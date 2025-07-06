@@ -50,13 +50,13 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   const getDisplaySize = (displaySize: string): number => {
     switch (displaySize) {
       case 'small':
-        return 32; // Increased from 20
+        return 40; // Further increased for better visibility
       case 'medium':
-        return 40; // Increased from 28
+        return 50; // Further increased for better visibility
       case 'large':
-        return 48; // Increased from 36
+        return 60; // Further increased for better visibility
       default:
-        return 40;
+        return 50;
     }
   };
 
@@ -102,18 +102,18 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
           stroke="rgba(255, 255, 255, 0.3)"
           strokeWidth="1"
         />
-        {/* Size indicator */}
-        <text
-          x={triangleSize / 2}
-          y={triangleHeight - 8}
-          textAnchor="middle"
-          fill="white"
-          fontSize="10"
-          fontWeight="bold"
-          style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)' }}
-        >
-          {size}
-        </text>
+        {/* Size indicator dots */}
+        {Array.from({ length: size }, (_, i) => (
+          <circle
+            key={i}
+            cx={triangleSize / 2 + (i - (size - 1) / 2) * 6}
+            cy={triangleHeight - 10}
+            r="2"
+            fill="rgba(255, 255, 255, 0.7)"
+            stroke="rgba(0, 0, 0, 0.3)"
+            strokeWidth="0.5"
+          />
+        ))}
       </svg>
     </div>
   );

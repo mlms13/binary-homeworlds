@@ -231,17 +231,20 @@ const GameBoard: React.FC = () => {
               player2Ship={setupState.player2Ship !== null}
             />
           ) : (
-            <>
+            <div className="normal-play-instructions">
               <div className="current-player-indicator">
                 Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
               </div>
-              <div className="game-phase">Phase: {gameState.getPhase()}</div>
-              <div className="player-info">
-                <div className="player-label">
-                  You are <strong>Player 1</strong> (bottom)
+              {currentPlayer === 'player1' ? (
+                <div className="action-hint">
+                  💡 Click on one of your ships to take an action
                 </div>
-              </div>
-            </>
+              ) : (
+                <div className="action-hint">
+                  ⏳ Waiting for opponent's move...
+                </div>
+              )}
+            </div>
           )}
         </div>
 
