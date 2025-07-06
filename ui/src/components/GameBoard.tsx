@@ -9,6 +9,7 @@ import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import ActionLog from './ActionLog';
 import SetupInstructions from './SetupInstructions';
+import GameHint from './GameHint';
 import './GameBoard.css';
 
 // Setup state management
@@ -182,6 +183,21 @@ const GameBoard: React.FC = () => {
 
   return (
     <div className="game-board">
+      {/* Bank in top-left of entire board */}
+      <div className="bank-container">
+        <Bank
+          pieces={gameState.getBankPieces()}
+          onPieceClick={handleBankPieceClick}
+          isSetupPhase={gameState.getPhase() === 'setup'}
+          selectedPieces={[
+            ...setupState.player1Stars,
+            ...setupState.player2Stars,
+            ...(setupState.player1Ship ? [setupState.player1Ship] : []),
+            ...(setupState.player2Ship ? [setupState.player2Ship] : []),
+          ]}
+        />
+      </div>
+
       {/* Top area - Opponent's home system */}
       <div className="top-area">
         <div className="opponent-home">
@@ -206,21 +222,6 @@ const GameBoard: React.FC = () => {
 
       {/* Main game area */}
       <div className="main-area">
-        {/* Bank in top-left */}
-        <div className="bank-container">
-          <Bank
-            pieces={gameState.getBankPieces()}
-            onPieceClick={handleBankPieceClick}
-            isSetupPhase={gameState.getPhase() === 'setup'}
-            selectedPieces={[
-              ...setupState.player1Stars,
-              ...setupState.player2Stars,
-              ...(setupState.player1Ship ? [setupState.player1Ship] : []),
-              ...(setupState.player2Ship ? [setupState.player2Ship] : []),
-            ]}
-          />
-        </div>
-
         {/* Central play area */}
         <div className="play-area">
           {gameState.getPhase() === 'setup' ? (
@@ -238,13 +239,11 @@ const GameBoard: React.FC = () => {
                 Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
               </div>
               {currentPlayer === 'player1' ? (
-                <div className="action-hint">
-                  💡 Click on one of your ships to take an action
-                </div>
+                <GameHint>
+                  Click on one of your ships to take an action
+                </GameHint>
               ) : (
-                <div className="action-hint">
-                  ⏳ Waiting for opponent's move...
-                </div>
+                <GameHint icon="⏳">Waiting for opponent's move...</GameHint>
               )}
             </div>
           )}

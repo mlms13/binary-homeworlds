@@ -83,16 +83,19 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       <div className="system-content">
         {/* Stars */}
         <div className="stars-container">
-          {system.stars.map((star, index) => (
-            <div key={star.id} className="star-wrapper">
-              <DiamondStar
-                color={star.color}
-                size={star.size}
-                displaySize="large"
-                isBinary={system.stars.length === 2 && index === 1}
-              />
-            </div>
-          ))}
+          {system.stars
+            .slice()
+            .sort((a, b) => b.size - a.size) // Sort by size descending (larger first)
+            .map((star, index) => (
+              <div key={star.id} className="star-wrapper">
+                <DiamondStar
+                  color={star.color}
+                  size={star.size}
+                  displaySize="large"
+                  isBinary={system.stars.length === 2 && index === 1}
+                />
+              </div>
+            ))}
         </div>
 
         {/* Ships */}
@@ -106,7 +109,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
                 onClick={event => handleShipClick(ship.id, event)}
                 isSelected={selectedShipId === ship.id}
                 isClickable={isCurrentPlayer}
-                isCurrentPlayer={isCurrentPlayer}
+                isCurrentPlayer={ship.owner === 'player1'} // Ship direction based on owner, not current turn
               />
               {isCurrentPlayer && (
                 <div className="clickable-hint">Click to act</div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import GameHint from './GameHint';
 import './SetupInstructions.css';
 
 interface SetupInstructionsProps {
@@ -83,9 +84,7 @@ const SetupInstructions: React.FC<SetupInstructionsProps> = ({
           <div className="progress-text">{getProgressText()}</div>
         )}
 
-        <div className="setup-hint">
-          💡 Click pieces in the bank to select them
-        </div>
+        <GameHint>Click pieces in the bank to select them</GameHint>
       </div>
     </div>
   );
