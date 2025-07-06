@@ -1,5 +1,5 @@
 import React from 'react';
-import { Piece } from '../../../src/types';
+import { Piece, Color } from '../../../src/types';
 import PieceComponent from './Piece';
 import './Bank.css';
 
@@ -8,18 +8,24 @@ interface BankProps {
 }
 
 const Bank: React.FC<BankProps> = ({ pieces }) => {
-  // Group pieces by color and size for better display
-  const groupedPieces = pieces.reduce(
+  // Group pieces by color first, then by size
+  const groupedByColor = pieces.reduce(
     (acc, piece) => {
-      const key = `${piece.color}-${piece.size}`;
-      if (!acc[key]) {
-        acc[key] = [];
+      if (!acc[piece.color]) {
+        acc[piece.color] = {};
       }
-      acc[key].push(piece);
+      if (!acc[piece.color][piece.size]) {
+        acc[piece.color][piece.size] = [];
+      }
+      acc[piece.color][piece.size].push(piece);
       return acc;
     },
-    {} as Record<string, Piece[]>
+    {} as Record<string, Record<number, Piece[]>>
   );
+
+  // Define color order for consistent display
+  const colorOrder: Color[] = ['red', 'yellow', 'green', 'blue'];
+  const sizeOrder = [1, 2, 3];
 
   return (
     <div className="bank">
@@ -28,16 +34,34 @@ const Bank: React.FC<BankProps> = ({ pieces }) => {
         <span className="piece-count">{pieces.length} pieces</span>
       </div>
       <div className="bank-pieces">
-        {Object.entries(groupedPieces).map(([key, piecesOfType]) => {
-          return (
-            <div key={key} className="piece-group">
-              <div className="piece-stack">
-                <PieceComponent piece={piecesOfType[0]} size="small" />
-                <span className="piece-count-badge">{piecesOfType.length}</span>
-              </div>
+        {colorOrder.map(color => (
+          <div key={color} className="color-row">
+            <div className="color-label">{color}</div>
+            <div className="size-pieces">
+              {sizeOrder.map(size => {
+                const piecesOfType = groupedByColor[color]?.[size] || [];
+                return (
+                  <div key={`${color}-${size}`} className="piece-group">
+                    {piecesOfType.length > 0 ? (
+                      <div className="piece-stack">
+                        <PieceComponent
+                          piece={piecesOfType[0]}
+                          size="small"
+                          isTriangle={true}
+                        />
+                        <span className="piece-count-badge">
+                          {piecesOfType.length}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="empty-piece-slot" />
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );

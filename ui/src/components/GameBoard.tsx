@@ -101,9 +101,14 @@ const GameBoard: React.FC = () => {
         {/* Central play area */}
         <div className="play-area">
           <div className="current-player-indicator">
-            Current Player: {currentPlayer}
+            Current Turn: {currentPlayer === 'player1' ? 'You' : 'Opponent'}
           </div>
           <div className="game-phase">Phase: {gameState.getPhase()}</div>
+          <div className="player-info">
+            <div className="player-label">
+              You are <strong>Player 1</strong> (bottom)
+            </div>
+          </div>
         </div>
 
         {/* Action log toggle */}

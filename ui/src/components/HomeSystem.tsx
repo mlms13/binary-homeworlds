@@ -34,7 +34,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   } | null>(null);
 
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
-    if (!isCurrentPlayer) return;
+    if (!isCurrentPlayer) {
+      return;
+    }
 
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     setActionMenuPosition({
@@ -54,7 +56,12 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${isOpponent ? 'opponent' : ''}`}
     >
       <div className="system-header">
-        <h4>{isCurrentPlayer ? 'Your Home' : 'Opponent Home'}</h4>
+        <h4>
+          {isCurrentPlayer ? 'Your Home System' : "Opponent's Home System"}
+        </h4>
+        <div className="player-indicator">
+          {isCurrentPlayer ? 'Player 1 (You)' : 'Player 2 (Opponent)'}
+        </div>
       </div>
 
       <div className="system-content">
@@ -78,6 +85,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
                 isSelected={selectedShipId === ship.id}
                 isClickable={isCurrentPlayer}
               />
+              {isCurrentPlayer && (
+                <div className="clickable-hint">Click to act</div>
+              )}
               <div className="ship-owner">
                 {ship.owner === 'player1' ? 'P1' : 'P2'}
               </div>

@@ -1,12 +1,30 @@
 .piece {
   position: relative;
-  border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.piece-circle {
+  border-radius: 50%;
+}
+
+.piece-triangle {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 20px solid;
+  border-radius: 0;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.piece-triangle .piece-inner {
+  display: none;
 }
 
 .piece-inner {
@@ -54,26 +72,61 @@
   transform: scale(1.2);
 }
 
-/* Colors */
-.piece-color-red {
+/* Colors for circles */
+.piece-circle.piece-color-red {
   background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
 }
 
-.piece-color-yellow {
+.piece-circle.piece-color-yellow {
   background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
 }
 
-.piece-color-green {
+.piece-circle.piece-color-green {
   background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
 }
 
-.piece-color-blue {
+.piece-circle.piece-color-blue {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* Colors for triangles */
+.piece-triangle.piece-color-red {
+  border-bottom-color: #dc2626;
+}
+
+.piece-triangle.piece-color-yellow {
+  border-bottom-color: #eab308;
+}
+
+.piece-triangle.piece-color-green {
+  border-bottom-color: #16a34a;
+}
+
+.piece-triangle.piece-color-blue {
+  border-bottom-color: #2563eb;
 }
 
 /* Interactive states */
 .piece-clickable {
   cursor: pointer;
+  position: relative;
+}
+
+.piece-clickable::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(74, 222, 128, 0.5);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.piece-clickable:hover::before {
+  opacity: 1;
 }
 
 .piece-clickable:hover {

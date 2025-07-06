@@ -8,6 +8,7 @@ interface PieceProps {
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
   isClickable?: boolean;
+  isTriangle?: boolean;
 }
 
 const Piece: React.FC<PieceProps> = ({
@@ -16,6 +17,7 @@ const Piece: React.FC<PieceProps> = ({
   onClick,
   isSelected = false,
   isClickable = false,
+  isTriangle = false,
 }) => {
   const sizeClass = `piece-size-${size}`;
   const colorClass = `piece-color-${piece.color}`;
@@ -25,6 +27,7 @@ const Piece: React.FC<PieceProps> = ({
       : piece.size === 2
         ? 'piece-medium'
         : 'piece-large';
+  const geometryClass = isTriangle ? 'piece-triangle' : 'piece-circle';
 
   const handleClick = (event: React.MouseEvent) => {
     if (isClickable && onClick) {
@@ -39,6 +42,7 @@ const Piece: React.FC<PieceProps> = ({
         ${sizeClass}
         ${colorClass}
         ${shapeClass}
+        ${geometryClass}
         ${isSelected ? 'piece-selected' : ''}
         ${isClickable ? 'piece-clickable' : ''}
       `}
