@@ -188,8 +188,10 @@ const GameBoard: React.FC = () => {
           {displayPlayer2Home ? (
             <HomeSystem
               system={displayPlayer2Home}
-              isCurrentPlayer={currentPlayer === 'player2'}
-              isOpponent={currentPlayer === 'player1'}
+              isCurrentPlayer={
+                gameState.getPhase() === 'normal' && currentPlayer === 'player2'
+              }
+              isOpponent={true} // Top area is always opponent from human perspective
               onAction={applyAction}
               getAvailableActions={getAvailableActions}
             />
@@ -265,8 +267,10 @@ const GameBoard: React.FC = () => {
           {displayPlayer1Home ? (
             <HomeSystem
               system={displayPlayer1Home}
-              isCurrentPlayer={currentPlayer === 'player1'}
-              isOpponent={currentPlayer === 'player2'}
+              isCurrentPlayer={
+                gameState.getPhase() === 'normal' && currentPlayer === 'player1'
+              }
+              isOpponent={false} // Bottom area is always you from human perspective
               onAction={applyAction}
               getAvailableActions={getAvailableActions}
             />
