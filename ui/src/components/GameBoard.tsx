@@ -151,14 +151,43 @@ const GameBoard: React.FC = () => {
 
   const currentPlayer = gameState.getCurrentPlayer();
 
+  // Create display home systems that show selected pieces during setup
+  const getDisplayHomeSystem = (player: 'player1' | 'player2') => {
+    const actualHome = player === 'player1' ? player1Home : player2Home;
+    if (actualHome) return actualHome;
+
+    // During setup, create temporary system with selected pieces
+    if (gameState.getPhase() === 'setup') {
+      const stars =
+        player === 'player1'
+          ? setupState.player1Stars
+          : setupState.player2Stars;
+      const ship =
+        player === 'player1' ? setupState.player1Ship : setupState.player2Ship;
+
+      return {
+        id: `temp-${player}-home`,
+        stars: stars.map(piece => ({ ...piece, id: `temp-star-${piece.id}` })),
+        ships: ship
+          ? [{ ...ship, id: `temp-ship-${ship.id}`, owner: player }]
+          : [],
+      };
+    }
+
+    return null;
+  };
+
+  const displayPlayer1Home = getDisplayHomeSystem('player1');
+  const displayPlayer2Home = getDisplayHomeSystem('player2');
+
   return (
     <div className="game-board">
       {/* Top area - Opponent's home system */}
       <div className="top-area">
         <div className="opponent-home">
-          {player2Home ? (
+          {displayPlayer2Home ? (
             <HomeSystem
-              system={player2Home}
+              system={displayPlayer2Home}
               isCurrentPlayer={currentPlayer === 'player2'}
               isOpponent={currentPlayer === 'player1'}
               onAction={applyAction}
@@ -230,9 +259,9 @@ const GameBoard: React.FC = () => {
       {/* Bottom area - Current player's home system */}
       <div className="bottom-area">
         <div className="player-home">
-          {player1Home ? (
+          {displayPlayer1Home ? (
             <HomeSystem
-              system={player1Home}
+              system={displayPlayer1Home}
               isCurrentPlayer={currentPlayer === 'player1'}
               isOpponent={currentPlayer === 'player2'}
               onAction={applyAction}

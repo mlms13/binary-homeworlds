@@ -9,25 +9,39 @@ interface ActionLogProps {
 }
 
 const ActionLog: React.FC<ActionLogProps> = ({ isOpen, onClose, actions }) => {
-  const formatAction = (action: GameAction): string => {
-    switch (action.type) {
-      case 'setup':
-        return `${action.player} set up their home system`;
-      case 'move':
-        return `${action.player} moved ship to ${action.toSystemId || 'new system'}`;
-      case 'capture':
-        return `${action.player} captured a ship`;
-      case 'grow':
-        return `${action.player} grew a new ship`;
-      case 'trade':
-        return `${action.player} traded ship color`;
-      case 'sacrifice':
-        return `${action.player} sacrificed ship for ${action.followupActions.length} actions`;
-      case 'overpopulation':
-        return `${action.player} declared overpopulation`;
-      default:
-        return `${(action as GameAction).player} performed an action`;
-    }
+  const formatPlayerName = (player: string): string => {
+    return player === 'player1' ? 'You' : 'Your opponent';
+  };
+
+  const formatAction = (action: GameAction): React.ReactNode => {
+    const playerName = formatPlayerName(action.player);
+
+    const actionText = (() => {
+      switch (action.type) {
+        case 'setup':
+          return 'set up their home system';
+        case 'move':
+          return `moved ship to ${action.toSystemId || 'new system'}`;
+        case 'capture':
+          return 'captured a ship';
+        case 'grow':
+          return 'grew a new ship';
+        case 'trade':
+          return 'traded ship color';
+        case 'sacrifice':
+          return `sacrificed ship for ${action.followupActions.length} actions`;
+        case 'overpopulation':
+          return 'declared overpopulation';
+        default:
+          return 'performed an action';
+      }
+    })();
+
+    return (
+      <>
+        <strong>{playerName}</strong> {actionText}
+      </>
+    );
   };
 
   const formatTimestamp = (timestamp: number): string => {

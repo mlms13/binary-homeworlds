@@ -20,10 +20,10 @@ interface SetupInstructionsProps {
 const SetupInstructions: React.FC<SetupInstructionsProps> = ({
   currentPlayer,
   currentStep,
-  player1Stars,
-  player2Stars,
-  player1Ship,
-  player2Ship,
+  player1Stars: _player1Stars,
+  player2Stars: _player2Stars,
+  player1Ship: _player1Ship,
+  player2Ship: _player2Ship,
 }) => {
   const isYourTurn = currentPlayer === 'player1';
 
@@ -61,9 +61,8 @@ const SetupInstructions: React.FC<SetupInstructionsProps> = ({
   };
 
   const getProgressText = () => {
-    const p1Progress = `Player 1: ${player1Stars}/2 stars, ${player1Ship ? '1' : '0'}/1 ship`;
-    const p2Progress = `Player 2: ${player2Stars}/2 stars, ${player2Ship ? '1' : '0'}/1 ship`;
-    return `${p1Progress} | ${p2Progress}`;
+    // Simplified progress - no detailed tracking needed since pieces show in home systems
+    return '';
   };
 
   return (

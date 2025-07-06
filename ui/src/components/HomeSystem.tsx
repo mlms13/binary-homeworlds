@@ -40,10 +40,27 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     }
 
     const rect = (event.target as HTMLElement).getBoundingClientRect();
-    setActionMenuPosition({
-      x: rect.left + rect.width / 2,
-      y: rect.top,
-    });
+    const menuWidth = 200; // Approximate menu width
+    const menuHeight = 250; // Approximate menu height
+
+    // Calculate position, ensuring menu stays on screen
+    let x = rect.left + rect.width / 2;
+    let y = rect.bottom + 10; // Position below the ship by default
+
+    // Adjust horizontal position if menu would go off-screen
+    if (x + menuWidth / 2 > window.innerWidth) {
+      x = window.innerWidth - menuWidth / 2 - 10;
+    }
+    if (x - menuWidth / 2 < 0) {
+      x = menuWidth / 2 + 10;
+    }
+
+    // Adjust vertical position if menu would go off-screen
+    if (y + menuHeight > window.innerHeight) {
+      y = rect.top - menuHeight - 10; // Position above the ship instead
+    }
+
+    setActionMenuPosition({ x, y });
     setSelectedShipId(shipId);
   };
 

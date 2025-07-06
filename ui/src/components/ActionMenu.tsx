@@ -71,7 +71,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
           position: 'absolute',
           left: position.x,
           top: position.y,
-          transform: 'translate(-50%, -100%)',
+          transform: 'translate(-50%, 0)',
         }}
       >
         <div className="action-menu-header">
