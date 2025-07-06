@@ -57,7 +57,15 @@ const GameBoard: React.FC = () => {
 
   // Wrapper for applyAction that handles confirmation
   const handleAction = (action: any) => {
-    if (confirmTurnActions && gameState.getPhase() === 'normal') {
+    // Check if this action will end the turn (grow, trade, move, capture, sacrifice)
+    const turnEndingActions = ['grow', 'trade', 'move', 'capture', 'sacrifice'];
+    const willEndTurn = turnEndingActions.includes(action.type);
+
+    if (
+      confirmTurnActions &&
+      gameState.getPhase() === 'normal' &&
+      willEndTurn
+    ) {
       setPendingAction(action);
       setShowConfirmation(true);
       return { valid: true, message: 'Action pending confirmation' }; // Return success for now, actual validation happens on confirm
@@ -269,6 +277,8 @@ const GameBoard: React.FC = () => {
               isOpponent={true} // Top area is always opponent from human perspective
               onAction={handleAction}
               getAvailableActions={getAvailableActions}
+              bankPieces={gameState.getBankPieces()}
+              currentPlayer={currentPlayer}
             />
           ) : (
             <div className="no-system">
@@ -324,6 +334,8 @@ const GameBoard: React.FC = () => {
               isOpponent={false} // Bottom area is always you from human perspective
               onAction={handleAction}
               getAvailableActions={getAvailableActions}
+              bankPieces={gameState.getBankPieces()}
+              currentPlayer={currentPlayer}
             />
           ) : (
             <div className="no-system">
@@ -352,8 +364,8 @@ const GameBoard: React.FC = () => {
       <ConfirmationDialog
         isOpen={showConfirmation}
         title="Confirm Action"
-        message="Are you sure you want to perform this action? This will end your turn."
-        confirmText="Confirm"
+        message={`Are you sure you want to perform this ${pendingAction?.type || 'action'}? This will end your turn and pass to your opponent.`}
+        confirmText="Confirm & End Turn"
         cancelText="Cancel"
         onConfirm={confirmAction}
         onCancel={cancelAction}

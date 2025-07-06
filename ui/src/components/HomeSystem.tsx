@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
-import { System, GameAction, ActionValidationResult } from '../../../src/types';
+import {
+  System,
+  GameAction,
+  ActionValidationResult,
+  Piece,
+} from '../../../src/types';
+import {
+  createGrowAction,
+  createTradeAction,
+} from '../../../src/action-builders';
 import DiamondStar from './DiamondStar';
 import DirectionalShip from './DirectionalShip';
 import ActionMenu from './ActionMenu';
+import BankPieceSelector from './BankPieceSelector';
 import './HomeSystem.css';
 
 interface ActionOption {
@@ -19,20 +29,28 @@ interface HomeSystemProps {
   isOpponent: boolean;
   onAction: (action: GameAction) => ActionValidationResult;
   getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
+  bankPieces: Piece[];
+  currentPlayer: string;
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
   system,
   isCurrentPlayer,
   isOpponent,
-  onAction: _onAction,
+  onAction,
   getAvailableActions,
+  bankPieces,
+  currentPlayer,
 }) => {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+  const [showBankSelector, setShowBankSelector] = useState(false);
+  const [pendingActionType, setPendingActionType] = useState<
+    'grow' | 'trade' | null
+  >(null);
 
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
     if (!isCurrentPlayer) {
@@ -67,6 +85,85 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   const handleCloseActionMenu = () => {
     setSelectedShipId(null);
     setActionMenuPosition(null);
+  };
+
+  const handleActionSelect = (actionType: string) => {
+    if (actionType === 'grow' || actionType === 'trade') {
+      setPendingActionType(actionType);
+      setShowBankSelector(true);
+      handleCloseActionMenu();
+    } else {
+      // Handle other action types (move, capture, etc.)
+      console.log('Action selected:', actionType);
+      handleCloseActionMenu();
+    }
+  };
+
+  const handleBankPieceSelect = (piece: Piece) => {
+    if (!selectedShipId || !pendingActionType) return;
+
+    let action: GameAction;
+
+    if (pendingActionType === 'grow') {
+      action = createGrowAction(
+        currentPlayer as 'player1' | 'player2',
+        selectedShipId,
+        system.id,
+        piece.id
+      );
+    } else if (pendingActionType === 'trade') {
+      action = createTradeAction(
+        currentPlayer as 'player1' | 'player2',
+        selectedShipId,
+        system.id,
+        piece.id
+      );
+    } else {
+      return;
+    }
+
+    // Apply the action
+    onAction(action);
+
+    // Reset state
+    setShowBankSelector(false);
+    setPendingActionType(null);
+    setSelectedShipId(null);
+  };
+
+  const handleCloseBankSelector = () => {
+    setShowBankSelector(false);
+    setPendingActionType(null);
+  };
+
+  const getValidBankPieceIds = (): string[] => {
+    if (!pendingActionType || !selectedShipId) return [];
+
+    // For grow actions, we need pieces that can grow the acting ship
+    // For trade actions, we need pieces of different colors
+    const actingShip = system.ships.find(s => s.id === selectedShipId);
+    if (!actingShip) return [];
+
+    if (pendingActionType === 'grow') {
+      // Can grow with pieces of the same color and one size larger
+      return bankPieces
+        .filter(
+          piece =>
+            piece.color === actingShip.color &&
+            piece.size === actingShip.size + 1
+        )
+        .map(piece => piece.id);
+    } else if (pendingActionType === 'trade') {
+      // Can trade for pieces of different colors (same size)
+      return bankPieces
+        .filter(
+          piece =>
+            piece.color !== actingShip.color && piece.size === actingShip.size
+        )
+        .map(piece => piece.id);
+    }
+
+    return [];
   };
 
   return (
@@ -158,13 +255,23 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
           position={actionMenuPosition}
           availableActions={getAvailableActions(selectedShipId, system.id)}
           onClose={handleCloseActionMenu}
-          onAction={actionType => {
-            console.log('Action selected:', actionType);
-            // TODO: Create actual action based on type and apply it
-            handleCloseActionMenu();
-          }}
+          onAction={handleActionSelect}
         />
       )}
+
+      {/* Bank Piece Selector */}
+      <BankPieceSelector
+        isOpen={showBankSelector}
+        title={
+          pendingActionType === 'grow'
+            ? 'Select piece to grow'
+            : 'Select piece to trade for'
+        }
+        bankPieces={bankPieces}
+        validPieceIds={getValidBankPieceIds()}
+        onPieceSelect={handleBankPieceSelect}
+        onClose={handleCloseBankSelector}
+      />
     </div>
   );
 };
