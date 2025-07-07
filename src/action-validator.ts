@@ -120,11 +120,11 @@ export class ActionValidator {
         return { valid: false, error: 'Destination system not found' };
       }
 
-      // Check size restriction: destination star must be different size than origin stars
+      // Check size restriction: ALL destination star sizes must be different from ALL origin star sizes
       const originSizes = fromSystem.stars.map(star => star.size);
       const destinationSizes = toSystem.stars.map(star => star.size);
 
-      const hasValidDestination = destinationSizes.some(
+      const hasValidDestination = destinationSizes.every(
         destSize => !originSizes.includes(destSize)
       );
 

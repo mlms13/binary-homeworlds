@@ -162,6 +162,130 @@ describe('RULES.md Examples', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toContain('different sizes');
     });
+
+    it('should prevent moves when ANY destination star size matches ANY origin star size', () => {
+      const engine = new GameEngine();
+      const gameState = engine.getGameState();
+
+      // Create test pieces
+      const smallStar1 = createPiece('yellow', 1);
+      const mediumStar1 = createPiece('blue', 2);
+      const largeStar1 = createPiece('red', 3);
+      const smallStar2 = createPiece('yellow', 1);
+      const mediumStar2 = createPiece('blue', 2);
+      const largeStar2 = createPiece('red', 3);
+      const testShip = createPiece('green', 2);
+      testShip.owner = 'player1'; // Ensure ship is owned by player1
+
+      // Test Case 1: Moving from [small, large] to [large] should be INVALID
+      // (large star in destination matches large star in origin)
+      // Note: smallStar1 is yellow, so move action will be available
+      const originSystem1 = createSystem([smallStar1, largeStar1], [testShip]);
+      const destSystem1 = createSystem([largeStar2], []);
+
+      gameState.addSystem(originSystem1);
+      gameState.addSystem(destSystem1);
+      gameState.setPhase('normal');
+
+      const invalidMoveAction1 = createMoveAction(
+        'player1',
+        testShip.id,
+        originSystem1.id,
+        destSystem1.id
+      );
+
+      let result = engine.applyAction(invalidMoveAction1);
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('different sizes');
+
+      // Test Case 2: Moving from [medium] to [large, medium] should be INVALID
+      // (medium star in destination matches medium star in origin)
+      const engine2 = new GameEngine();
+      const gameState2 = engine2.getGameState();
+
+      const testShip2 = createPiece('green', 2);
+      testShip2.owner = 'player1'; // Ensure ship is owned by player1
+      // Add a yellow star to make move action available
+      const yellowStar = createPiece('yellow', 3);
+      const originSystem2 = createSystem(
+        [mediumStar1, yellowStar],
+        [testShip2]
+      );
+      const destSystem2 = createSystem([largeStar1, mediumStar2], []);
+
+      gameState2.addSystem(originSystem2);
+      gameState2.addSystem(destSystem2);
+      gameState2.setPhase('normal');
+
+      const invalidMoveAction2 = createMoveAction(
+        'player1',
+        testShip2.id,
+        originSystem2.id,
+        destSystem2.id
+      );
+
+      result = engine2.applyAction(invalidMoveAction2);
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('different sizes');
+
+      // Test Case 3: Moving from [small, medium] to [large] should be VALID
+      // (large star in destination doesn't match any origin star sizes)
+      const engine3 = new GameEngine();
+      const gameState3 = engine3.getGameState();
+
+      const testShip3 = createPiece('green', 2);
+      testShip3.owner = 'player1'; // Ensure ship is owned by player1
+      // smallStar2 is yellow, so move action will be available
+      const originSystem3 = createSystem(
+        [smallStar2, mediumStar1],
+        [testShip3]
+      );
+      const destSystem3 = createSystem([largeStar2], []);
+
+      gameState3.addSystem(originSystem3);
+      gameState3.addSystem(destSystem3);
+      gameState3.setPhase('normal');
+
+      const validMoveAction = createMoveAction(
+        'player1',
+        testShip3.id,
+        originSystem3.id,
+        destSystem3.id
+      );
+
+      result = engine3.applyAction(validMoveAction);
+      expect(result.valid).toBe(true);
+
+      // Test Case 4: Moving from [small, medium, large] to [medium] should be INVALID
+      // (medium star in destination matches medium star in origin)
+      const engine4 = new GameEngine();
+      const gameState4 = engine4.getGameState();
+
+      const testShip4 = createPiece('green', 2);
+      testShip4.owner = 'player1'; // Ensure ship is owned by player1
+      const extraStar = createPiece('green', 1);
+      // smallStar1 is yellow, so move action will be available
+      const originSystem4 = createSystem(
+        [smallStar1, mediumStar2, largeStar1],
+        [testShip4]
+      );
+      const destSystem4 = createSystem([extraStar], []); // Size 1 matches small star in origin
+
+      gameState4.addSystem(originSystem4);
+      gameState4.addSystem(destSystem4);
+      gameState4.setPhase('normal');
+
+      const invalidMoveAction4 = createMoveAction(
+        'player1',
+        testShip4.id,
+        originSystem4.id,
+        destSystem4.id
+      );
+
+      result = engine4.applyAction(invalidMoveAction4);
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('different sizes');
+    });
   });
 
   describe('Example 4: System cleanup after movement', () => {

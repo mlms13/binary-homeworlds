@@ -20,6 +20,7 @@ import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
 import SettingsMenu from './SettingsMenu';
 import ConfirmationDialog from './ConfirmationDialog';
+import GameEndModal from './GameEndModal';
 import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
@@ -97,6 +98,9 @@ const GameBoard: React.FC = () => {
     systemId: string,
     validPieceIds: string[]
   ) => {
+    // Check if game has ended
+    if (gameState.isGameEnded()) return;
+
     setPendingTrade({ shipId, systemId, validPieceIds });
   };
 
@@ -111,6 +115,9 @@ const GameBoard: React.FC = () => {
     systemId: string,
     validTargetShipIds: string[]
   ) => {
+    // Check if game has ended
+    if (gameState.isGameEnded()) return;
+
     setPendingCapture({ attackingShipId, systemId, validTargetShipIds });
   };
 
@@ -135,7 +142,16 @@ const GameBoard: React.FC = () => {
       systemId
     );
 
-    handleAction(captureAction);
+    // For sacrifice mode, handle action directly without turn ending
+    if (pendingSacrifice) {
+      const result = applyAction(captureAction);
+      if (result.valid) {
+        setGameState(gameEngine.getGameState());
+        handleSacrificeActionComplete();
+      }
+    } else {
+      handleAction(captureAction);
+    }
     setPendingCapture(null); // Clear pending capture
   };
 
@@ -144,6 +160,9 @@ const GameBoard: React.FC = () => {
     sacrificedShipId: string,
     systemId: string
   ) => {
+    // Check if game has ended
+    if (gameState.isGameEnded()) return;
+
     const system = gameState.getSystem(systemId);
     const ship = system?.ships.find(s => s.id === sacrificedShipId);
 
@@ -157,16 +176,20 @@ const GameBoard: React.FC = () => {
       [] // No follow-up actions planned yet
     );
 
-    // Apply the sacrifice action (removes ship, returns to bank)
-    handleAction(sacrificeAction);
+    // Apply the sacrifice action directly (bypassing confirmation)
+    const result = applyAction(sacrificeAction);
+    if (result.valid) {
+      // Update game state after successful sacrifice
+      setGameState(gameEngine.getGameState());
 
-    // Set up sacrifice action mode based on ship color
-    const actionType = getActionTypeForColor(ship.color);
-    setPendingSacrifice({
-      shipColor: ship.color,
-      actionsRemaining: ship.size,
-      actionType,
-    });
+      // Set up sacrifice action mode based on ship color
+      const actionType = getActionTypeForColor(ship.color);
+      setPendingSacrifice({
+        shipColor: ship.color,
+        actionsRemaining: ship.size,
+        actionType,
+      });
+    }
   };
 
   // Helper function to determine action type based on color
@@ -210,6 +233,26 @@ const GameBoard: React.FC = () => {
       case 'trade':
         return 'Choose a ship to trade';
     }
+  };
+
+  // Helper function to handle sacrifice action completion
+  const handleSacrificeActionComplete = () => {
+    if (!pendingSacrifice) return;
+
+    setPendingSacrifice(prev => {
+      if (!prev) return null;
+      const newActionsRemaining = prev.actionsRemaining - 1;
+      if (newActionsRemaining <= 0) {
+        // End sacrifice mode and end turn
+        gameEngine.getGameState().switchPlayer();
+        setGameState(gameEngine.getGameState());
+        return null;
+      }
+      return {
+        ...prev,
+        actionsRemaining: newActionsRemaining,
+      };
+    });
   };
 
   // Handle sacrifice action execution
@@ -275,24 +318,21 @@ const GameBoard: React.FC = () => {
         return;
     }
 
-    // Execute the action and decrement remaining actions
-    handleAction(action);
-
-    setPendingSacrifice(prev => {
-      if (!prev) return null;
-      const newActionsRemaining = prev.actionsRemaining - 1;
-      if (newActionsRemaining <= 0) {
-        return null; // End sacrifice mode
-      }
-      return {
-        ...prev,
-        actionsRemaining: newActionsRemaining,
-      };
-    });
+    // Execute the action directly (bypassing turn-ending logic for sacrifice actions)
+    const result = applyAction(action);
+    if (result.valid) {
+      // Update game state after successful action
+      setGameState(gameEngine.getGameState());
+      // Handle sacrifice action completion
+      handleSacrificeActionComplete();
+    }
   };
 
   // Handle move initiation from HomeSystem
   const handleMoveInitiate = (shipId: string, fromSystemId: string) => {
+    // Check if game has ended
+    if (gameState.isGameEnded()) return;
+
     // Calculate valid destinations and bank pieces for move
     const allSystems = gameState.getSystems();
     const fromSystem = allSystems.find(s => s.id === fromSystemId);
@@ -300,14 +340,22 @@ const GameBoard: React.FC = () => {
 
     if (!ship || !fromSystem) return;
 
-    // Valid destination systems (excluding the current system)
+    // Valid destination systems (excluding the current system and checking star size restrictions)
+    const originStarSizes = fromSystem.stars.map(star => star.size);
     const validDestinationIds = allSystems
-      .filter(s => s.id !== fromSystemId)
+      .filter(s => {
+        if (s.id === fromSystemId) return false; // Can't move to same system
+
+        // Check star size restriction: ALL destination star sizes must be different from ALL origin star sizes
+        const destStarSizes = s.stars.map(star => star.size);
+        return destStarSizes.every(
+          destSize => !originStarSizes.includes(destSize)
+        );
+      })
       .map(s => s.id);
 
     // Valid bank pieces for creating new systems
     // Rule: New star must be different size than origin system stars
-    const originStarSizes = fromSystem.stars.map(star => star.size);
     const validBankPieceIds = gameState
       .getBankPieces()
       .filter(piece => !originStarSizes.includes(piece.size))
@@ -342,12 +390,26 @@ const GameBoard: React.FC = () => {
       undefined // newStarPieceId is undefined for existing system
     );
 
-    handleAction(moveAction);
+    // For sacrifice mode, handle action directly without turn ending
+    if (pendingSacrifice) {
+      const result = applyAction(moveAction);
+      if (result.valid) {
+        setGameState(gameEngine.getGameState());
+        handleSacrificeActionComplete();
+      }
+    } else {
+      handleAction(moveAction);
+    }
     setPendingMove(null); // Clear pending move
   };
 
   // Wrapper for applyAction that handles confirmation
   const handleAction = (action: GameAction) => {
+    // Check if game has ended - disable all actions if so
+    if (gameState.isGameEnded()) {
+      return { valid: false, error: 'Game has ended' };
+    }
+
     // Check if this action will end the turn (grow, trade, move, capture, sacrifice)
     const turnEndingActions = ['grow', 'trade', 'move', 'capture', 'sacrifice'];
     const willEndTurn = turnEndingActions.includes(action.type);
@@ -387,6 +449,25 @@ const GameBoard: React.FC = () => {
     setShowConfirmation(false);
   };
 
+  // Handle starting a new game
+  const handleNewGame = () => {
+    // Reset all state
+    setPendingMove(null);
+    setPendingCapture(null);
+    setPendingSacrifice(null);
+    setPendingTrade(null);
+    setPendingAction(null);
+    setShowConfirmation(false);
+
+    // Create new game engine and update state
+    const newGameEngine = new GameEngine();
+    setGameState(newGameEngine.getGameState());
+
+    // Update the game engine reference (if needed by parent)
+    // Note: This assumes gameEngine is passed as a prop or managed externally
+    // If gameEngine is local state, we'd need to update it here
+  };
+
   // Update game state when engine changes
   useEffect(() => {
     setGameState(gameEngine.getGameState());
@@ -407,7 +488,16 @@ const GameBoard: React.FC = () => {
         piece.id
       );
 
-      handleAction(tradeAction);
+      // For sacrifice mode, handle action directly without turn ending
+      if (pendingSacrifice) {
+        const result = applyAction(tradeAction);
+        if (result.valid) {
+          setGameState(gameEngine.getGameState());
+          handleSacrificeActionComplete();
+        }
+      } else {
+        handleAction(tradeAction);
+      }
       setPendingTrade(null); // Clear pending trade
       return;
     }
@@ -426,7 +516,16 @@ const GameBoard: React.FC = () => {
         piece.id // newStarPieceId
       );
 
-      handleAction(moveAction);
+      // For sacrifice mode, handle action directly without turn ending
+      if (pendingSacrifice) {
+        const result = applyAction(moveAction);
+        if (result.valid) {
+          setGameState(gameEngine.getGameState());
+          handleSacrificeActionComplete();
+        }
+      } else {
+        handleAction(moveAction);
+      }
 
       setPendingMove(null); // Clear pending move
       return;
@@ -817,6 +916,14 @@ const GameBoard: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
       />
+
+      {/* Game end modal */}
+      {(() => {
+        const winner = gameState.getWinner();
+        return gameState.isGameEnded() && winner ? (
+          <GameEndModal winner={winner} onNewGame={handleNewGame} />
+        ) : null;
+      })()}
 
       {/* Confirmation dialog */}
       <ConfirmationDialog

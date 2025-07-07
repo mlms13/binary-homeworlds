@@ -43,11 +43,11 @@ export const useGameActions = (gameEngine: GameEngine) => {
           const originSizes = system.stars.map(star => star.size);
           const allSystems = gameState.getSystems();
 
-          // Check if there are existing systems with different star sizes
+          // Check if there are existing systems with ALL different star sizes
           const hasValidExistingSystems = allSystems.some(otherSystem => {
             if (otherSystem.id === system.id) return false; // Can't move to same system
             const destSizes = otherSystem.stars.map(star => star.size);
-            return destSizes.some(destSize => !originSizes.includes(destSize));
+            return destSizes.every(destSize => !originSizes.includes(destSize));
           });
 
           // Check if we can create new systems (bank has pieces of different sizes)
