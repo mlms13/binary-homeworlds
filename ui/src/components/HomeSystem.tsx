@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   System,
   GameAction,
@@ -30,7 +30,7 @@ interface HomeSystemProps {
   onAction: (action: GameAction) => ActionValidationResult;
   getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
   bankPieces: Piece[];
-  currentPlayer: string;
+  currentPlayer: 'player1' | 'player2';
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
@@ -53,6 +53,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   >(null);
 
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
+    console.log('HANDLING SHIP CLICK');
     if (!isCurrentPlayer) {
       return;
     }
@@ -96,6 +97,8 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       setPendingActionType(actionType);
       setShowBankSelector(true);
       // Close action menu but keep selectedShipId for bank selector
+      console.log('handling trade action select');
+      console.log('selected ship id:', selectedShipId);
       setActionMenuPosition(null);
     } else {
       // Handle other action types (move, capture, etc.)
@@ -119,7 +122,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     if (!smallestPiece) return; // No pieces available
 
     const action = createGrowAction(
-      currentPlayer as 'player1' | 'player2',
+      currentPlayer,
       selectedShipId,
       system.id,
       smallestPiece.id
@@ -136,7 +139,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     if (!selectedShipId || pendingActionType !== 'trade') return;
 
     const action = createTradeAction(
-      currentPlayer as 'player1' | 'player2',
+      currentPlayer,
       selectedShipId,
       system.id,
       piece.id
@@ -152,29 +155,58 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   };
 
   const handleCloseBankSelector = () => {
+    console.log('CLOSING BANK SELECTOR');
     setShowBankSelector(false);
     setPendingActionType(null);
     setSelectedShipId(null);
   };
 
-  const getValidBankPieceIds = (): string[] => {
-    if (!pendingActionType || !selectedShipId) return [];
+  // Memoize valid bank piece IDs to preserve them even if selectedShipId changes
+  const validBankPieceIds = useMemo(() => {
+    console.log('=== useMemo: Computing valid bank piece IDs ===');
+    console.log('pending action type:', pendingActionType);
+    console.log('selected ship id:', selectedShipId);
 
-    const actingShip = system.ships.find(s => s.id === selectedShipId);
-    if (!actingShip) return [];
-
-    if (pendingActionType === 'trade') {
-      // Can trade for pieces of different colors and same size
-      return bankPieces
-        .filter(
-          piece =>
-            piece.color !== actingShip.color && piece.size === actingShip.size
-        )
-        .map(piece => piece.id);
+    if (!pendingActionType || !selectedShipId) {
+      console.log('Early return: missing pendingActionType or selectedShipId');
+      return [];
     }
 
+    const actingShip = system.ships.find(s => s.id === selectedShipId);
+    console.log('acting ship:', actingShip);
+
+    if (!actingShip) {
+      console.log('Early return: actingShip not found');
+      return [];
+    }
+
+    if (pendingActionType === 'trade') {
+      console.log('Processing trade action...');
+      console.log(
+        'Acting ship color:',
+        actingShip.color,
+        'size:',
+        actingShip.size
+      );
+      console.log('Bank pieces:', bankPieces);
+
+      const validPieces = bankPieces.filter(piece => {
+        const colorMatch = piece.color !== actingShip.color;
+        const sizeMatch = piece.size === actingShip.size;
+        console.log(
+          `Piece ${piece.id} (${piece.color} ${piece.size}): colorMatch=${colorMatch}, sizeMatch=${sizeMatch}`
+        );
+        return colorMatch && sizeMatch;
+      });
+
+      const validIds = validPieces.map(piece => piece.id);
+      console.log('Valid piece IDs:', validIds);
+      return validIds;
+    }
+
+    console.log('No matching action type');
     return [];
-  };
+  }, [pendingActionType, selectedShipId, system.ships, bankPieces]);
 
   return (
     <div
@@ -206,12 +238,6 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
                   isClickable={isCurrentPlayer}
                   isCurrentPlayer={ship.owner === 'player1'}
                 />
-                {isCurrentPlayer && (
-                  <div className="clickable-hint">Click to act</div>
-                )}
-                <div className="ship-owner">
-                  {ship.owner === 'player1' ? 'P1' : 'P2'}
-                </div>
               </div>
             ))}
 
@@ -246,12 +272,6 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
                   isClickable={isCurrentPlayer}
                   isCurrentPlayer={ship.owner === 'player1'}
                 />
-                {isCurrentPlayer && (
-                  <div className="clickable-hint">Click to act</div>
-                )}
-                <div className="ship-owner">
-                  {ship.owner === 'player1' ? 'P1' : 'P2'}
-                </div>
               </div>
             ))}
         </div>
@@ -274,7 +294,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
         isOpen={showBankSelector}
         title="Select piece to trade for"
         bankPieces={bankPieces}
-        validPieceIds={getValidBankPieceIds()}
+        validPieceIds={validBankPieceIds}
         onPieceSelect={handleBankPieceSelect}
         onClose={handleCloseBankSelector}
       />
