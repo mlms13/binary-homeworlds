@@ -320,30 +320,22 @@ const GameBoard: React.FC = () => {
     }
   };
 
-  // Get home systems for both players
+  // Get home systems for both players using the proper game state method
   const systems = gameState.getSystems();
-  const player1Home = systems.find(system =>
-    system.ships.some(ship => ship.owner === 'player1')
-  );
-  const player2Home = systems.find(system =>
-    system.ships.some(ship => ship.owner === 'player2')
-  );
+  const player1Home = gameState.getHomeSystem('player1');
+  const player2Home = gameState.getHomeSystem('player2');
 
-  // Get non-home systems (systems that don't contain any ships, or contain ships from both players)
+  // Get non-home systems (all systems that aren't the primary home systems)
   const nonHomeSystems = systems.filter(system => {
-    const hasPlayer1Ships = system.ships.some(ship => ship.owner === 'player1');
-    const hasPlayer2Ships = system.ships.some(ship => ship.owner === 'player2');
-
-    // Include systems that:
-    // 1. Have no ships (star-only systems)
-    // 2. Have ships from both players (contested systems)
-    // 3. Are not the primary home system for either player
-    return (
-      system.id !== player1Home?.id &&
-      system.id !== player2Home?.id &&
-      (system.ships.length === 0 || (hasPlayer1Ships && hasPlayer2Ships))
-    );
+    // Include all systems except the primary home systems
+    return system.id !== player1Home?.id && system.id !== player2Home?.id;
   });
+
+  // Debug logging
+  console.log('All systems:', systems.length);
+  console.log('Player1 home ID:', player1Home?.id);
+  console.log('Player2 home ID:', player2Home?.id);
+  console.log('Non-home systems:', nonHomeSystems.length, nonHomeSystems);
 
   const currentPlayer = gameState.getCurrentPlayer();
 
