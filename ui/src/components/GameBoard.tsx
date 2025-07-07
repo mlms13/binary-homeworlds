@@ -555,25 +555,37 @@ const GameBoard: React.FC = () => {
                 <div className="other-systems">
                   <div className="other-systems-label">Other Systems:</div>
                   <div className="other-systems-grid">
-                    {nonHomeSystems.map(system => (
-                      <HomeSystem
-                        key={system.id}
-                        system={system}
-                        isCurrentPlayer={false}
-                        isOpponent={false}
-                        onAction={handleAction}
-                        getAvailableActions={getAvailableActions}
-                        bankPieces={gameState.getBankPieces()}
-                        currentPlayer={currentPlayer}
-                        onTradeInitiate={handleTradeInitiate}
-                        onMoveInitiate={handleMoveInitiate}
-                        onSystemClick={handleSystemClick}
-                        isMoveDestination={
-                          !!pendingMove &&
-                          pendingMove.validDestinationIds.includes(system.id)
-                        }
-                      />
-                    ))}
+                    {nonHomeSystems.map(system => {
+                      // Determine if this system has ships belonging to the current player
+                      const hasCurrentPlayerShips = system.ships.some(
+                        ship => ship.owner === currentPlayer
+                      );
+                      const hasOpponentShips = system.ships.some(
+                        ship => ship.owner !== currentPlayer
+                      );
+
+                      return (
+                        <HomeSystem
+                          key={system.id}
+                          system={system}
+                          isCurrentPlayer={hasCurrentPlayerShips}
+                          isOpponent={
+                            hasOpponentShips && !hasCurrentPlayerShips
+                          }
+                          onAction={handleAction}
+                          getAvailableActions={getAvailableActions}
+                          bankPieces={gameState.getBankPieces()}
+                          currentPlayer={currentPlayer}
+                          onTradeInitiate={handleTradeInitiate}
+                          onMoveInitiate={handleMoveInitiate}
+                          onSystemClick={handleSystemClick}
+                          isMoveDestination={
+                            !!pendingMove &&
+                            pendingMove.validDestinationIds.includes(system.id)
+                          }
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               )}

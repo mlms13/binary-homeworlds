@@ -36,6 +36,7 @@ interface HomeSystemProps {
   onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
+  systemTitle?: string; // Optional custom title for the system
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
@@ -50,6 +51,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   onMoveInitiate,
   onSystemClick,
   isMoveDestination = false,
+  systemTitle,
 }) => {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
@@ -187,6 +189,59 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     }
   };
 
+  // Helper function to determine system title
+  const getSystemTitle = () => {
+    if (systemTitle) {
+      return systemTitle;
+    }
+
+    // For home systems
+    if (isCurrentPlayer && !isOpponent) {
+      return 'Your Home System';
+    }
+    if (isOpponent && !isCurrentPlayer) {
+      return "Opponent's Home System";
+    }
+
+    // For other systems, describe based on content
+    const hasYourShips = system.ships.some(
+      ship => ship.owner === currentPlayer
+    );
+    const hasOpponentShips = system.ships.some(
+      ship => ship.owner !== currentPlayer
+    );
+
+    if (hasYourShips && hasOpponentShips) {
+      return 'Contested System';
+    } else if (hasYourShips) {
+      return 'Your System';
+    } else if (hasOpponentShips) {
+      return "Opponent's System";
+    } else {
+      return 'Empty System';
+    }
+  };
+
+  // Helper function to determine player indicator
+  const getPlayerIndicator = () => {
+    const hasYourShips = system.ships.some(
+      ship => ship.owner === currentPlayer
+    );
+    const hasOpponentShips = system.ships.some(
+      ship => ship.owner !== currentPlayer
+    );
+
+    if (hasYourShips && hasOpponentShips) {
+      return 'Both Players';
+    } else if (hasYourShips) {
+      return 'Player 1 (You)';
+    } else if (hasOpponentShips) {
+      return 'Player 2 (Opponent)';
+    } else {
+      return 'No Ships';
+    }
+  };
+
   return (
     <div
       className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${
@@ -195,10 +250,8 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       onClick={isMoveDestination ? handleSystemClick : undefined}
     >
       <div className="system-header">
-        <h4>{isOpponent ? "Opponent's Home System" : 'Your Home System'}</h4>
-        <div className="player-indicator">
-          {isOpponent ? 'Player 2 (Opponent)' : 'Player 1 (You)'}
-        </div>
+        <h4>{getSystemTitle()}</h4>
+        <div className="player-indicator">{getPlayerIndicator()}</div>
       </div>
 
       <div className="system-content">
