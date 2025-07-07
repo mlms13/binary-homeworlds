@@ -12,6 +12,7 @@ import {
 
 import { useGameActions } from '../hooks/useGameActions';
 import { Piece, GameAction, Color } from '../../../src/types';
+import { hasShipsAtHome, hasStarsAtHome } from '../../../src/utils';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import StarSystem from './StarSystem';
@@ -22,6 +23,7 @@ import SettingsMenu from './SettingsMenu';
 import ConfirmationDialog from './ConfirmationDialog';
 import GameEndModal from './GameEndModal';
 import OverpopulationModal from './OverpopulationModal';
+import GameLossWarningModal from './GameLossWarningModal';
 import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
@@ -98,8 +100,42 @@ const GameBoard: React.FC = () => {
     otherPlayerPrompted: boolean;
   } | null>(null);
 
+  // Game loss warning state
+  const [gameLossWarning, setGameLossWarning] = useState<{
+    action: GameAction;
+    warningMessage: string;
+  } | null>(null);
+
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
+
+  // Check if an action would cause the current player to lose
+  const wouldActionCauseLoss = (action: GameAction): string | null => {
+    // Create a temporary game engine to simulate the action
+    const tempEngine = new GameEngine(gameEngine.getGameState());
+    const result = tempEngine.applyAction(action);
+
+    if (!result.valid) {
+      return null; // If action is invalid, it won't cause loss
+    }
+
+    // Check if the current player would lose after this action
+    const tempGameState = tempEngine.getGameState();
+    const currentPlayer = gameState.getCurrentPlayer();
+
+    const hasShips = hasShipsAtHome(tempGameState.getState(), currentPlayer);
+    const hasStars = hasStarsAtHome(tempGameState.getState(), currentPlayer);
+
+    if (!hasShips && !hasStars) {
+      return 'This action would leave you with no ships AND no stars at your home system, causing you to lose the game immediately.';
+    } else if (!hasShips) {
+      return 'This action would leave you with no ships at your home system, causing you to lose the game.';
+    } else if (!hasStars) {
+      return 'This action would destroy all stars at your home system, causing you to lose the game.';
+    }
+
+    return null; // Action would not cause loss
+  };
 
   // Handle trade initiation from HomeSystem
   const handleTradeInitiate = (
@@ -358,6 +394,37 @@ const GameBoard: React.FC = () => {
     }
   };
 
+  // Handle proceeding with game loss warning
+  const handleProceedWithLoss = () => {
+    if (!gameLossWarning) return;
+
+    // Execute the action that would cause loss
+    const result = applyAction(gameLossWarning.action);
+    if (result.valid) {
+      setGameState(gameEngine.getGameState());
+
+      // Check for overpopulation after action
+      const turnEndingActions = [
+        'grow',
+        'trade',
+        'move',
+        'capture',
+        'sacrifice',
+      ];
+      if (turnEndingActions.includes(gameLossWarning.action.type)) {
+        checkForOverpopulation();
+      }
+    }
+
+    // Clear the warning
+    setGameLossWarning(null);
+  };
+
+  // Handle canceling game loss warning
+  const handleCancelLoss = () => {
+    setGameLossWarning(null);
+  };
+
   // Handle sacrifice action execution
   const handleSacrificeAction = (shipId: string, systemId: string) => {
     if (!pendingSacrifice) return;
@@ -506,11 +573,21 @@ const GameBoard: React.FC = () => {
     setPendingMove(null); // Clear pending move
   };
 
-  // Wrapper for applyAction that handles confirmation
+  // Wrapper for applyAction that handles confirmation and loss warnings
   const handleAction = (action: GameAction) => {
     // Check if game has ended - disable all actions if so
     if (gameState.isGameEnded()) {
       return { valid: false, error: 'Game has ended' };
+    }
+
+    // Check if this action would cause the player to lose
+    const lossWarning = wouldActionCauseLoss(action);
+    if (lossWarning) {
+      setGameLossWarning({ action, warningMessage: lossWarning });
+      return {
+        valid: true,
+        message: 'Action pending loss warning confirmation',
+      };
     }
 
     // Check if this action will end the turn (grow, trade, move, capture, sacrifice)
@@ -1025,6 +1102,16 @@ const GameBoard: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
       />
+
+      {/* Game loss warning modal */}
+      {gameLossWarning && (
+        <GameLossWarningModal
+          action={gameLossWarning.action}
+          warningMessage={gameLossWarning.warningMessage}
+          onProceed={handleProceedWithLoss}
+          onCancel={handleCancelLoss}
+        />
+      )}
 
       {/* Overpopulation modal */}
       {overpopulationPrompt && (
