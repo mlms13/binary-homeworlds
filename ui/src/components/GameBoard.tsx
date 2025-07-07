@@ -5,6 +5,7 @@ import { createSetupAction } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
 import { Piece } from '../../../src/types';
+import { createStar, createShip, createSystem } from '../../../src/utils';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import ActionLog from './ActionLog';
@@ -243,6 +244,40 @@ const GameBoard: React.FC = () => {
 
       {/* Top-right controls */}
       <div className="top-right-controls">
+        {gameState.getPhase() === 'setup' && (
+          <button
+            onClick={() => {
+              // Quick setup for testing
+              // Create player 1 home system
+              const p1Star1 = createStar('red', 1);
+              const p1Star2 = createStar('yellow', 2);
+              const p1Ship = createShip('blue', 1, 'player1');
+              const p1System = createSystem([p1Star1, p1Star2], [p1Ship]);
+
+              // Create player 2 home system
+              const p2Star1 = createStar('green', 2);
+              const p2Star2 = createStar('blue', 3);
+              const p2Ship = createShip('red', 2, 'player2');
+              const p2System = createSystem([p2Star1, p2Star2], [p2Ship]);
+
+              // Add systems and set phase
+              gameState.addSystem(p1System);
+              gameState.addSystem(p2System);
+              gameState.setHomeSystem('player1', p1System.id);
+              gameState.setHomeSystem('player2', p2System.id);
+              gameState.setPhase('normal');
+              gameState.switchPlayer(); // Ensure player1 starts
+
+              // Force re-render
+              setGameState(gameEngine.getGameState());
+            }}
+            className="settings-btn"
+            title="Skip Setup (Testing)"
+            style={{ marginRight: '10px' }}
+          >
+            🚀
+          </button>
+        )}
         <button
           onClick={event => {
             const rect = (event.target as HTMLElement).getBoundingClientRect();
