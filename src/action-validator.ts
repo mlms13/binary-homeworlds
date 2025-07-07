@@ -375,11 +375,35 @@ export class ActionValidator {
       return { valid: false, error: 'You do not own the sacrificed ship' };
     }
 
+    // Check if sacrificing this ship would end the game (no ships at home)
+    const isHomeSystem =
+      gameState.players[action.player].homeSystemId === action.systemId;
+    const playerShipsAtHome = isHomeSystem
+      ? system.ships.filter(s => s.owner === action.player)
+      : [];
+    const wouldEndGame =
+      isHomeSystem &&
+      playerShipsAtHome.length === 1 &&
+      playerShipsAtHome[0].id === action.sacrificedShipId;
+
     // Check number of followup actions matches ship size
-    if (action.followupActions.length !== sacrificedShip.size) {
+    // Exception: if this sacrifice would end the game, no followup actions are needed
+    if (
+      !wouldEndGame &&
+      action.followupActions.length !== sacrificedShip.size
+    ) {
       return {
         valid: false,
         error: `Number of followup actions (${action.followupActions.length}) must equal ship size (${sacrificedShip.size})`,
+      };
+    }
+
+    // If this sacrifice would end the game, no followup actions should be provided
+    if (wouldEndGame && action.followupActions.length > 0) {
+      return {
+        valid: false,
+        error:
+          'Sacrificing your last ship at home ends the game immediately - no followup actions allowed',
       };
     }
 

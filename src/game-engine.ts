@@ -304,6 +304,20 @@ export class GameEngine {
       this.gameState.removeSystem(system.id);
     }
 
+    // Check for game end immediately after sacrifice (before followup actions)
+    // This is crucial: if sacrificing leaves the player with no ships at home, they lose
+    // Only check if this was at the player's home system
+    const isHomeSystem =
+      this.gameState.getState().players[action.player].homeSystemId ===
+      action.systemId;
+    if (isHomeSystem) {
+      const gameEnded = this.gameState.checkAndUpdateGameEnd();
+      if (gameEnded) {
+        // Game has ended, don't process followup actions
+        return;
+      }
+    }
+
     // Apply followup actions (but don't switch players or check game end for each)
     for (const followupAction of action.followupActions) {
       // For sacrifice followup actions, we skip normal validation since

@@ -11,6 +11,7 @@ import {
   createCaptureAction,
   createGrowAction,
   createTradeAction,
+  createSacrificeAction,
   createOverpopulationAction,
 } from '../action-builders';
 import { Color, Size } from '../types';
@@ -340,6 +341,50 @@ describe('Edge Cases and Error Conditions', () => {
       );
       const result = engine.applyAction(overpopAction);
 
+      expect(result.valid).toBe(true);
+      expect(gameState.isGameEnded()).toBe(true);
+      expect(gameState.getWinner()).toBe('player2');
+    });
+
+    it('should end game when player sacrifices last ship at home', () => {
+      const engine = new GameEngine();
+      const gameState = engine.getGameState();
+
+      // Set up player1 with only one ship at home
+      const player1Ship = createShip('yellow', 2, 'player1');
+      const player1Home = createSystem(
+        [createStar('blue', 1), createStar('green', 2)],
+        [player1Ship]
+      );
+
+      // Set up player2 with normal home
+      const player2Home = createSystem(
+        [createStar('red', 1), createStar('yellow', 3)],
+        [createShip('red', 1, 'player2')]
+      );
+
+      gameState.addSystem(player1Home);
+      gameState.addSystem(player2Home);
+      gameState.setHomeSystem('player1', player1Home.id);
+      gameState.setHomeSystem('player2', player2Home.id);
+      gameState.setPhase('normal');
+
+      // Make sure it's player1's turn
+      if (gameState.getCurrentPlayer() !== 'player1') {
+        gameState.switchPlayer();
+      }
+
+      // Player1 sacrifices their only ship at home
+      const sacrificeAction = createSacrificeAction(
+        'player1',
+        player1Ship.id,
+        player1Home.id,
+        [] // No followup actions needed for this test
+      );
+
+      const result = engine.applyAction(sacrificeAction);
+
+      // The sacrifice should be valid but game should end immediately
       expect(result.valid).toBe(true);
       expect(gameState.isGameEnded()).toBe(true);
       expect(gameState.getWinner()).toBe('player2');

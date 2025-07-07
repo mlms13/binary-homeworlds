@@ -7,6 +7,7 @@ import {
   createMoveAction,
   createCaptureAction,
   createGrowAction,
+  createSacrificeAction,
   createOverpopulationAction,
 } from '../../../src/action-builders';
 
@@ -224,7 +225,48 @@ const GameBoard: React.FC = () => {
 
     if (!ship) return;
 
-    // Manually handle the sacrifice (bypass the action system for now)
+    const currentPlayer = gameState.getCurrentPlayer();
+
+    // Check if this sacrifice would end the game (last ship at home)
+    const isHomeSystem =
+      gameState.getState().players[currentPlayer].homeSystemId === systemId;
+    const playerShipsAtHome =
+      isHomeSystem && system
+        ? system.ships.filter(s => s.owner === currentPlayer)
+        : [];
+    const wouldEndGame =
+      isHomeSystem &&
+      playerShipsAtHome.length === 1 &&
+      playerShipsAtHome[0].id === sacrificedShipId;
+
+    if (wouldEndGame) {
+      // This sacrifice would end the game - create a proper sacrifice action and show warning
+      const sacrificeAction = createSacrificeAction(
+        currentPlayer,
+        sacrificedShipId,
+        systemId,
+        [] // No followup actions since game will end
+      );
+
+      // Use the normal action warning system
+      const lossWarning = wouldActionCauseLoss(sacrificeAction);
+      if (lossWarning) {
+        setGameLossWarning({
+          action: sacrificeAction,
+          warningMessage: lossWarning,
+        });
+        return;
+      }
+
+      // If no warning needed, execute the action directly
+      const result = applyAction(sacrificeAction);
+      if (result.valid) {
+        setGameState(gameEngine.getGameState());
+      }
+      return;
+    }
+
+    // Normal sacrifice - manually handle (bypass the action system for now)
     // Remove the ship from the system
     const systemRef = gameEngine
       .getGameState()
