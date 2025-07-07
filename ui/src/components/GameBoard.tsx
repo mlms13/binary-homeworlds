@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { GameEngine } from '../../../src/game-engine';
 import { BinaryHomeworldsGameState } from '../../../src/game-state';
-import { createSetupAction } from '../../../src/action-builders';
+import {
+  createSetupAction,
+  createTradeAction,
+} from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
 import { Piece } from '../../../src/types';
@@ -52,8 +55,30 @@ const GameBoard: React.FC = () => {
     player2Ship: null,
     currentStep: 'p1-star1',
   });
+
+  // Trade action state
+  const [pendingTrade, setPendingTrade] = useState<{
+    shipId: string;
+    systemId: string;
+    validPieceIds: string[];
+  } | null>(null);
+
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
+
+  // Handle trade initiation from HomeSystem
+  const handleTradeInitiate = (
+    shipId: string,
+    systemId: string,
+    validPieceIds: string[]
+  ) => {
+    setPendingTrade({ shipId, systemId, validPieceIds });
+  };
+
+  // Handle trade cancellation
+  const handleCancelTrade = () => {
+    setPendingTrade(null);
+  };
 
   // Wrapper for applyAction that handles confirmation
   const handleAction = (action: any) => {
@@ -92,8 +117,27 @@ const GameBoard: React.FC = () => {
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
 
-  // Handle bank piece clicks during setup
+  // Handle bank piece clicks during setup and trade actions
   const handleBankPieceClick = (piece: Piece) => {
+    // Handle trade actions during normal play
+    if (gameState.getPhase() === 'normal' && pendingTrade) {
+      // Check if this piece is valid for the trade
+      if (!pendingTrade.validPieceIds.includes(piece.id)) return;
+
+      // Create and execute the trade action
+      const tradeAction = createTradeAction(
+        gameState.getCurrentPlayer(),
+        pendingTrade.shipId,
+        pendingTrade.systemId,
+        piece.id
+      );
+
+      handleAction(tradeAction);
+      setPendingTrade(null); // Clear pending trade
+      return;
+    }
+
+    // Handle setup phase
     if (gameState.getPhase() !== 'setup') return;
 
     const currentPlayer = gameState.getCurrentPlayer();
@@ -238,6 +282,8 @@ const GameBoard: React.FC = () => {
             ...(setupState.player1Ship ? [setupState.player1Ship] : []),
             ...(setupState.player2Ship ? [setupState.player2Ship] : []),
           ]}
+          validTradeIds={pendingTrade?.validPieceIds || []}
+          isTradeMode={!!pendingTrade}
         />
       </div>
 
@@ -279,6 +325,7 @@ const GameBoard: React.FC = () => {
               getAvailableActions={getAvailableActions}
               bankPieces={gameState.getBankPieces()}
               currentPlayer={currentPlayer}
+              onTradeInitiate={handleTradeInitiate}
             />
           ) : (
             <div className="no-system">
@@ -309,7 +356,25 @@ const GameBoard: React.FC = () => {
                   Current Turn:{' '}
                   {currentPlayer === 'player1' ? 'You' : 'Opponent'}
                 </div>
-                {currentPlayer === 'player1' ? (
+                {pendingTrade ? (
+                  <GameHint>
+                    Click on a valid piece in the bank to complete the trade, or{' '}
+                    <button
+                      onClick={handleCancelTrade}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        padding: 0,
+                        font: 'inherit',
+                      }}
+                    >
+                      cancel trade
+                    </button>
+                  </GameHint>
+                ) : currentPlayer === 'player1' ? (
                   <GameHint>
                     Click on one of your ships to take an action
                   </GameHint>
@@ -336,6 +401,7 @@ const GameBoard: React.FC = () => {
               getAvailableActions={getAvailableActions}
               bankPieces={gameState.getBankPieces()}
               currentPlayer={currentPlayer}
+              onTradeInitiate={handleTradeInitiate}
             />
           ) : (
             <div className="no-system">

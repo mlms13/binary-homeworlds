@@ -5,14 +5,11 @@ import {
   ActionValidationResult,
   Piece,
 } from '../../../src/types';
-import {
-  createGrowAction,
-  createTradeAction,
-} from '../../../src/action-builders';
+import { createGrowAction } from '../../../src/action-builders';
 import DiamondStar from './DiamondStar';
 import DirectionalShip from './DirectionalShip';
 import ActionMenu from './ActionMenu';
-import BankPieceSelector from './BankPieceSelector';
+
 import './HomeSystem.css';
 
 interface ActionOption {
@@ -31,6 +28,11 @@ interface HomeSystemProps {
   getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
   bankPieces: Piece[];
   currentPlayer: 'player1' | 'player2';
+  onTradeInitiate?: (
+    shipId: string,
+    systemId: string,
+    validPieceIds: string[]
+  ) => void;
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
@@ -41,16 +43,13 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   getAvailableActions,
   bankPieces,
   currentPlayer,
+  onTradeInitiate,
 }) => {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  const [showBankSelector, setShowBankSelector] = useState(false);
-  const [pendingActionType, setPendingActionType] = useState<
-    'grow' | 'trade' | null
-  >(null);
 
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
     console.log('HANDLING SHIP CLICK');
@@ -133,10 +132,16 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
         handleGrowAction();
         handleCloseActionMenu();
       } else if (actionType === 'trade') {
-        setPendingActionType(actionType);
-        setShowBankSelector(true);
-        // Close action menu but keep selectedShipId for bank selector
-        handleCloseActionMenu(true); // Pass true to preserve selectedShipId
+        // Calculate valid pieces for trade
+        const validIds = validBankPieceIds;
+
+        // Notify parent component about trade initiation
+        if (onTradeInitiate && selectedShipId) {
+          onTradeInitiate(selectedShipId, system.id, validIds);
+        }
+
+        // Close action menu and clear selection
+        handleCloseActionMenu();
       } else {
         // Handle other action types (move, capture, etc.)
         handleCloseActionMenu();
@@ -145,53 +150,21 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     [selectedShipId, handleCloseActionMenu, handleGrowAction]
   );
 
-  const handleBankPieceSelect = useCallback(
-    (piece: Piece) => {
-      if (!selectedShipId || pendingActionType !== 'trade') return;
-
-      const action = createTradeAction(
-        currentPlayer,
-        selectedShipId,
-        system.id,
-        piece.id
-      );
-
-      // Apply the action
-      onAction(action);
-
-      // Reset state
-      setShowBankSelector(false);
-      setPendingActionType(null);
-      setSelectedShipId(null);
-    },
-    [selectedShipId, pendingActionType, currentPlayer, system.id, onAction]
-  );
-
-  const handleCloseBankSelector = useCallback(() => {
-    setShowBankSelector(false);
-    setPendingActionType(null);
-    setSelectedShipId(null);
-  }, []);
-
-  // Memoize valid bank piece IDs to preserve them even if selectedShipId changes
+  // Memoize valid bank piece IDs for trade actions
   const validBankPieceIds = useMemo(() => {
-    if (!pendingActionType || !selectedShipId) return [];
+    if (!selectedShipId) return [];
 
     const actingShip = system.ships.find(s => s.id === selectedShipId);
     if (!actingShip) return [];
 
-    if (pendingActionType === 'trade') {
-      // Can trade for pieces of different colors and same size
-      return bankPieces
-        .filter(
-          piece =>
-            piece.color !== actingShip.color && piece.size === actingShip.size
-        )
-        .map(piece => piece.id);
-    }
-
-    return [];
-  }, [pendingActionType, selectedShipId, system.ships, bankPieces]);
+    // Can trade for pieces of different colors and same size
+    return bankPieces
+      .filter(
+        piece =>
+          piece.color !== actingShip.color && piece.size === actingShip.size
+      )
+      .map(piece => piece.id);
+  }, [selectedShipId, system.ships, bankPieces]);
 
   return (
     <div
@@ -273,16 +246,6 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
           onAction={handleActionSelect}
         />
       )}
-
-      {/* Bank Piece Selector */}
-      <BankPieceSelector
-        isOpen={showBankSelector}
-        title="Select piece to trade for"
-        bankPieces={bankPieces}
-        validPieceIds={validBankPieceIds}
-        onPieceSelect={handleBankPieceSelect}
-        onClose={handleCloseBankSelector}
-      />
     </div>
   );
 };

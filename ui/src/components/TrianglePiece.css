@@ -32,3 +32,16 @@
     filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1));
   }
 }
+
+.triangle-piece.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.triangle-piece.disabled:hover {
+  transform: none;
+}
+
+.triangle-piece.disabled svg {
+  filter: grayscale(1) !important;
+}

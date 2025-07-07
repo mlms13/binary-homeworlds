@@ -10,6 +10,7 @@ interface TrianglePieceProps {
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
   isClickable?: boolean;
+  isDisabled?: boolean;
 }
 
 const TrianglePiece: React.FC<TrianglePieceProps> = ({
@@ -19,6 +20,7 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   onClick,
   isSelected = false,
   isClickable = false,
+  isDisabled = false,
 }) => {
   const getSizeMultiplier = (size: Size): number => {
     switch (size) {
@@ -52,16 +54,16 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
   const triangleHeight = triangleSize * 0.866; // Height of equilateral triangle
 
   const handleClick = (event: React.MouseEvent) => {
-    if (isClickable && onClick) {
+    if (isClickable && !isDisabled && onClick) {
       onClick(event);
     }
   };
 
   return (
     <div
-      className={`triangle-piece ${isClickable ? 'clickable' : ''} ${
+      className={`triangle-piece ${isClickable && !isDisabled ? 'clickable' : ''} ${
         isSelected ? 'selected' : ''
-      }`}
+      } ${isDisabled ? 'disabled' : ''}`}
       onClick={handleClick}
       style={{
         width: triangleSize,

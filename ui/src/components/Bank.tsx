@@ -8,6 +8,8 @@ interface BankProps {
   onPieceClick?: (piece: Piece) => void;
   isSetupPhase?: boolean;
   selectedPieces?: Piece[];
+  validTradeIds?: string[];
+  isTradeMode?: boolean;
 }
 
 const Bank: React.FC<BankProps> = ({
@@ -15,6 +17,8 @@ const Bank: React.FC<BankProps> = ({
   onPieceClick,
   isSetupPhase = false,
   selectedPieces = [],
+  validTradeIds = [],
+  isTradeMode = false,
 }) => {
   // Group pieces by color first, then by size
   const groupedByColor = pieces.reduce(
@@ -58,10 +62,22 @@ const Bank: React.FC<BankProps> = ({
                           onClick={() =>
                             onPieceClick && onPieceClick(piecesOfType[0])
                           }
-                          isClickable={isSetupPhase}
-                          isSelected={selectedPieces.some(
-                            p => p.color === color && p.size === size
-                          )}
+                          isClickable={
+                            isSetupPhase ||
+                            (isTradeMode &&
+                              validTradeIds.includes(piecesOfType[0].id))
+                          }
+                          isSelected={
+                            selectedPieces.some(
+                              p => p.color === color && p.size === size
+                            ) ||
+                            (isTradeMode &&
+                              validTradeIds.includes(piecesOfType[0].id))
+                          }
+                          isDisabled={
+                            isTradeMode &&
+                            !validTradeIds.includes(piecesOfType[0].id)
+                          }
                         />
                         <span className="piece-count-badge">
                           {piecesOfType.length}
