@@ -41,6 +41,7 @@ interface StarSystemProps {
     systemId: string;
     validTargetShipIds: string[];
   } | null;
+  onSacrificeInitiate?: (sacrificedShipId: string, systemId: string) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
   title?: string; // Optional custom title
@@ -57,6 +58,7 @@ const StarSystem: React.FC<StarSystemProps> = ({
   onCaptureInitiate,
   onShipClickForCapture,
   pendingCapture,
+  onSacrificeInitiate,
   onSystemClick,
   isMoveDestination = false,
   title = 'Star System',
@@ -167,6 +169,8 @@ const StarSystem: React.FC<StarSystemProps> = ({
             .map(ship => ship.id);
           onCaptureInitiate(selectedShipId, system.id, validTargetShipIds);
         }
+      } else if (actionId === 'sacrifice' && onSacrificeInitiate) {
+        onSacrificeInitiate(selectedShipId, system.id);
       } else {
         // Handle other actions through the action system
         const availableActions = getAvailableActions(selectedShipId, system.id);
@@ -193,6 +197,7 @@ const StarSystem: React.FC<StarSystemProps> = ({
       onTradeInitiate,
       onMoveInitiate,
       onCaptureInitiate,
+      onSacrificeInitiate,
       getAvailableActions,
       handleGrowAction,
       currentPlayer,

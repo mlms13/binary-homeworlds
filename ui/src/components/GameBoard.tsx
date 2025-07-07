@@ -6,10 +6,20 @@ import {
   createTradeAction,
   createMoveAction,
   createCaptureAction,
+  createSacrificeAction,
 } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
-import { Piece, GameAction } from '../../../src/types';
+import {
+  Piece,
+  GameAction,
+  Color,
+  Size,
+  MoveAction,
+  CaptureAction,
+  GrowAction,
+  TradeAction,
+} from '../../../src/types';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import StarSystem from './StarSystem';
@@ -18,6 +28,7 @@ import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
 import SettingsMenu from './SettingsMenu';
 import ConfirmationDialog from './ConfirmationDialog';
+import SacrificeModal from './SacrificeModal';
 import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
@@ -79,6 +90,16 @@ const GameBoard: React.FC = () => {
     validTargetShipIds: string[];
   } | null>(null);
 
+  // Sacrifice action state
+  const [pendingSacrifice, setPendingSacrifice] = useState<{
+    sacrificedShipId: string;
+    systemId: string;
+    shipColor: Color;
+    shipSize: Size;
+    actionsRemaining: number;
+    plannedActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[];
+  } | null>(null);
+
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
 
@@ -128,6 +149,79 @@ const GameBoard: React.FC = () => {
 
     handleAction(captureAction);
     setPendingCapture(null); // Clear pending capture
+  };
+
+  // Handle sacrifice initiation from StarSystem
+  const handleSacrificeInitiate = (
+    sacrificedShipId: string,
+    systemId: string
+  ) => {
+    const system = gameState.getSystem(systemId);
+    const ship = system?.ships.find(s => s.id === sacrificedShipId);
+
+    if (!ship) return;
+
+    setPendingSacrifice({
+      sacrificedShipId,
+      systemId,
+      shipColor: ship.color,
+      shipSize: ship.size,
+      actionsRemaining: ship.size,
+      plannedActions: [],
+    });
+  };
+
+  // Handle sacrifice completion
+  const handleSacrificeComplete = () => {
+    if (!pendingSacrifice) return;
+
+    // Create and execute the sacrifice action
+    const sacrificeAction = createSacrificeAction(
+      gameState.getCurrentPlayer(),
+      pendingSacrifice.sacrificedShipId,
+      pendingSacrifice.systemId,
+      pendingSacrifice.plannedActions
+    );
+
+    handleAction(sacrificeAction);
+    setPendingSacrifice(null); // Clear pending sacrifice
+  };
+
+  // Handle sacrifice cancellation
+  const handleSacrificeCancel = () => {
+    setPendingSacrifice(null);
+  };
+
+  // Handle adding action to sacrifice plan
+  const handleSacrificeAddAction = (
+    action: MoveAction | CaptureAction | GrowAction | TradeAction
+  ) => {
+    if (!pendingSacrifice || pendingSacrifice.actionsRemaining <= 0) return;
+
+    setPendingSacrifice(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        actionsRemaining: prev.actionsRemaining - 1,
+        plannedActions: [...prev.plannedActions, action],
+      };
+    });
+  };
+
+  // Handle removing action from sacrifice plan
+  const handleSacrificeRemoveAction = (index: number) => {
+    if (!pendingSacrifice) return;
+
+    setPendingSacrifice(prev => {
+      if (!prev) return null;
+      const newPlannedActions = [...prev.plannedActions];
+      newPlannedActions.splice(index, 1);
+      return {
+        ...prev,
+        actionsRemaining: prev.actionsRemaining + 1,
+        plannedActions: newPlannedActions,
+      };
+    });
   };
 
   // Handle move initiation from HomeSystem
@@ -468,6 +562,7 @@ const GameBoard: React.FC = () => {
               onCaptureInitiate={handleCaptureInitiate}
               onShipClickForCapture={handleShipClickForCapture}
               pendingCapture={pendingCapture}
+              onSacrificeInitiate={handleSacrificeInitiate}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&
@@ -567,6 +662,7 @@ const GameBoard: React.FC = () => {
                         onCaptureInitiate={handleCaptureInitiate}
                         onShipClickForCapture={handleShipClickForCapture}
                         pendingCapture={pendingCapture}
+                        onSacrificeInitiate={handleSacrificeInitiate}
                         onSystemClick={handleSystemClick}
                         isMoveDestination={
                           !!pendingMove &&
@@ -602,6 +698,7 @@ const GameBoard: React.FC = () => {
               onCaptureInitiate={handleCaptureInitiate}
               onShipClickForCapture={handleShipClickForCapture}
               pendingCapture={pendingCapture}
+              onSacrificeInitiate={handleSacrificeInitiate}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&
@@ -630,6 +727,22 @@ const GameBoard: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
       />
+
+      {/* Sacrifice modal */}
+      {pendingSacrifice && (
+        <SacrificeModal
+          sacrificedShipId={pendingSacrifice.sacrificedShipId}
+          systemId={pendingSacrifice.systemId}
+          shipColor={pendingSacrifice.shipColor}
+          shipSize={pendingSacrifice.shipSize}
+          actionsRemaining={pendingSacrifice.actionsRemaining}
+          plannedActions={pendingSacrifice.plannedActions}
+          onComplete={handleSacrificeComplete}
+          onCancel={handleSacrificeCancel}
+          onAddAction={handleSacrificeAddAction}
+          onRemoveAction={handleSacrificeRemoveAction}
+        />
+      )}
 
       {/* Confirmation dialog */}
       <ConfirmationDialog
