@@ -89,6 +89,17 @@
   margin-bottom: 4px;
 }
 
+.action-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.action-content span {
+  flex: 1;
+  line-height: 1.4;
+}
+
 .action-timestamp {
   color: #64748b;
   font-size: 12px;

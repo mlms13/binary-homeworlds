@@ -1172,6 +1172,7 @@ const GameBoard: React.FC = () => {
         isOpen={isLogOpen}
         onClose={() => setIsLogOpen(false)}
         actions={actionHistory}
+        gameState={gameState}
       />
 
       {/* Settings menu */}
