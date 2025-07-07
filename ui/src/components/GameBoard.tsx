@@ -4,6 +4,7 @@ import { BinaryHomeworldsGameState } from '../../../src/game-state';
 import {
   createSetupAction,
   createTradeAction,
+  createMoveAction,
 } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
@@ -63,6 +64,14 @@ const GameBoard: React.FC = () => {
     validPieceIds: string[];
   } | null>(null);
 
+  // Move action state
+  const [pendingMove, setPendingMove] = useState<{
+    shipId: string;
+    fromSystemId: string;
+    validDestinationIds: string[];
+    validBankPieceIds: string[];
+  } | null>(null);
+
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
 
@@ -78,6 +87,56 @@ const GameBoard: React.FC = () => {
   // Handle trade cancellation
   const handleCancelTrade = () => {
     setPendingTrade(null);
+  };
+
+  // Handle move initiation from HomeSystem
+  const handleMoveInitiate = (shipId: string, fromSystemId: string) => {
+    // Calculate valid destinations and bank pieces for move
+    const allSystems = gameState.getAllSystems();
+    const fromSystem = allSystems.find(s => s.id === fromSystemId);
+    const ship = fromSystem?.ships.find(s => s.id === shipId);
+
+    if (!ship || !fromSystem) return;
+
+    // Valid destination systems (excluding the current system)
+    const validDestinationIds = allSystems
+      .filter(s => s.id !== fromSystemId)
+      .map(s => s.id);
+
+    // Valid bank pieces for creating new systems (any piece that can be a star)
+    const validBankPieceIds = gameState.getBankPieces().map(p => p.id);
+
+    setPendingMove({
+      shipId,
+      fromSystemId,
+      validDestinationIds,
+      validBankPieceIds,
+    });
+  };
+
+  // Handle move cancellation
+  const handleCancelMove = () => {
+    setPendingMove(null);
+  };
+
+  // Handle system click for move destination
+  const handleSystemClick = (systemId: string) => {
+    if (!pendingMove) return;
+
+    // Check if this system is a valid destination
+    if (!pendingMove.validDestinationIds.includes(systemId)) return;
+
+    // Create and execute the move action to existing system
+    const moveAction = createMoveAction(
+      gameState.getCurrentPlayer(),
+      pendingMove.shipId,
+      pendingMove.fromSystemId,
+      systemId, // toSystemId
+      undefined // newStarPieceId is undefined for existing system
+    );
+
+    handleAction(moveAction);
+    setPendingMove(null); // Clear pending move
   };
 
   // Wrapper for applyAction that handles confirmation
@@ -117,7 +176,7 @@ const GameBoard: React.FC = () => {
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
 
-  // Handle bank piece clicks during setup and trade actions
+  // Handle bank piece clicks during setup, trade actions, and move actions
   const handleBankPieceClick = (piece: Piece) => {
     // Handle trade actions during normal play
     if (gameState.getPhase() === 'normal' && pendingTrade) {
@@ -134,6 +193,25 @@ const GameBoard: React.FC = () => {
 
       handleAction(tradeAction);
       setPendingTrade(null); // Clear pending trade
+      return;
+    }
+
+    // Handle move actions during normal play (creating new system)
+    if (gameState.getPhase() === 'normal' && pendingMove) {
+      // Check if this piece is valid for creating a new system
+      if (!pendingMove.validBankPieceIds.includes(piece.id)) return;
+
+      // Create and execute the move action to create new system
+      const moveAction = createMoveAction(
+        gameState.getCurrentPlayer(),
+        pendingMove.shipId,
+        pendingMove.fromSystemId,
+        undefined, // toSystemId is undefined for new system
+        piece.id // newStarPieceId
+      );
+
+      handleAction(moveAction);
+      setPendingMove(null); // Clear pending move
       return;
     }
 
@@ -284,6 +362,8 @@ const GameBoard: React.FC = () => {
           ]}
           validTradeIds={pendingTrade?.validPieceIds || []}
           isTradeMode={!!pendingTrade}
+          validMoveIds={pendingMove?.validBankPieceIds || []}
+          isMoveMode={!!pendingMove}
         />
       </div>
 
@@ -326,6 +406,12 @@ const GameBoard: React.FC = () => {
               bankPieces={gameState.getBankPieces()}
               currentPlayer={currentPlayer}
               onTradeInitiate={handleTradeInitiate}
+              onMoveInitiate={handleMoveInitiate}
+              onSystemClick={handleSystemClick}
+              isMoveDestination={
+                !!pendingMove &&
+                pendingMove.validDestinationIds.includes(displayPlayer2Home.id)
+              }
             />
           ) : (
             <div className="no-system">
@@ -374,6 +460,25 @@ const GameBoard: React.FC = () => {
                       cancel trade
                     </button>
                   </GameHint>
+                ) : pendingMove ? (
+                  <GameHint>
+                    Click on an existing system or a bank piece to create a new
+                    system, or{' '}
+                    <button
+                      onClick={handleCancelMove}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        padding: 0,
+                        font: 'inherit',
+                      }}
+                    >
+                      cancel move
+                    </button>
+                  </GameHint>
                 ) : currentPlayer === 'player1' ? (
                   <GameHint>
                     Click on one of your ships to take an action
@@ -402,6 +507,12 @@ const GameBoard: React.FC = () => {
               bankPieces={gameState.getBankPieces()}
               currentPlayer={currentPlayer}
               onTradeInitiate={handleTradeInitiate}
+              onMoveInitiate={handleMoveInitiate}
+              onSystemClick={handleSystemClick}
+              isMoveDestination={
+                !!pendingMove &&
+                pendingMove.validDestinationIds.includes(displayPlayer1Home.id)
+              }
             />
           ) : (
             <div className="no-system">

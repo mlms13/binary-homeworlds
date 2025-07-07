@@ -33,6 +33,9 @@ interface HomeSystemProps {
     systemId: string,
     validPieceIds: string[]
   ) => void;
+  onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
+  onSystemClick?: (systemId: string) => void;
+  isMoveDestination?: boolean;
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
@@ -44,6 +47,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   bankPieces,
   currentPlayer,
   onTradeInitiate,
+  onMoveInitiate,
+  onSystemClick,
+  isMoveDestination = false,
 }) => {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
@@ -142,6 +148,15 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
 
         // Close action menu and clear selection
         handleCloseActionMenu();
+      } else if (actionType === 'move') {
+        // Notify parent component about move initiation
+        // GameBoard will calculate valid destinations since it has access to all systems
+        if (onMoveInitiate && selectedShipId) {
+          onMoveInitiate(selectedShipId, system.id);
+        }
+
+        // Close action menu and clear selection
+        handleCloseActionMenu();
       } else {
         // Handle other action types (move, capture, etc.)
         handleCloseActionMenu();
@@ -166,9 +181,18 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       .map(piece => piece.id);
   }, [selectedShipId, system.ships, bankPieces]);
 
+  const handleSystemClick = () => {
+    if (isMoveDestination && onSystemClick) {
+      onSystemClick(system.id);
+    }
+  };
+
   return (
     <div
-      className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${isOpponent ? 'opponent' : ''}`}
+      className={`home-system ${isCurrentPlayer ? 'current-player' : ''} ${
+        isOpponent ? 'opponent' : ''
+      } ${isMoveDestination ? 'move-destination' : ''}`}
+      onClick={isMoveDestination ? handleSystemClick : undefined}
     >
       <div className="system-header">
         <h4>{isOpponent ? "Opponent's Home System" : 'Your Home System'}</h4>

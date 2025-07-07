@@ -106,3 +106,16 @@
     opacity: 1;
   }
 }
+
+.home-system.move-destination {
+  cursor: pointer;
+  border: 2px solid #10b981;
+  border-radius: 8px;
+  background-color: rgba(16, 185, 129, 0.1);
+  transition: all 0.2s ease;
+}
+
+.home-system.move-destination:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+  transform: scale(1.02);
+}
