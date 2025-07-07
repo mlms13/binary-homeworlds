@@ -1,7 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { System, GameAction, Piece } from '../../../src/types';
-import { ActionValidationResult } from '../../../src/action-validator';
-import TrianglePiece from './TrianglePiece';
+import {
+  System,
+  GameAction,
+  Piece,
+  ActionValidationResult,
+} from '../../../src/types';
+import DiamondStar from './DiamondStar';
+import DirectionalShip from './DirectionalShip';
 import ActionMenu from './ActionMenu';
 import './HomeSystem.css'; // Reuse the same styles for now
 
@@ -151,12 +156,11 @@ const StarSystem: React.FC<StarSystemProps> = ({
           <div className="section-label">Stars:</div>
           <div className="pieces-container">
             {system.stars.map(star => (
-              <TrianglePiece
+              <DiamondStar
                 key={star.id}
-                piece={star}
-                onClick={() => {}}
-                disabled={true}
-                showAsShip={false}
+                color={star.color}
+                size={star.size}
+                isBinary={system.stars.length > 1}
               />
             ))}
           </div>
@@ -169,13 +173,14 @@ const StarSystem: React.FC<StarSystemProps> = ({
               <div className="no-pieces">No ships</div>
             ) : (
               system.ships.map(ship => (
-                <TrianglePiece
+                <DirectionalShip
                   key={ship.id}
-                  piece={ship}
-                  onClick={handleShipClick}
-                  disabled={ship.owner !== currentPlayer}
-                  showAsShip={true}
+                  color={ship.color}
+                  size={ship.size}
+                  onClick={event => handleShipClick(ship.id, event)}
                   isSelected={selectedShipId === ship.id}
+                  isCurrentPlayer={ship.owner === currentPlayer}
+                  isClickable={ship.owner === currentPlayer}
                 />
               ))
             )}
@@ -185,10 +190,12 @@ const StarSystem: React.FC<StarSystemProps> = ({
 
       {selectedShipId && actionMenuPosition && (
         <ActionMenu
-          actions={getAvailableActions(selectedShipId, system.id)}
+          shipId={selectedShipId}
+          systemId={system.id}
           position={actionMenuPosition}
-          onActionSelect={handleActionSelect}
+          availableActions={getAvailableActions(selectedShipId, system.id)}
           onClose={handleCloseMenu}
+          onAction={handleActionSelect}
         />
       )}
     </div>
