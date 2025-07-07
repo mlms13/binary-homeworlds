@@ -92,7 +92,7 @@ const GameBoard: React.FC = () => {
   // Handle move initiation from HomeSystem
   const handleMoveInitiate = (shipId: string, fromSystemId: string) => {
     // Calculate valid destinations and bank pieces for move
-    const allSystems = gameState.getAllSystems();
+    const allSystems = gameState.getSystems();
     const fromSystem = allSystems.find(s => s.id === fromSystemId);
     const ship = fromSystem?.ships.find(s => s.id === shipId);
 
