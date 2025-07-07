@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { GameEngine } from '../../../src/game-engine';
+import { isColorAvailable } from '../../../src/utils';
 import { GameAction } from '../../../src/types';
 
 export const useGameActions = (gameEngine: GameEngine) => {
@@ -17,46 +18,89 @@ export const useGameActions = (gameEngine: GameEngine) => {
   );
 
   const getAvailableActions = useCallback(
-    (_shipId: string, _systemId: string) => {
-      // const gameState = gameEngine.getGameState();
-      // const _currentPlayer = gameState.getCurrentPlayer();
+    (shipId: string, systemId: string) => {
+      // Get the current game state
+      const gameState = gameEngine.getGameState();
+      const system = gameState.getSystem(systemId);
+      const ship = system?.ships.find(s => s.id === shipId);
 
-      // TODO: Implement proper action availability checking
-      // For now, return a basic set of actions
+      if (!system || !ship) {
+        return [];
+      }
+
+      const currentPlayer = gameState.getCurrentPlayer();
+
+      // Check if each action is available based on star colors in the system
+      const moveEnabled = isColorAvailable(system, 'yellow', currentPlayer);
+      const captureEnabled = isColorAvailable(system, 'red', currentPlayer);
+      const growEnabled = isColorAvailable(system, 'green', currentPlayer);
+      const tradeEnabled = isColorAvailable(system, 'blue', currentPlayer);
+
+      // Additional checks for specific actions
+      const hasEnemyShips = system.ships.some(s => s.owner !== currentPlayer);
+      const captureActuallyEnabled = captureEnabled && hasEnemyShips;
+
+      // Check if bank has pieces for grow action
+      const bankPieces = gameState.getBankPieces();
+      const hasGrowPieces = bankPieces.some(
+        piece => piece.color === ship.color
+      );
+      const growActuallyEnabled = growEnabled && hasGrowPieces;
+
+      // Check if bank has pieces for trade action
+      const hasTradePieces = bankPieces.some(
+        piece => piece.size === ship.size && piece.color !== ship.color
+      );
+      const tradeActuallyEnabled = tradeEnabled && hasTradePieces;
+
       return [
         {
           id: 'move',
           label: 'Move',
-          description: 'Move this ship to another system',
-          enabled: true,
+          description: moveEnabled
+            ? 'Move this ship to another system'
+            : 'No yellow star or ship available',
+          enabled: moveEnabled,
           color: '#eab308',
         },
         {
           id: 'capture',
           label: 'Capture',
-          description: 'Capture an enemy ship',
-          enabled: false, // TODO: Check if capture is possible
+          description: captureActuallyEnabled
+            ? 'Capture an enemy ship'
+            : !captureEnabled
+              ? 'No red star or ship available'
+              : 'No enemy ships to capture',
+          enabled: captureActuallyEnabled,
           color: '#dc2626',
         },
         {
           id: 'grow',
           label: 'Grow',
-          description: 'Create a new ship',
-          enabled: true,
+          description: growActuallyEnabled
+            ? 'Create a new ship'
+            : !growEnabled
+              ? 'No green star or ship available'
+              : 'No pieces available in bank',
+          enabled: growActuallyEnabled,
           color: '#16a34a',
         },
         {
           id: 'trade',
           label: 'Trade',
-          description: 'Change ship color',
-          enabled: true,
+          description: tradeActuallyEnabled
+            ? 'Change ship color'
+            : !tradeEnabled
+              ? 'No blue star or ship available'
+              : 'No suitable pieces in bank',
+          enabled: tradeActuallyEnabled,
           color: '#2563eb',
         },
         {
           id: 'sacrifice',
           label: 'Sacrifice',
           description: 'Sacrifice for multiple actions',
-          enabled: true,
+          enabled: true, // Sacrifice is always available
           color: '#7c3aed',
         },
       ];
