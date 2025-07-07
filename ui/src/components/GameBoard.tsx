@@ -224,7 +224,10 @@ const GameBoard: React.FC = () => {
         piece.id // newStarPieceId
       );
 
-      handleAction(moveAction);
+      console.log('Executing move action:', moveAction);
+      const result = handleAction(moveAction);
+      console.log('Move action result:', result);
+      console.log('Systems after move:', gameState.getSystems().length);
       setPendingMove(null); // Clear pending move
       return;
     }
@@ -331,11 +334,30 @@ const GameBoard: React.FC = () => {
     return system.id !== player1Home?.id && system.id !== player2Home?.id;
   });
 
-  // Debug logging
-  console.log('All systems:', systems.length);
-  console.log('Player1 home ID:', player1Home?.id);
-  console.log('Player2 home ID:', player2Home?.id);
-  console.log('Non-home systems:', nonHomeSystems.length, nonHomeSystems);
+  // Debug logging for system detection
+  if (gameState.getPhase() === 'normal') {
+    console.log('=== System Detection Debug ===');
+    console.log(
+      'All systems:',
+      systems.length,
+      systems.map(s => ({
+        id: s.id,
+        stars: s.stars.length,
+        ships: s.ships.length,
+      }))
+    );
+    console.log('Player1 home ID:', player1Home?.id);
+    console.log('Player2 home ID:', player2Home?.id);
+    console.log(
+      'Non-home systems:',
+      nonHomeSystems.length,
+      nonHomeSystems.map(s => ({
+        id: s.id,
+        stars: s.stars.length,
+        ships: s.ships.length,
+      }))
+    );
+  }
 
   const currentPlayer = gameState.getCurrentPlayer();
 
