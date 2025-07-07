@@ -5,6 +5,7 @@ import {
   Piece,
   ActionValidationResult,
 } from '../../../src/types';
+import { createGrowAction } from '../../../src/action-builders';
 import SystemContent from './SystemContent';
 import ActionMenu from './ActionMenu';
 import './HomeSystem.css'; // Reuse the same styles for now
@@ -67,11 +68,50 @@ const StarSystem: React.FC<StarSystemProps> = ({
     [system.ships, currentPlayer]
   );
 
+  const handleGrowAction = useCallback(() => {
+    if (!selectedShipId) return;
+
+    const actingShip = system.ships.find(s => s.id === selectedShipId);
+    if (!actingShip) return;
+
+    // Find the smallest available piece of the same color
+    const availablePieces = bankPieces
+      .filter(piece => piece.color === actingShip.color)
+      .sort((a, b) => a.size - b.size);
+
+    const smallestPiece = availablePieces[0];
+    if (!smallestPiece) return; // No pieces available
+
+    const action = createGrowAction(
+      currentPlayer,
+      selectedShipId,
+      system.id,
+      smallestPiece.id
+    );
+
+    // Apply the action
+    _onAction(action);
+
+    // Reset state
+    setSelectedShipId(null);
+    setActionMenuPosition(null);
+  }, [
+    selectedShipId,
+    system.ships,
+    system.id,
+    bankPieces,
+    currentPlayer,
+    _onAction,
+  ]);
+
   const handleActionSelect = useCallback(
     (actionId: string) => {
       if (!selectedShipId) return;
 
-      if (actionId === 'trade' && onTradeInitiate) {
+      if (actionId === 'grow') {
+        // Grow action: automatically select smallest available piece of same color
+        handleGrowAction();
+      } else if (actionId === 'trade' && onTradeInitiate) {
         // Get valid pieces for trade
         const ship = system.ships.find(s => s.id === selectedShipId);
         if (ship) {
@@ -110,6 +150,7 @@ const StarSystem: React.FC<StarSystemProps> = ({
       onTradeInitiate,
       onMoveInitiate,
       getAvailableActions,
+      handleGrowAction,
     ]
   );
 
