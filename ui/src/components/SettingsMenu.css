@@ -103,15 +103,3 @@
   background: #1a1a1a;
   color: white;
 }
-
-.setting-checkbox {
-  margin-right: 8px;
-  accent-color: #4ade80;
-  cursor: pointer;
-}
-
-.setting-label:has(.setting-checkbox) {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}

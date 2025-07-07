@@ -14,8 +14,21 @@
   transform: scale(1.1);
 }
 
-.triangle-piece.clickable:hover svg {
-  filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.6)) !important;
+/* Color-specific hover effects */
+.triangle-piece.clickable:hover svg.color-red {
+  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-yellow {
+  filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-green {
+  filter: drop-shadow(0 0 12px rgba(22, 163, 74, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-blue {
+  filter: drop-shadow(0 0 12px rgba(37, 99, 235, 0.8)) !important;
 }
 
 .triangle-piece.selected svg {

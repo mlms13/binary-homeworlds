@@ -112,17 +112,61 @@
   position: relative;
 }
 
-.piece-clickable::before {
+/* Color-specific hover glows for pieces */
+.piece-clickable.piece-color-red::before {
   content: '';
   position: absolute;
   top: -4px;
   left: -4px;
   right: -4px;
   bottom: -4px;
-  border: 2px solid rgba(74, 222, 128, 0.5);
+  border: 2px solid rgba(220, 38, 38, 0.6);
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.3s ease;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.4);
+}
+
+.piece-clickable.piece-color-yellow::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(234, 179, 8, 0.6);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
+}
+
+.piece-clickable.piece-color-green::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(22, 163, 74, 0.6);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 0 12px rgba(22, 163, 74, 0.4);
+}
+
+.piece-clickable.piece-color-blue::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(37, 99, 235, 0.6);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
 }
 
 .piece-clickable:hover::before {

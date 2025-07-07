@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import ToggleSwitch from './ToggleSwitch';
 import './SettingsMenu.css';
 
 interface SettingsMenuProps {
@@ -74,15 +75,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
 
           {/* Turn Confirmation Setting */}
           <div className="setting-group">
-            <label className="setting-label">
-              <input
-                type="checkbox"
-                className="setting-checkbox"
-                checked={confirmTurnActions}
-                onChange={e => setConfirmTurnActions(e.target.checked)}
-              />
-              Confirm turn actions before passing to opponent
-            </label>
+            <ToggleSwitch
+              checked={confirmTurnActions}
+              onChange={setConfirmTurnActions}
+              label="Confirm turn actions before passing to opponent"
+              id="confirm-turn-actions"
+            />
           </div>
         </div>
       </div>

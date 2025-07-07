@@ -18,7 +18,7 @@ const Bank: React.FC<BankProps> = ({
   pieces,
   onPieceClick,
   isSetupPhase = false,
-  selectedPieces = [],
+  selectedPieces: _selectedPieces = [],
   validTradeIds = [],
   isTradeMode = false,
   validMoveIds = [],
@@ -73,15 +73,7 @@ const Bank: React.FC<BankProps> = ({
                             (isMoveMode &&
                               validMoveIds.includes(piecesOfType[0].id))
                           }
-                          isSelected={
-                            selectedPieces.some(
-                              p => p.color === color && p.size === size
-                            ) ||
-                            (isTradeMode &&
-                              validTradeIds.includes(piecesOfType[0].id)) ||
-                            (isMoveMode &&
-                              validMoveIds.includes(piecesOfType[0].id))
-                          }
+                          isSelected={false}
                           isDisabled={
                             (isTradeMode &&
                               !validTradeIds.includes(piecesOfType[0].id)) ||

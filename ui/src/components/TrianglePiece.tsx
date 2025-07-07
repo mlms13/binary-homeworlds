@@ -75,6 +75,7 @@ const TrianglePiece: React.FC<TrianglePieceProps> = ({
         width={triangleSize}
         height={triangleHeight}
         viewBox={`0 0 ${triangleSize} ${triangleHeight}`}
+        className={`color-${color}`}
         style={{
           filter: isSelected
             ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.8))'
