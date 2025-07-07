@@ -111,30 +111,41 @@ const GameBoard: React.FC = () => {
 
   // Check if an action would cause the current player to lose
   const wouldActionCauseLoss = (action: GameAction): string | null => {
-    // Create a temporary game engine to simulate the action
-    const tempEngine = new GameEngine(gameEngine.getGameState());
-    const result = tempEngine.applyAction(action);
+    try {
+      // Create a deep copy of the current game state to avoid any shared references
+      const currentState = gameEngine.getGameState().getState();
+      const tempGameState = new BinaryHomeworldsGameState(
+        JSON.parse(JSON.stringify(currentState))
+      );
+      const tempEngine = new GameEngine(tempGameState);
 
-    if (!result.valid) {
-      return null; // If action is invalid, it won't cause loss
+      const result = tempEngine.applyAction(action);
+
+      if (!result.valid) {
+        return null; // If action is invalid, it won't cause loss
+      }
+
+      // Check if the current player would lose after this action
+      const finalState = tempEngine.getGameState();
+      const currentPlayer = gameState.getCurrentPlayer();
+
+      const hasShips = hasShipsAtHome(finalState.getState(), currentPlayer);
+      const hasStars = hasStarsAtHome(finalState.getState(), currentPlayer);
+
+      if (!hasShips && !hasStars) {
+        return 'This action would leave you with no ships AND no stars at your home system, causing you to lose the game immediately.';
+      } else if (!hasShips) {
+        return 'This action would leave you with no ships at your home system, causing you to lose the game.';
+      } else if (!hasStars) {
+        return 'This action would destroy all stars at your home system, causing you to lose the game.';
+      }
+
+      return null; // Action would not cause loss
+    } catch (error) {
+      // If there's any error in simulation, don't show warning
+      console.warn('Error simulating action for loss detection:', error);
+      return null;
     }
-
-    // Check if the current player would lose after this action
-    const tempGameState = tempEngine.getGameState();
-    const currentPlayer = gameState.getCurrentPlayer();
-
-    const hasShips = hasShipsAtHome(tempGameState.getState(), currentPlayer);
-    const hasStars = hasStarsAtHome(tempGameState.getState(), currentPlayer);
-
-    if (!hasShips && !hasStars) {
-      return 'This action would leave you with no ships AND no stars at your home system, causing you to lose the game immediately.';
-    } else if (!hasShips) {
-      return 'This action would leave you with no ships at your home system, causing you to lose the game.';
-    } else if (!hasStars) {
-      return 'This action would destroy all stars at your home system, causing you to lose the game.';
-    }
-
-    return null; // Action would not cause loss
   };
 
   // Handle trade initiation from HomeSystem
