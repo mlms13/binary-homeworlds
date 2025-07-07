@@ -45,7 +45,7 @@ interface SetupState {
 }
 
 const GameBoard: React.FC = () => {
-  const [gameEngine] = useState(() => new GameEngine());
+  const [gameEngine, setGameEngine] = useState(() => new GameEngine());
   const [gameState, setGameState] = useState<BinaryHomeworldsGameState>(
     gameEngine.getGameState()
   );
@@ -690,21 +690,29 @@ const GameBoard: React.FC = () => {
 
   // Handle starting a new game
   const handleNewGame = () => {
-    // Reset all state
+    // Reset all pending action state
     setPendingMove(null);
     setPendingCapture(null);
     setPendingSacrifice(null);
     setPendingTrade(null);
     setPendingAction(null);
     setShowConfirmation(false);
+    setGameLossWarning(null);
+    setOverpopulationPrompt(null);
 
-    // Create new game engine and update state
+    // Reset setup state to initial values
+    setSetupState({
+      player1Stars: [],
+      player2Stars: [],
+      player1Ship: null,
+      player2Ship: null,
+      currentStep: 'p1-star1',
+    });
+
+    // Create new game engine and update both engine and state
     const newGameEngine = new GameEngine();
+    setGameEngine(newGameEngine);
     setGameState(newGameEngine.getGameState());
-
-    // Update the game engine reference (if needed by parent)
-    // Note: This assumes gameEngine is passed as a prop or managed externally
-    // If gameEngine is local state, we'd need to update it here
   };
 
   // Update game state when engine changes

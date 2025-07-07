@@ -1,10 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GameEngine } from '../../../src/game-engine';
 import { isColorAvailable } from '../../../src/utils';
 import { GameAction } from '../../../src/types';
 
 export const useGameActions = (gameEngine: GameEngine) => {
   const [actionHistory, setActionHistory] = useState<GameAction[]>([]);
+
+  // Reset action history when game engine changes (new game)
+  useEffect(() => {
+    setActionHistory([]);
+  }, [gameEngine]);
 
   const applyAction = useCallback(
     (action: GameAction) => {
