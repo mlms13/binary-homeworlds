@@ -8,6 +8,7 @@ import {
   createCaptureAction,
   createSacrificeAction,
   createGrowAction,
+  createOverpopulationAction,
 } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
@@ -21,6 +22,7 @@ import GameHint from './GameHint';
 import SettingsMenu from './SettingsMenu';
 import ConfirmationDialog from './ConfirmationDialog';
 import GameEndModal from './GameEndModal';
+import OverpopulationModal from './OverpopulationModal';
 import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
@@ -87,6 +89,14 @@ const GameBoard: React.FC = () => {
     shipColor: Color;
     actionsRemaining: number;
     actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null>(null);
+
+  // Overpopulation state
+  const [overpopulationPrompt, setOverpopulationPrompt] = useState<{
+    systemId: string;
+    color: Color;
+    currentPlayerPrompted: boolean;
+    otherPlayerPrompted: boolean;
   } | null>(null);
 
   const { actionHistory, applyAction, getAvailableActions } =
@@ -246,6 +256,8 @@ const GameBoard: React.FC = () => {
         // End sacrifice mode and end turn
         gameEngine.getGameState().switchPlayer();
         setGameState(gameEngine.getGameState());
+        // Check for overpopulation after turn ends
+        checkForOverpopulation();
         return null;
       }
       return {
@@ -253,6 +265,87 @@ const GameBoard: React.FC = () => {
         actionsRemaining: newActionsRemaining,
       };
     });
+  };
+
+  // Check for overpopulation and prompt players
+  const checkForOverpopulation = () => {
+    const systems = gameState.getSystems();
+
+    for (const system of systems) {
+      for (const color of ['yellow', 'green', 'blue', 'red'] as Color[]) {
+        const pieces = [
+          ...system.stars.filter(star => star.color === color),
+          ...system.ships.filter(ship => ship.color === color),
+        ];
+
+        if (pieces.length >= 4) {
+          // Found overpopulation - prompt current player first
+          setOverpopulationPrompt({
+            systemId: system.id,
+            color,
+            currentPlayerPrompted: false,
+            otherPlayerPrompted: false,
+          });
+          return; // Only prompt for one overpopulation at a time
+        }
+      }
+    }
+  };
+
+  // Handle overpopulation declaration
+  const handleDeclareOverpopulation = () => {
+    if (!overpopulationPrompt) return;
+
+    const overpopulationAction = createOverpopulationAction(
+      gameState.getCurrentPlayer(),
+      overpopulationPrompt.systemId,
+      overpopulationPrompt.color
+    );
+
+    const result = applyAction(overpopulationAction);
+    if (result.valid) {
+      setGameState(gameEngine.getGameState());
+      // Clear overpopulation prompt and check for new overpopulation
+      setOverpopulationPrompt(null);
+      checkForOverpopulation();
+    }
+  };
+
+  // Handle ignoring overpopulation
+  const handleIgnoreOverpopulation = () => {
+    if (!overpopulationPrompt) return;
+
+    const currentPlayer = gameState.getCurrentPlayer();
+    const isCurrentPlayerPrompted = overpopulationPrompt.currentPlayerPrompted;
+    const isOtherPlayerPrompted = overpopulationPrompt.otherPlayerPrompted;
+
+    if (
+      !isCurrentPlayerPrompted &&
+      currentPlayer === gameState.getCurrentPlayer()
+    ) {
+      // Current player is ignoring, mark them as prompted
+      setOverpopulationPrompt(prev =>
+        prev
+          ? {
+              ...prev,
+              currentPlayerPrompted: true,
+            }
+          : null
+      );
+    } else if (!isOtherPlayerPrompted) {
+      // Other player is ignoring, mark them as prompted
+      setOverpopulationPrompt(prev =>
+        prev
+          ? {
+              ...prev,
+              otherPlayerPrompted: true,
+            }
+          : null
+      );
+    } else {
+      // Both players have been prompted and ignored, clear the prompt
+      setOverpopulationPrompt(null);
+    }
   };
 
   // Handle sacrifice action execution
@@ -427,6 +520,10 @@ const GameBoard: React.FC = () => {
       if (result.valid) {
         // Update game state after successful action
         setGameState(gameEngine.getGameState());
+        // Check for overpopulation after action (if turn ended)
+        if (willEndTurn) {
+          checkForOverpopulation();
+        }
       }
       return result;
     }
@@ -438,6 +535,8 @@ const GameBoard: React.FC = () => {
       if (result.valid) {
         // Update game state after successful action
         setGameState(gameEngine.getGameState());
+        // Check for overpopulation after confirmed action
+        checkForOverpopulation();
       }
       setPendingAction(null);
     }
@@ -916,6 +1015,19 @@ const GameBoard: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
       />
+
+      {/* Overpopulation modal */}
+      {overpopulationPrompt && (
+        <OverpopulationModal
+          systemId={overpopulationPrompt.systemId}
+          color={overpopulationPrompt.color}
+          currentPlayer={gameState.getCurrentPlayer()}
+          currentPlayerPrompted={overpopulationPrompt.currentPlayerPrompted}
+          otherPlayerPrompted={overpopulationPrompt.otherPlayerPrompted}
+          onDeclareOverpopulation={handleDeclareOverpopulation}
+          onIgnoreOverpopulation={handleIgnoreOverpopulation}
+        />
+      )}
 
       {/* Game end modal */}
       {(() => {
