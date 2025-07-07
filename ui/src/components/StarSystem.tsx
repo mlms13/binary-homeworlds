@@ -59,11 +59,27 @@ const StarSystem: React.FC<StarSystemProps> = ({
       if (!ship || ship.owner !== currentPlayer) return;
 
       const rect = (event.target as HTMLElement).getBoundingClientRect();
+
+      // Calculate initial position with some smart defaults
+      // Try to position to the right first, but consider viewport bounds
+      const viewportWidth = window.innerWidth;
+      const estimatedMenuWidth = 200;
+
+      let x = rect.right + 10;
+      let y = rect.top;
+
+      // If menu would go off the right edge, position to the left
+      if (x + estimatedMenuWidth > viewportWidth) {
+        x = rect.left - estimatedMenuWidth - 10;
+      }
+
+      // If still off screen, center on the element
+      if (x < 0) {
+        x = rect.left + rect.width / 2;
+      }
+
       setSelectedShipId(shipId);
-      setActionMenuPosition({
-        x: rect.right + 10,
-        y: rect.top,
-      });
+      setActionMenuPosition({ x, y });
     },
     [system.ships, currentPlayer]
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './ActionMenu.css';
 
@@ -28,6 +28,82 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
   onAction,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  // Calculate optimal position considering viewport bounds
+  const calculateOptimalPosition = (initialPosition: {
+    x: number;
+    y: number;
+  }) => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Estimate menu dimensions (will be refined after render)
+    const estimatedMenuWidth = 200;
+    const estimatedMenuHeight = Math.min(
+      300,
+      availableActions.length * 60 + 80
+    );
+
+    let { x, y } = initialPosition;
+
+    // Adjust horizontal position
+    if (x + estimatedMenuWidth > viewportWidth) {
+      // Position to the left of the trigger point
+      x = initialPosition.x - estimatedMenuWidth - 20;
+    }
+    if (x < 0) {
+      // Ensure menu doesn't go off the left edge
+      x = 10;
+    }
+
+    // Adjust vertical position
+    if (y + estimatedMenuHeight > viewportHeight) {
+      // Position above the trigger point
+      y = initialPosition.y - estimatedMenuHeight - 10;
+    }
+    if (y < 0) {
+      // Ensure menu doesn't go off the top edge
+      y = 10;
+    }
+
+    return { x, y };
+  };
+
+  const [adjustedPosition, setAdjustedPosition] = useState(() =>
+    calculateOptimalPosition(position)
+  );
+
+  // Fine-tune position after menu is rendered and we have actual dimensions
+  useLayoutEffect(() => {
+    if (!menuRef.current) return;
+
+    const menu = menuRef.current;
+    const menuRect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let { x, y } = position;
+
+    // Adjust horizontal position with actual width
+    if (x + menuRect.width > viewportWidth) {
+      x = position.x - menuRect.width - 20;
+    }
+    if (x < 0) {
+      x = 10;
+    }
+
+    // Adjust vertical position with actual height
+    if (y + menuRect.height > viewportHeight) {
+      y = position.y - menuRect.height - 10;
+    }
+    if (y < 0) {
+      y = 10;
+    }
+
+    // Only update if position actually changed
+    if (x !== adjustedPosition.x || y !== adjustedPosition.y) {
+      setAdjustedPosition({ x, y });
+    }
+  }, [position, availableActions, adjustedPosition.x, adjustedPosition.y]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -71,9 +147,8 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
         className="action-menu"
         style={{
           position: 'absolute',
-          left: position.x,
-          top: position.y,
-          transform: 'translate(-50%, 0)',
+          left: adjustedPosition.x,
+          top: adjustedPosition.y,
         }}
       >
         <div className="action-menu-header">
