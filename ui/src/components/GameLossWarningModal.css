@@ -82,21 +82,21 @@
   text-align: center;
 }
 
-.action-description {
+.loss-action-description {
   background: rgba(0, 0, 0, 0.2);
   padding: 16px;
   border-radius: 8px;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.action-description p {
+.loss-action-description p {
   color: #f3f4f6;
   margin: 0 0 8px 0;
   font-size: 14px;
   line-height: 1.5;
 }
 
-.action-description p:last-child {
+.loss-action-description p:last-child {
   margin-bottom: 0;
   font-weight: 600;
 }
@@ -210,7 +210,7 @@
     font-size: 14px;
   }
 
-  .action-description p {
+  .loss-action-description p {
     font-size: 13px;
   }
 }

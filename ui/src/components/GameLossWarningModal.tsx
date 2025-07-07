@@ -49,7 +49,7 @@ const GameLossWarningModal: React.FC<GameLossWarningModalProps> = ({
             <p className="warning-text">{warningMessage}</p>
           </div>
 
-          <div className="action-description">
+          <div className="loss-action-description">
             <p>
               You are about to <strong>{getActionDescription(action)}</strong>.
             </p>
