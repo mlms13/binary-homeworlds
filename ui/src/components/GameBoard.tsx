@@ -103,8 +103,13 @@ const GameBoard: React.FC = () => {
       .filter(s => s.id !== fromSystemId)
       .map(s => s.id);
 
-    // Valid bank pieces for creating new systems (any piece that can be a star)
-    const validBankPieceIds = gameState.getBankPieces().map(p => p.id);
+    // Valid bank pieces for creating new systems
+    // Rule: New star must be different size than origin system stars
+    const originStarSizes = fromSystem.stars.map(star => star.size);
+    const validBankPieceIds = gameState
+      .getBankPieces()
+      .filter(piece => !originStarSizes.includes(piece.size))
+      .map(p => p.id);
 
     setPendingMove({
       shipId,
@@ -154,13 +159,22 @@ const GameBoard: React.FC = () => {
       setShowConfirmation(true);
       return { valid: true, message: 'Action pending confirmation' }; // Return success for now, actual validation happens on confirm
     } else {
-      return applyAction(action);
+      const result = applyAction(action);
+      if (result.valid) {
+        // Update game state after successful action
+        setGameState(gameEngine.getGameState());
+      }
+      return result;
     }
   };
 
   const confirmAction = () => {
     if (pendingAction) {
-      applyAction(pendingAction);
+      const result = applyAction(pendingAction);
+      if (result.valid) {
+        // Update game state after successful action
+        setGameState(gameEngine.getGameState());
+      }
       setPendingAction(null);
     }
     setShowConfirmation(false);
@@ -314,6 +328,22 @@ const GameBoard: React.FC = () => {
   const player2Home = systems.find(system =>
     system.ships.some(ship => ship.owner === 'player2')
   );
+
+  // Get non-home systems (systems that don't contain any ships, or contain ships from both players)
+  const nonHomeSystems = systems.filter(system => {
+    const hasPlayer1Ships = system.ships.some(ship => ship.owner === 'player1');
+    const hasPlayer2Ships = system.ships.some(ship => ship.owner === 'player2');
+
+    // Include systems that:
+    // 1. Have no ships (star-only systems)
+    // 2. Have ships from both players (contested systems)
+    // 3. Are not the primary home system for either player
+    return (
+      system.id !== player1Home?.id &&
+      system.id !== player2Home?.id &&
+      (system.ships.length === 0 || (hasPlayer1Ships && hasPlayer2Ships))
+    );
+  });
 
   const currentPlayer = gameState.getCurrentPlayer();
 
@@ -487,6 +517,34 @@ const GameBoard: React.FC = () => {
                   <GameHint icon="⏳">Waiting for opponent's move...</GameHint>
                 )}
               </div>
+
+              {/* Display non-home systems */}
+              {nonHomeSystems.length > 0 && (
+                <div className="other-systems">
+                  <div className="other-systems-label">Other Systems:</div>
+                  <div className="other-systems-grid">
+                    {nonHomeSystems.map(system => (
+                      <HomeSystem
+                        key={system.id}
+                        system={system}
+                        isCurrentPlayer={false}
+                        isOpponent={false}
+                        onAction={handleAction}
+                        getAvailableActions={getAvailableActions}
+                        bankPieces={gameState.getBankPieces()}
+                        currentPlayer={currentPlayer}
+                        onTradeInitiate={handleTradeInitiate}
+                        onMoveInitiate={handleMoveInitiate}
+                        onSystemClick={handleSystemClick}
+                        isMoveDestination={
+                          !!pendingMove &&
+                          pendingMove.validDestinationIds.includes(system.id)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

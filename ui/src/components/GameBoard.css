@@ -168,3 +168,28 @@
   color: #64748b;
   font-style: italic;
 }
+
+.other-systems {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.other-systems-label {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.other-systems-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.other-systems-grid .home-system {
+  transform: scale(0.8); /* Make other systems slightly smaller */
+  margin: 5px;
+}
