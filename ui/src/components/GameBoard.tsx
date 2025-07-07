@@ -149,6 +149,14 @@ const GameBoard: React.FC = () => {
     }
   };
 
+  // Helper function to clear all pending actions
+  const clearAllPendingActions = () => {
+    setPendingMove(null);
+    setPendingCapture(null);
+    setPendingTrade(null);
+    // Note: Don't clear pendingSacrifice as it's a different type of state
+  };
+
   // Handle trade initiation from HomeSystem
   const handleTradeInitiate = (
     shipId: string,
@@ -157,6 +165,9 @@ const GameBoard: React.FC = () => {
   ) => {
     // Check if game has ended
     if (gameState.isGameEnded()) return;
+
+    // Clear any existing pending actions before starting new one
+    clearAllPendingActions();
 
     setPendingTrade({ shipId, systemId, validPieceIds });
   };
@@ -174,6 +185,9 @@ const GameBoard: React.FC = () => {
   ) => {
     // Check if game has ended
     if (gameState.isGameEnded()) return;
+
+    // Clear any existing pending actions before starting new one
+    clearAllPendingActions();
 
     setPendingCapture({ attackingShipId, systemId, validTargetShipIds });
   };
@@ -555,6 +569,9 @@ const GameBoard: React.FC = () => {
   const handleMoveInitiate = (shipId: string, fromSystemId: string) => {
     // Check if game has ended
     if (gameState.isGameEnded()) return;
+
+    // Clear any existing pending actions before starting new one
+    clearAllPendingActions();
 
     // Calculate valid destinations and bank pieces for move
     const allSystems = gameState.getSystems();
