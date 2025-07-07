@@ -227,7 +227,25 @@ const GameBoard: React.FC = () => {
       console.log('Executing move action:', moveAction);
       const result = handleAction(moveAction);
       console.log('Move action result:', result);
-      console.log('Systems after move:', gameState.getSystems().length);
+
+      // Force a state update and check again
+      window.setTimeout(() => {
+        const updatedGameState = gameEngine.getGameState();
+        console.log(
+          'Systems after move (delayed check):',
+          updatedGameState.getSystems().length
+        );
+        console.log(
+          'Updated systems:',
+          updatedGameState.getSystems().map(s => ({
+            id: s.id,
+            stars: s.stars.length,
+            ships: s.ships.length,
+          }))
+        );
+        setGameState(updatedGameState);
+      }, 100);
+
       setPendingMove(null); // Clear pending move
       return;
     }

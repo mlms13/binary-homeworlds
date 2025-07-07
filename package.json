@@ -17,6 +17,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit && cd ui && npx tsc --noEmit",
+    "typecheck:staged": "npm run typecheck",
     "prepare": "husky",
     "ui:dev": "vite --config vite.config.ui.ts",
     "ui:build": "vite build --config vite.config.ui.ts",
