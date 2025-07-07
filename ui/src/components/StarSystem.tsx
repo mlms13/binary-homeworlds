@@ -4,6 +4,7 @@ import {
   GameAction,
   Piece,
   ActionValidationResult,
+  Color,
 } from '../../../src/types';
 import { createGrowAction } from '../../../src/action-builders';
 import SystemContent from './SystemContent';
@@ -42,6 +43,12 @@ interface StarSystemProps {
     validTargetShipIds: string[];
   } | null;
   onSacrificeInitiate?: (sacrificedShipId: string, systemId: string) => void;
+  pendingSacrifice?: {
+    shipColor: Color;
+    actionsRemaining: number;
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null;
+  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
   title?: string; // Optional custom title
@@ -59,6 +66,8 @@ const StarSystem: React.FC<StarSystemProps> = ({
   onShipClickForCapture,
   pendingCapture,
   onSacrificeInitiate,
+  pendingSacrifice,
+  onShipClickForSacrifice,
   onSystemClick,
   isMoveDestination = false,
   title = 'Star System',
@@ -248,6 +257,8 @@ const StarSystem: React.FC<StarSystemProps> = ({
         onShipClick={handleShipClick}
         pendingCapture={pendingCapture}
         onShipClickForCapture={onShipClickForCapture}
+        pendingSacrifice={pendingSacrifice}
+        onShipClickForSacrifice={onShipClickForSacrifice}
       />
 
       {selectedShipId && actionMenuPosition && (

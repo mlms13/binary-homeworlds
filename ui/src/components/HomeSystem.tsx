@@ -4,6 +4,7 @@ import {
   GameAction,
   ActionValidationResult,
   Piece,
+  Color,
 } from '../../../src/types';
 import StarSystem from './StarSystem';
 
@@ -41,6 +42,12 @@ interface HomeSystemProps {
     validTargetShipIds: string[];
   } | null;
   onSacrificeInitiate?: (sacrificedShipId: string, systemId: string) => void;
+  pendingSacrifice?: {
+    shipColor: Color;
+    actionsRemaining: number;
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null;
+  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
 }
@@ -59,6 +66,8 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   onShipClickForCapture,
   pendingCapture,
   onSacrificeInitiate,
+  pendingSacrifice,
+  onShipClickForSacrifice,
   onSystemClick,
   isMoveDestination = false,
 }) => {
@@ -84,6 +93,8 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       onShipClickForCapture={onShipClickForCapture}
       pendingCapture={pendingCapture}
       onSacrificeInitiate={onSacrificeInitiate}
+      pendingSacrifice={pendingSacrifice}
+      onShipClickForSacrifice={onShipClickForSacrifice}
       onSystemClick={onSystemClick}
       isMoveDestination={isMoveDestination}
       title={getSystemTitle()}

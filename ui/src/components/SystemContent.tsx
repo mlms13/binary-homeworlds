@@ -1,5 +1,5 @@
 import React from 'react';
-import { System } from '../../../src/types';
+import { System, Color } from '../../../src/types';
 import DiamondStar from './DiamondStar';
 import DirectionalShip from './DirectionalShip';
 
@@ -14,6 +14,12 @@ interface SystemContentProps {
     validTargetShipIds: string[];
   } | null;
   onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  pendingSacrifice?: {
+    shipColor: Color;
+    actionsRemaining: number;
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null;
+  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
 }
 
 const SystemContent: React.FC<SystemContentProps> = ({
@@ -23,8 +29,20 @@ const SystemContent: React.FC<SystemContentProps> = ({
   onShipClick,
   pendingCapture,
   onShipClickForCapture,
+  pendingSacrifice,
+  onShipClickForSacrifice,
 }) => {
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
+    // If we're in sacrifice mode, handle sacrifice action
+    if (pendingSacrifice && onShipClickForSacrifice) {
+      const ship = system.ships.find(s => s.id === shipId);
+      // Only allow clicking ships owned by current player
+      if (ship && ship.owner === currentPlayer) {
+        onShipClickForSacrifice(shipId, system.id);
+        return;
+      }
+    }
+
     // If we're in capture mode and this is a valid target, handle capture
     if (
       pendingCapture &&

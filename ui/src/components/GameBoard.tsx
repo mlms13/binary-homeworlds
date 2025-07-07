@@ -7,19 +7,11 @@ import {
   createMoveAction,
   createCaptureAction,
   createSacrificeAction,
+  createGrowAction,
 } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
-import {
-  Piece,
-  GameAction,
-  Color,
-  Size,
-  MoveAction,
-  CaptureAction,
-  GrowAction,
-  TradeAction,
-} from '../../../src/types';
+import { Piece, GameAction, Color } from '../../../src/types';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import StarSystem from './StarSystem';
@@ -28,7 +20,6 @@ import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
 import SettingsMenu from './SettingsMenu';
 import ConfirmationDialog from './ConfirmationDialog';
-import SacrificeModal from './SacrificeModal';
 import { useTheme } from '../contexts/ThemeContext';
 import './GameBoard.css';
 
@@ -92,12 +83,9 @@ const GameBoard: React.FC = () => {
 
   // Sacrifice action state
   const [pendingSacrifice, setPendingSacrifice] = useState<{
-    sacrificedShipId: string;
-    systemId: string;
     shipColor: Color;
-    shipSize: Size;
     actionsRemaining: number;
-    plannedActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[];
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
   } | null>(null);
 
   const { actionHistory, applyAction, getAvailableActions } =
@@ -161,65 +149,144 @@ const GameBoard: React.FC = () => {
 
     if (!ship) return;
 
-    setPendingSacrifice({
-      sacrificedShipId,
-      systemId,
-      shipColor: ship.color,
-      shipSize: ship.size,
-      actionsRemaining: ship.size,
-      plannedActions: [],
-    });
-  };
-
-  // Handle sacrifice completion
-  const handleSacrificeComplete = () => {
-    if (!pendingSacrifice) return;
-
-    // Create and execute the sacrifice action
+    // Execute the sacrifice immediately and set up action mode
     const sacrificeAction = createSacrificeAction(
       gameState.getCurrentPlayer(),
-      pendingSacrifice.sacrificedShipId,
-      pendingSacrifice.systemId,
-      pendingSacrifice.plannedActions
+      sacrificedShipId,
+      systemId,
+      [] // No follow-up actions planned yet
     );
 
+    // Apply the sacrifice action (removes ship, returns to bank)
     handleAction(sacrificeAction);
-    setPendingSacrifice(null); // Clear pending sacrifice
-  };
 
-  // Handle sacrifice cancellation
-  const handleSacrificeCancel = () => {
-    setPendingSacrifice(null);
-  };
-
-  // Handle adding action to sacrifice plan
-  const handleSacrificeAddAction = (
-    action: MoveAction | CaptureAction | GrowAction | TradeAction
-  ) => {
-    if (!pendingSacrifice || pendingSacrifice.actionsRemaining <= 0) return;
-
-    setPendingSacrifice(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        actionsRemaining: prev.actionsRemaining - 1,
-        plannedActions: [...prev.plannedActions, action],
-      };
+    // Set up sacrifice action mode based on ship color
+    const actionType = getActionTypeForColor(ship.color);
+    setPendingSacrifice({
+      shipColor: ship.color,
+      actionsRemaining: ship.size,
+      actionType,
     });
   };
 
-  // Handle removing action from sacrifice plan
-  const handleSacrificeRemoveAction = (index: number) => {
+  // Helper function to determine action type based on color
+  const getActionTypeForColor = (
+    color: Color
+  ): 'move' | 'capture' | 'grow' | 'trade' => {
+    switch (color) {
+      case 'yellow':
+        return 'move';
+      case 'red':
+        return 'capture';
+      case 'green':
+        return 'grow';
+      case 'blue':
+        return 'trade';
+    }
+  };
+
+  // Helper function to get color name
+  const getColorName = (color: Color): string => {
+    const colorNames = {
+      yellow: 'Yellow',
+      green: 'Green',
+      blue: 'Blue',
+      red: 'Red',
+    };
+    return colorNames[color];
+  };
+
+  // Helper function to get action help text
+  const getActionHelpText = (
+    actionType: 'move' | 'capture' | 'grow' | 'trade'
+  ): string => {
+    switch (actionType) {
+      case 'move':
+        return 'Choose a ship to move';
+      case 'capture':
+        return 'Choose a ship to capture with';
+      case 'grow':
+        return 'Choose a ship to grow';
+      case 'trade':
+        return 'Choose a ship to trade';
+    }
+  };
+
+  // Handle sacrifice action execution
+  const handleSacrificeAction = (shipId: string, systemId: string) => {
     if (!pendingSacrifice) return;
+
+    const actionType = pendingSacrifice.actionType;
+    const currentPlayer = gameState.getCurrentPlayer();
+
+    // Create the appropriate action based on sacrifice type
+    let action: GameAction;
+
+    switch (actionType) {
+      case 'move': {
+        // For move, we need to initiate move selection
+        handleMoveInitiate(shipId, systemId);
+        return;
+      }
+      case 'capture': {
+        // For capture, we need target selection - this will be handled by existing capture flow
+        handleCaptureInitiate(shipId, systemId, []); // Will be populated by existing logic
+        return;
+      }
+      case 'grow': {
+        // For grow, we can execute immediately
+        const system = gameState.getSystem(systemId);
+        const ship = system?.ships.find(s => s.id === shipId);
+        if (!ship) return;
+
+        const availablePieces = gameState
+          .getBankPieces()
+          .filter(piece => piece.color === pendingSacrifice.shipColor)
+          .sort((a, b) => a.size - b.size);
+
+        const smallestPiece = availablePieces[0];
+        if (!smallestPiece) return;
+
+        action = createGrowAction(
+          currentPlayer,
+          shipId,
+          systemId,
+          smallestPiece.id
+        );
+        break;
+      }
+      case 'trade': {
+        // For trade, we need piece selection - this will be handled by existing trade flow
+        const tradeSystem = gameState.getSystem(systemId);
+        const tradeShip = tradeSystem?.ships.find(s => s.id === shipId);
+        if (tradeShip) {
+          const validPieceIds = gameState
+            .getBankPieces()
+            .filter(
+              piece =>
+                piece.size === tradeShip.size && piece.color !== tradeShip.color
+            )
+            .map(piece => piece.id);
+          handleTradeInitiate(shipId, systemId, validPieceIds);
+        }
+        return;
+      }
+      default:
+        return;
+    }
+
+    // Execute the action and decrement remaining actions
+    handleAction(action);
 
     setPendingSacrifice(prev => {
       if (!prev) return null;
-      const newPlannedActions = [...prev.plannedActions];
-      newPlannedActions.splice(index, 1);
+      const newActionsRemaining = prev.actionsRemaining - 1;
+      if (newActionsRemaining <= 0) {
+        return null; // End sacrifice mode
+      }
       return {
         ...prev,
-        actionsRemaining: prev.actionsRemaining + 1,
-        plannedActions: newPlannedActions,
+        actionsRemaining: newActionsRemaining,
       };
     });
   };
@@ -563,6 +630,8 @@ const GameBoard: React.FC = () => {
               onShipClickForCapture={handleShipClickForCapture}
               pendingCapture={pendingCapture}
               onSacrificeInitiate={handleSacrificeInitiate}
+              pendingSacrifice={pendingSacrifice}
+              onShipClickForSacrifice={handleSacrificeAction}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&
@@ -635,6 +704,23 @@ const GameBoard: React.FC = () => {
                       cancel move
                     </button>
                   </GameHint>
+                ) : pendingSacrifice ? (
+                  <GameHint>
+                    <div
+                      style={{
+                        marginBottom: '8px',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {pendingSacrifice.actionsRemaining}{' '}
+                      {getColorName(pendingSacrifice.shipColor).toLowerCase()}{' '}
+                      {pendingSacrifice.actionType} action
+                      {pendingSacrifice.actionsRemaining !== 1 ? 's' : ''}{' '}
+                      remaining
+                    </div>
+                    {getActionHelpText(pendingSacrifice.actionType)}
+                  </GameHint>
                 ) : currentPlayer === 'player1' ? (
                   <GameHint>
                     Click on one of your ships to take an action
@@ -663,6 +749,8 @@ const GameBoard: React.FC = () => {
                         onShipClickForCapture={handleShipClickForCapture}
                         pendingCapture={pendingCapture}
                         onSacrificeInitiate={handleSacrificeInitiate}
+                        pendingSacrifice={pendingSacrifice}
+                        onShipClickForSacrifice={handleSacrificeAction}
                         onSystemClick={handleSystemClick}
                         isMoveDestination={
                           !!pendingMove &&
@@ -699,6 +787,8 @@ const GameBoard: React.FC = () => {
               onShipClickForCapture={handleShipClickForCapture}
               pendingCapture={pendingCapture}
               onSacrificeInitiate={handleSacrificeInitiate}
+              pendingSacrifice={pendingSacrifice}
+              onShipClickForSacrifice={handleSacrificeAction}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&
@@ -727,22 +817,6 @@ const GameBoard: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         position={settingsPosition}
       />
-
-      {/* Sacrifice modal */}
-      {pendingSacrifice && (
-        <SacrificeModal
-          sacrificedShipId={pendingSacrifice.sacrificedShipId}
-          systemId={pendingSacrifice.systemId}
-          shipColor={pendingSacrifice.shipColor}
-          shipSize={pendingSacrifice.shipSize}
-          actionsRemaining={pendingSacrifice.actionsRemaining}
-          plannedActions={pendingSacrifice.plannedActions}
-          onComplete={handleSacrificeComplete}
-          onCancel={handleSacrificeCancel}
-          onAddAction={handleSacrificeAddAction}
-          onRemoveAction={handleSacrificeRemoveAction}
-        />
-      )}
 
       {/* Confirmation dialog */}
       <ConfirmationDialog
