@@ -31,10 +31,35 @@ export const useGameActions = (gameEngine: GameEngine) => {
       const currentPlayer = gameState.getCurrentPlayer();
 
       // Check if each action is available based on star colors in the system
-      const moveEnabled = isColorAvailable(system, 'yellow', currentPlayer);
+      const yellowAvailable = isColorAvailable(system, 'yellow', currentPlayer);
       const captureEnabled = isColorAvailable(system, 'red', currentPlayer);
       const growEnabled = isColorAvailable(system, 'green', currentPlayer);
       const tradeEnabled = isColorAvailable(system, 'blue', currentPlayer);
+
+      // For move actions, also check if there are valid destinations
+      const hasValidMoveDestinations =
+        yellowAvailable &&
+        (() => {
+          const originSizes = system.stars.map(star => star.size);
+          const allSystems = gameState.getSystems();
+
+          // Check if there are existing systems with different star sizes
+          const hasValidExistingSystems = allSystems.some(otherSystem => {
+            if (otherSystem.id === system.id) return false; // Can't move to same system
+            const destSizes = otherSystem.stars.map(star => star.size);
+            return destSizes.some(destSize => !originSizes.includes(destSize));
+          });
+
+          // Check if we can create new systems (bank has pieces of different sizes)
+          const bankPieces = gameState.getBankPieces();
+          const hasValidNewSystemPieces = bankPieces.some(
+            piece => !originSizes.includes(piece.size)
+          );
+
+          return hasValidExistingSystems || hasValidNewSystemPieces;
+        })();
+
+      const moveEnabled = hasValidMoveDestinations;
 
       // Additional checks for specific actions
       const hasEnemyShips = system.ships.some(s => s.owner !== currentPlayer);
@@ -59,7 +84,9 @@ export const useGameActions = (gameEngine: GameEngine) => {
           label: 'Move',
           description: moveEnabled
             ? 'Move this ship to another system'
-            : 'No yellow star or ship available',
+            : !yellowAvailable
+              ? 'No yellow star or ship available'
+              : 'No valid destinations (all systems have same star sizes)',
           enabled: moveEnabled,
           color: '#eab308',
         },
