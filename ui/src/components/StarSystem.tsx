@@ -5,8 +5,7 @@ import {
   Piece,
   ActionValidationResult,
 } from '../../../src/types';
-import DiamondStar from './DiamondStar';
-import DirectionalShip from './DirectionalShip';
+import SystemContent from './SystemContent';
 import ActionMenu from './ActionMenu';
 import './HomeSystem.css'; // Reuse the same styles for now
 
@@ -151,42 +150,12 @@ const StarSystem: React.FC<StarSystemProps> = ({
         <div className="player-indicator">{getPlayerIndicator()}</div>
       </div>
 
-      <div className="system-content">
-        <div className="stars-section">
-          <div className="section-label">Stars:</div>
-          <div className="pieces-container">
-            {system.stars.map(star => (
-              <DiamondStar
-                key={star.id}
-                color={star.color}
-                size={star.size}
-                isBinary={system.stars.length > 1}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="ships-section">
-          <div className="section-label">Ships:</div>
-          <div className="pieces-container">
-            {system.ships.length === 0 ? (
-              <div className="no-pieces">No ships</div>
-            ) : (
-              system.ships.map(ship => (
-                <DirectionalShip
-                  key={ship.id}
-                  color={ship.color}
-                  size={ship.size}
-                  onClick={event => handleShipClick(ship.id, event)}
-                  isSelected={selectedShipId === ship.id}
-                  isCurrentPlayer={ship.owner === currentPlayer}
-                  isClickable={ship.owner === currentPlayer}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      <SystemContent
+        system={system}
+        currentPlayer={currentPlayer}
+        selectedShipId={selectedShipId}
+        onShipClick={handleShipClick}
+      />
 
       {selectedShipId && actionMenuPosition && (
         <ActionMenu

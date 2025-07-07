@@ -6,8 +6,7 @@ import {
   Piece,
 } from '../../../src/types';
 import { createGrowAction } from '../../../src/action-builders';
-import DiamondStar from './DiamondStar';
-import DirectionalShip from './DirectionalShip';
+import SystemContent from './SystemContent';
 import ActionMenu from './ActionMenu';
 
 import './HomeSystem.css';
@@ -217,63 +216,12 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
         <div className="player-indicator">{getPlayerIndicator()}</div>
       </div>
 
-      <div className="system-content">
-        {/* All system objects in single line: opponent ships (small→big), stars, player ships (big→small) */}
-        <div className="system-objects-container">
-          {/* Opponent ships (small to big) */}
-          {system.ships
-            .filter(ship => ship.owner === 'player2')
-            .slice()
-            .sort((a, b) => a.size - b.size)
-            .map(ship => (
-              <div key={ship.id} className="ship-wrapper">
-                <DirectionalShip
-                  color={ship.color}
-                  size={ship.size}
-                  displaySize="medium"
-                  onClick={event => handleShipClick(ship.id, event)}
-                  isSelected={selectedShipId === ship.id}
-                  isClickable={isCurrentPlayer}
-                  isCurrentPlayer={ship.owner === 'player1'}
-                />
-              </div>
-            ))}
-
-          {/* Stars (larger first) */}
-          {system.stars
-            .slice()
-            .sort((a, b) => b.size - a.size)
-            .map((star, index) => (
-              <div key={star.id} className="star-wrapper">
-                <DiamondStar
-                  color={star.color}
-                  size={star.size}
-                  displaySize="large"
-                  isBinary={system.stars.length === 2 && index === 1}
-                />
-              </div>
-            ))}
-
-          {/* Player ships (big to small) */}
-          {system.ships
-            .filter(ship => ship.owner === 'player1')
-            .slice()
-            .sort((a, b) => b.size - a.size)
-            .map(ship => (
-              <div key={ship.id} className="ship-wrapper">
-                <DirectionalShip
-                  color={ship.color}
-                  size={ship.size}
-                  displaySize="medium"
-                  onClick={event => handleShipClick(ship.id, event)}
-                  isSelected={selectedShipId === ship.id}
-                  isClickable={isCurrentPlayer}
-                  isCurrentPlayer={ship.owner === 'player1'}
-                />
-              </div>
-            ))}
-        </div>
-      </div>
+      <SystemContent
+        system={system}
+        currentPlayer={currentPlayer}
+        selectedShipId={selectedShipId}
+        onShipClick={handleShipClick}
+      />
 
       {/* Action Menu */}
       {selectedShipId && actionMenuPosition && (
