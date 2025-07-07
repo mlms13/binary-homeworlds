@@ -40,7 +40,7 @@ const SystemContent: React.FC<SystemContentProps> = ({
                 onClick={event => handleShipClick(ship.id, event)}
                 isSelected={selectedShipId === ship.id}
                 isClickable={ship.owner === currentPlayer}
-                isCurrentPlayer={ship.owner === currentPlayer}
+                isCurrentPlayer={ship.owner === 'player1'}
               />
             </div>
           ))}
@@ -74,7 +74,7 @@ const SystemContent: React.FC<SystemContentProps> = ({
                 onClick={event => handleShipClick(ship.id, event)}
                 isSelected={selectedShipId === ship.id}
                 isClickable={ship.owner === currentPlayer}
-                isCurrentPlayer={ship.owner === currentPlayer}
+                isCurrentPlayer={ship.owner === 'player1'}
               />
             </div>
           ))}
