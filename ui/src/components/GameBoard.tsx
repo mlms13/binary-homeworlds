@@ -6,7 +6,6 @@ import {
   createTradeAction,
   createMoveAction,
   createCaptureAction,
-  createSacrificeAction,
   createGrowAction,
   createOverpopulationAction,
 } from '../../../src/action-builders';
@@ -178,18 +177,29 @@ const GameBoard: React.FC = () => {
 
     if (!ship) return;
 
-    // Execute the sacrifice immediately and set up action mode
-    const sacrificeAction = createSacrificeAction(
-      gameState.getCurrentPlayer(),
-      sacrificedShipId,
-      systemId,
-      [] // No follow-up actions planned yet
-    );
+    // Manually handle the sacrifice (bypass the action system for now)
+    // Remove the ship from the system
+    const systemRef = gameEngine
+      .getGameState()
+      .getSystemsRef()
+      .find(s => s.id === systemId);
+    if (systemRef) {
+      systemRef.ships = systemRef.ships.filter(s => s.id !== sacrificedShipId);
 
-    // Apply the sacrifice action directly (bypassing confirmation)
-    const result = applyAction(sacrificeAction);
-    if (result.valid) {
-      // Update game state after successful sacrifice
+      // Return the ship to the bank
+      gameEngine.getGameState().addPieceToBank({
+        color: ship.color,
+        size: ship.size,
+        id: ship.id,
+      });
+
+      // Check if system should be cleaned up (no ships left)
+      if (systemRef.ships.length === 0) {
+        gameEngine.getGameState().addPiecesToBank(systemRef.stars);
+        gameEngine.getGameState().removeSystem(systemRef.id);
+      }
+
+      // Update game state
       setGameState(gameEngine.getGameState());
 
       // Set up sacrifice action mode based on ship color
