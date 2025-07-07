@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   System,
   GameAction,
@@ -83,31 +83,15 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     setSelectedShipId(shipId);
   };
 
-  const handleCloseActionMenu = () => {
-    setSelectedShipId(null);
-    setActionMenuPosition(null);
-  };
-
-  const handleActionSelect = (actionType: string) => {
-    if (actionType === 'grow') {
-      // Grow action: automatically select smallest available piece of same color
-      handleGrowAction();
-      handleCloseActionMenu();
-    } else if (actionType === 'trade') {
-      setPendingActionType(actionType);
-      setShowBankSelector(true);
-      // Close action menu but keep selectedShipId for bank selector
-      console.log('handling trade action select');
-      console.log('selected ship id:', selectedShipId);
-      setActionMenuPosition(null);
-    } else {
-      // Handle other action types (move, capture, etc.)
-      console.log('Action selected:', actionType);
-      handleCloseActionMenu();
+  const handleCloseActionMenu = useCallback((preserveShipId = false) => {
+    // Don't clear selectedShipId if we're preserving it for trade action
+    if (!preserveShipId) {
+      setSelectedShipId(null);
     }
-  };
+    setActionMenuPosition(null);
+  }, []);
 
-  const handleGrowAction = () => {
+  const handleGrowAction = useCallback(() => {
     if (!selectedShipId) return;
 
     const actingShip = system.ships.find(s => s.id === selectedShipId);
@@ -133,78 +117,79 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
 
     // Reset state
     setSelectedShipId(null);
-  };
+  }, [
+    selectedShipId,
+    system.ships,
+    system.id,
+    bankPieces,
+    currentPlayer,
+    onAction,
+  ]);
 
-  const handleBankPieceSelect = (piece: Piece) => {
-    if (!selectedShipId || pendingActionType !== 'trade') return;
+  const handleActionSelect = useCallback(
+    (actionType: string) => {
+      if (actionType === 'grow') {
+        // Grow action: automatically select smallest available piece of same color
+        handleGrowAction();
+        handleCloseActionMenu();
+      } else if (actionType === 'trade') {
+        setPendingActionType(actionType);
+        setShowBankSelector(true);
+        // Close action menu but keep selectedShipId for bank selector
+        handleCloseActionMenu(true); // Pass true to preserve selectedShipId
+      } else {
+        // Handle other action types (move, capture, etc.)
+        handleCloseActionMenu();
+      }
+    },
+    [selectedShipId, handleCloseActionMenu, handleGrowAction]
+  );
 
-    const action = createTradeAction(
-      currentPlayer,
-      selectedShipId,
-      system.id,
-      piece.id
-    );
+  const handleBankPieceSelect = useCallback(
+    (piece: Piece) => {
+      if (!selectedShipId || pendingActionType !== 'trade') return;
 
-    // Apply the action
-    onAction(action);
+      const action = createTradeAction(
+        currentPlayer,
+        selectedShipId,
+        system.id,
+        piece.id
+      );
 
-    // Reset state
+      // Apply the action
+      onAction(action);
+
+      // Reset state
+      setShowBankSelector(false);
+      setPendingActionType(null);
+      setSelectedShipId(null);
+    },
+    [selectedShipId, pendingActionType, currentPlayer, system.id, onAction]
+  );
+
+  const handleCloseBankSelector = useCallback(() => {
     setShowBankSelector(false);
     setPendingActionType(null);
     setSelectedShipId(null);
-  };
-
-  const handleCloseBankSelector = () => {
-    console.log('CLOSING BANK SELECTOR');
-    setShowBankSelector(false);
-    setPendingActionType(null);
-    setSelectedShipId(null);
-  };
+  }, []);
 
   // Memoize valid bank piece IDs to preserve them even if selectedShipId changes
   const validBankPieceIds = useMemo(() => {
-    console.log('=== useMemo: Computing valid bank piece IDs ===');
-    console.log('pending action type:', pendingActionType);
-    console.log('selected ship id:', selectedShipId);
-
-    if (!pendingActionType || !selectedShipId) {
-      console.log('Early return: missing pendingActionType or selectedShipId');
-      return [];
-    }
+    if (!pendingActionType || !selectedShipId) return [];
 
     const actingShip = system.ships.find(s => s.id === selectedShipId);
-    console.log('acting ship:', actingShip);
-
-    if (!actingShip) {
-      console.log('Early return: actingShip not found');
-      return [];
-    }
+    if (!actingShip) return [];
 
     if (pendingActionType === 'trade') {
-      console.log('Processing trade action...');
-      console.log(
-        'Acting ship color:',
-        actingShip.color,
-        'size:',
-        actingShip.size
-      );
-      console.log('Bank pieces:', bankPieces);
-
-      const validPieces = bankPieces.filter(piece => {
-        const colorMatch = piece.color !== actingShip.color;
-        const sizeMatch = piece.size === actingShip.size;
-        console.log(
-          `Piece ${piece.id} (${piece.color} ${piece.size}): colorMatch=${colorMatch}, sizeMatch=${sizeMatch}`
-        );
-        return colorMatch && sizeMatch;
-      });
-
-      const validIds = validPieces.map(piece => piece.id);
-      console.log('Valid piece IDs:', validIds);
-      return validIds;
+      // Can trade for pieces of different colors and same size
+      return bankPieces
+        .filter(
+          piece =>
+            piece.color !== actingShip.color && piece.size === actingShip.size
+        )
+        .map(piece => piece.id);
     }
 
-    console.log('No matching action type');
     return [];
   }, [pendingActionType, selectedShipId, system.ships, bankPieces]);
 
