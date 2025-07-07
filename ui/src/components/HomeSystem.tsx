@@ -29,6 +29,17 @@ interface HomeSystemProps {
     validPieceIds: string[]
   ) => void;
   onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
+  onCaptureInitiate?: (
+    attackingShipId: string,
+    systemId: string,
+    validTargetShipIds: string[]
+  ) => void;
+  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  pendingCapture?: {
+    attackingShipId: string;
+    systemId: string;
+    validTargetShipIds: string[];
+  } | null;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
 }
@@ -43,6 +54,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   currentPlayer,
   onTradeInitiate,
   onMoveInitiate,
+  onCaptureInitiate,
+  onShipClickForCapture,
+  pendingCapture,
   onSystemClick,
   isMoveDestination = false,
 }) => {
@@ -64,6 +78,9 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
       currentPlayer={currentPlayer}
       onTradeInitiate={onTradeInitiate}
       onMoveInitiate={onMoveInitiate}
+      onCaptureInitiate={onCaptureInitiate}
+      onShipClickForCapture={onShipClickForCapture}
+      pendingCapture={pendingCapture}
       onSystemClick={onSystemClick}
       isMoveDestination={isMoveDestination}
       title={getSystemTitle()}

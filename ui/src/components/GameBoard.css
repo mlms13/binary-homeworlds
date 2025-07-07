@@ -193,3 +193,33 @@
   transform: scale(0.8); /* Make other systems slightly smaller */
   margin: 5px;
 }
+
+/* Capture target styling */
+.ship-wrapper.capture-target {
+  position: relative;
+}
+
+.ship-wrapper.capture-target::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid #dc2626;
+  border-radius: 4px;
+  background-color: rgba(220, 38, 38, 0.1);
+  pointer-events: none;
+  animation: capture-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes capture-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}

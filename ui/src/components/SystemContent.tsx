@@ -8,6 +8,12 @@ interface SystemContentProps {
   currentPlayer: 'player1' | 'player2';
   selectedShipId?: string | null;
   onShipClick?: (shipId: string, event: React.MouseEvent) => void;
+  pendingCapture?: {
+    attackingShipId: string;
+    systemId: string;
+    validTargetShipIds: string[];
+  } | null;
+  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
 }
 
 const SystemContent: React.FC<SystemContentProps> = ({
@@ -15,8 +21,22 @@ const SystemContent: React.FC<SystemContentProps> = ({
   currentPlayer,
   selectedShipId,
   onShipClick,
+  pendingCapture,
+  onShipClickForCapture,
 }) => {
   const handleShipClick = (shipId: string, event: React.MouseEvent) => {
+    // If we're in capture mode and this is a valid target, handle capture
+    if (
+      pendingCapture &&
+      pendingCapture.systemId === system.id &&
+      pendingCapture.validTargetShipIds.includes(shipId) &&
+      onShipClickForCapture
+    ) {
+      onShipClickForCapture(shipId, system.id);
+      return;
+    }
+
+    // Otherwise, handle normal ship click
     if (onShipClick) {
       onShipClick(shipId, event);
     }
@@ -31,19 +51,31 @@ const SystemContent: React.FC<SystemContentProps> = ({
           .filter(ship => ship.owner === 'player2')
           .slice()
           .sort((a, b) => a.size - b.size)
-          .map(ship => (
-            <div key={ship.id} className="ship-wrapper">
-              <DirectionalShip
-                color={ship.color}
-                size={ship.size}
-                displaySize="medium"
-                onClick={event => handleShipClick(ship.id, event)}
-                isSelected={selectedShipId === ship.id}
-                isClickable={ship.owner === currentPlayer}
-                isCurrentPlayer={ship.owner === 'player1'}
-              />
-            </div>
-          ))}
+          .map(ship => {
+            const isCaptureTarget =
+              pendingCapture &&
+              pendingCapture.systemId === system.id &&
+              pendingCapture.validTargetShipIds.includes(ship.id);
+
+            return (
+              <div
+                key={ship.id}
+                className={`ship-wrapper ${isCaptureTarget ? 'capture-target' : ''}`}
+              >
+                <DirectionalShip
+                  color={ship.color}
+                  size={ship.size}
+                  displaySize="medium"
+                  onClick={event => handleShipClick(ship.id, event)}
+                  isSelected={selectedShipId === ship.id}
+                  isClickable={
+                    ship.owner === currentPlayer || !!isCaptureTarget
+                  }
+                  isCurrentPlayer={ship.owner === 'player1'}
+                />
+              </div>
+            );
+          })}
 
         {/* Stars (larger first) */}
         {system.stars
@@ -65,19 +97,31 @@ const SystemContent: React.FC<SystemContentProps> = ({
           .filter(ship => ship.owner === 'player1')
           .slice()
           .sort((a, b) => b.size - a.size)
-          .map(ship => (
-            <div key={ship.id} className="ship-wrapper">
-              <DirectionalShip
-                color={ship.color}
-                size={ship.size}
-                displaySize="medium"
-                onClick={event => handleShipClick(ship.id, event)}
-                isSelected={selectedShipId === ship.id}
-                isClickable={ship.owner === currentPlayer}
-                isCurrentPlayer={ship.owner === 'player1'}
-              />
-            </div>
-          ))}
+          .map(ship => {
+            const isCaptureTarget =
+              pendingCapture &&
+              pendingCapture.systemId === system.id &&
+              pendingCapture.validTargetShipIds.includes(ship.id);
+
+            return (
+              <div
+                key={ship.id}
+                className={`ship-wrapper ${isCaptureTarget ? 'capture-target' : ''}`}
+              >
+                <DirectionalShip
+                  color={ship.color}
+                  size={ship.size}
+                  displaySize="medium"
+                  onClick={event => handleShipClick(ship.id, event)}
+                  isSelected={selectedShipId === ship.id}
+                  isClickable={
+                    ship.owner === currentPlayer || !!isCaptureTarget
+                  }
+                  isCurrentPlayer={ship.owner === 'player1'}
+                />
+              </div>
+            );
+          })}
       </div>
     </div>
   );

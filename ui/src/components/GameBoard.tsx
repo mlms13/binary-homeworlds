@@ -5,10 +5,11 @@ import {
   createSetupAction,
   createTradeAction,
   createMoveAction,
+  createCaptureAction,
 } from '../../../src/action-builders';
 
 import { useGameActions } from '../hooks/useGameActions';
-import { Piece } from '../../../src/types';
+import { Piece, GameAction } from '../../../src/types';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
 import StarSystem from './StarSystem';
@@ -44,9 +45,7 @@ const GameBoard: React.FC = () => {
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsPosition, setSettingsPosition] = useState({ x: 0, y: 0 });
-  const [pendingAction, setPendingAction] = useState<ReturnType<
-    typeof createSetupAction
-  > | null>(null);
+  const [pendingAction, setPendingAction] = useState<GameAction | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const { confirmTurnActions } = useTheme();
@@ -73,6 +72,13 @@ const GameBoard: React.FC = () => {
     validBankPieceIds: string[];
   } | null>(null);
 
+  // Capture action state
+  const [pendingCapture, setPendingCapture] = useState<{
+    attackingShipId: string;
+    systemId: string;
+    validTargetShipIds: string[];
+  } | null>(null);
+
   const { actionHistory, applyAction, getAvailableActions } =
     useGameActions(gameEngine);
 
@@ -88,6 +94,40 @@ const GameBoard: React.FC = () => {
   // Handle trade cancellation
   const handleCancelTrade = () => {
     setPendingTrade(null);
+  };
+
+  // Handle capture initiation from StarSystem
+  const handleCaptureInitiate = (
+    attackingShipId: string,
+    systemId: string,
+    validTargetShipIds: string[]
+  ) => {
+    setPendingCapture({ attackingShipId, systemId, validTargetShipIds });
+  };
+
+  // Handle ship clicks during capture target selection
+  const handleShipClickForCapture = (
+    targetShipId: string,
+    systemId: string
+  ) => {
+    if (!pendingCapture) return;
+
+    // Check if this ship is a valid target
+    if (!pendingCapture.validTargetShipIds.includes(targetShipId)) return;
+
+    // Check if this is the correct system
+    if (systemId !== pendingCapture.systemId) return;
+
+    // Create and execute the capture action
+    const captureAction = createCaptureAction(
+      gameState.getCurrentPlayer(),
+      pendingCapture.attackingShipId,
+      targetShipId,
+      systemId
+    );
+
+    handleAction(captureAction);
+    setPendingCapture(null); // Clear pending capture
   };
 
   // Handle move initiation from HomeSystem
@@ -146,7 +186,7 @@ const GameBoard: React.FC = () => {
   };
 
   // Wrapper for applyAction that handles confirmation
-  const handleAction = (action: any) => {
+  const handleAction = (action: GameAction) => {
     // Check if this action will end the turn (grow, trade, move, capture, sacrifice)
     const turnEndingActions = ['grow', 'trade', 'move', 'capture', 'sacrifice'];
     const willEndTurn = turnEndingActions.includes(action.type);
@@ -425,6 +465,9 @@ const GameBoard: React.FC = () => {
               currentPlayer={currentPlayer}
               onTradeInitiate={handleTradeInitiate}
               onMoveInitiate={handleMoveInitiate}
+              onCaptureInitiate={handleCaptureInitiate}
+              onShipClickForCapture={handleShipClickForCapture}
+              pendingCapture={pendingCapture}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&
@@ -521,6 +564,9 @@ const GameBoard: React.FC = () => {
                         currentPlayer={currentPlayer}
                         onTradeInitiate={handleTradeInitiate}
                         onMoveInitiate={handleMoveInitiate}
+                        onCaptureInitiate={handleCaptureInitiate}
+                        onShipClickForCapture={handleShipClickForCapture}
+                        pendingCapture={pendingCapture}
                         onSystemClick={handleSystemClick}
                         isMoveDestination={
                           !!pendingMove &&
@@ -553,6 +599,9 @@ const GameBoard: React.FC = () => {
               currentPlayer={currentPlayer}
               onTradeInitiate={handleTradeInitiate}
               onMoveInitiate={handleMoveInitiate}
+              onCaptureInitiate={handleCaptureInitiate}
+              onShipClickForCapture={handleShipClickForCapture}
+              pendingCapture={pendingCapture}
               onSystemClick={handleSystemClick}
               isMoveDestination={
                 !!pendingMove &&

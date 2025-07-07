@@ -30,6 +30,17 @@ interface StarSystemProps {
     validPieceIds: string[]
   ) => void;
   onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
+  onCaptureInitiate?: (
+    attackingShipId: string,
+    systemId: string,
+    validTargetShipIds: string[]
+  ) => void;
+  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  pendingCapture?: {
+    attackingShipId: string;
+    systemId: string;
+    validTargetShipIds: string[];
+  } | null;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
   title?: string; // Optional custom title
@@ -43,6 +54,9 @@ const StarSystem: React.FC<StarSystemProps> = ({
   currentPlayer,
   onTradeInitiate,
   onMoveInitiate,
+  onCaptureInitiate,
+  onShipClickForCapture,
+  pendingCapture,
   onSystemClick,
   isMoveDestination = false,
   title = 'Star System',
@@ -140,6 +154,19 @@ const StarSystem: React.FC<StarSystemProps> = ({
         }
       } else if (actionId === 'move' && onMoveInitiate) {
         onMoveInitiate(selectedShipId, system.id);
+      } else if (actionId === 'capture' && onCaptureInitiate) {
+        // Get valid target ships for capture
+        const attackingShip = system.ships.find(s => s.id === selectedShipId);
+        if (attackingShip) {
+          const validTargetShipIds = system.ships
+            .filter(
+              ship =>
+                ship.owner !== currentPlayer && // Enemy ship
+                attackingShip.size >= ship.size // Size restriction
+            )
+            .map(ship => ship.id);
+          onCaptureInitiate(selectedShipId, system.id, validTargetShipIds);
+        }
       } else {
         // Handle other actions through the action system
         const availableActions = getAvailableActions(selectedShipId, system.id);
@@ -165,8 +192,10 @@ const StarSystem: React.FC<StarSystemProps> = ({
       bankPieces,
       onTradeInitiate,
       onMoveInitiate,
+      onCaptureInitiate,
       getAvailableActions,
       handleGrowAction,
+      currentPlayer,
     ]
   );
 
@@ -212,6 +241,8 @@ const StarSystem: React.FC<StarSystemProps> = ({
         currentPlayer={currentPlayer}
         selectedShipId={selectedShipId}
         onShipClick={handleShipClick}
+        pendingCapture={pendingCapture}
+        onShipClickForCapture={onShipClickForCapture}
       />
 
       {selectedShipId && actionMenuPosition && (
