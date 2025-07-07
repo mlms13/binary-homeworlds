@@ -36,7 +36,6 @@ interface HomeSystemProps {
   onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
-  systemTitle?: string; // Optional custom title for the system
 }
 
 const HomeSystem: React.FC<HomeSystemProps> = ({
@@ -51,7 +50,6 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   onMoveInitiate,
   onSystemClick,
   isMoveDestination = false,
-  systemTitle,
 }) => {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
@@ -189,56 +187,21 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
     }
   };
 
-  // Helper function to determine system title
+  // Helper function to determine home system title
   const getSystemTitle = () => {
-    if (systemTitle) {
-      return systemTitle;
-    }
-
-    // For home systems
-    if (isCurrentPlayer && !isOpponent) {
-      return 'Your Home System';
-    }
-    if (isOpponent && !isCurrentPlayer) {
+    if (isOpponent) {
       return "Opponent's Home System";
-    }
-
-    // For other systems, describe based on content
-    const hasYourShips = system.ships.some(
-      ship => ship.owner === currentPlayer
-    );
-    const hasOpponentShips = system.ships.some(
-      ship => ship.owner !== currentPlayer
-    );
-
-    if (hasYourShips && hasOpponentShips) {
-      return 'Contested System';
-    } else if (hasYourShips) {
-      return 'Your System';
-    } else if (hasOpponentShips) {
-      return "Opponent's System";
     } else {
-      return 'Empty System';
+      return 'Your Home System';
     }
   };
 
-  // Helper function to determine player indicator
+  // Helper function to determine player indicator for home systems
   const getPlayerIndicator = () => {
-    const hasYourShips = system.ships.some(
-      ship => ship.owner === currentPlayer
-    );
-    const hasOpponentShips = system.ships.some(
-      ship => ship.owner !== currentPlayer
-    );
-
-    if (hasYourShips && hasOpponentShips) {
-      return 'Both Players';
-    } else if (hasYourShips) {
-      return 'Player 1 (You)';
-    } else if (hasOpponentShips) {
+    if (isOpponent) {
       return 'Player 2 (Opponent)';
     } else {
-      return 'No Ships';
+      return 'Player 1 (You)';
     }
   };
 

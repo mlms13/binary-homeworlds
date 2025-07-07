@@ -11,6 +11,7 @@ import { useGameActions } from '../hooks/useGameActions';
 import { Piece } from '../../../src/types';
 import Bank from './Bank';
 import HomeSystem from './HomeSystem';
+import StarSystem from './StarSystem';
 import ActionLog from './ActionLog';
 import SetupInstructions from './SetupInstructions';
 import GameHint from './GameHint';
@@ -510,37 +511,24 @@ const GameBoard: React.FC = () => {
                 <div className="other-systems">
                   <div className="other-systems-label">Other Systems:</div>
                   <div className="other-systems-grid">
-                    {nonHomeSystems.map(system => {
-                      // Determine if this system has ships belonging to the current player
-                      const hasCurrentPlayerShips = system.ships.some(
-                        ship => ship.owner === currentPlayer
-                      );
-                      const hasOpponentShips = system.ships.some(
-                        ship => ship.owner !== currentPlayer
-                      );
-
-                      return (
-                        <HomeSystem
-                          key={system.id}
-                          system={system}
-                          isCurrentPlayer={hasCurrentPlayerShips}
-                          isOpponent={
-                            hasOpponentShips && !hasCurrentPlayerShips
-                          }
-                          onAction={handleAction}
-                          getAvailableActions={getAvailableActions}
-                          bankPieces={gameState.getBankPieces()}
-                          currentPlayer={currentPlayer}
-                          onTradeInitiate={handleTradeInitiate}
-                          onMoveInitiate={handleMoveInitiate}
-                          onSystemClick={handleSystemClick}
-                          isMoveDestination={
-                            !!pendingMove &&
-                            pendingMove.validDestinationIds.includes(system.id)
-                          }
-                        />
-                      );
-                    })}
+                    {nonHomeSystems.map(system => (
+                      <StarSystem
+                        key={system.id}
+                        system={system}
+                        onAction={handleAction}
+                        getAvailableActions={getAvailableActions}
+                        bankPieces={gameState.getBankPieces()}
+                        currentPlayer={currentPlayer}
+                        onTradeInitiate={handleTradeInitiate}
+                        onMoveInitiate={handleMoveInitiate}
+                        onSystemClick={handleSystemClick}
+                        isMoveDestination={
+                          !!pendingMove &&
+                          pendingMove.validDestinationIds.includes(system.id)
+                        }
+                        title="Star System"
+                      />
+                    ))}
                   </div>
                 </div>
               )}
