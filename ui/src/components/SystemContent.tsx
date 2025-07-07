@@ -24,11 +24,11 @@ const SystemContent: React.FC<SystemContentProps> = ({
 
   return (
     <div className="system-content">
-      {/* All system objects in single line: opponent ships (small→big), stars, player ships (big→small) */}
+      {/* All system objects in single line: player2 ships (small→big), stars, player1 ships (big→small) */}
       <div className="system-objects-container">
-        {/* Opponent ships (small to big) */}
+        {/* Player 2 ships (small to big) */}
         {system.ships
-          .filter(ship => ship.owner !== currentPlayer)
+          .filter(ship => ship.owner === 'player2')
           .slice()
           .sort((a, b) => a.size - b.size)
           .map(ship => (
@@ -60,9 +60,9 @@ const SystemContent: React.FC<SystemContentProps> = ({
             </div>
           ))}
 
-        {/* Player ships (big to small) */}
+        {/* Player 1 ships (big to small) */}
         {system.ships
-          .filter(ship => ship.owner === currentPlayer)
+          .filter(ship => ship.owner === 'player1')
           .slice()
           .sort((a, b) => b.size - a.size)
           .map(ship => (
