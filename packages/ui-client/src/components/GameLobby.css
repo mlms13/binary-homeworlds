@@ -1,0 +1,361 @@
+.game-lobby {
+  min-height: 100vh;
+  background: var(--background-color);
+  color: var(--text-color);
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.welcome-screen h1 {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+}
+
+.player-registration {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-width: 300px;
+}
+
+.player-registration h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.player-registration input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+.player-registration input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.player-registration button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.player-registration button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.player-registration button:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.lobby-header h1 {
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.player-info {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.lobby-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .lobby-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.current-games,
+.public-games,
+.game-actions {
+  background: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.current-games {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.game-actions {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.public-games {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.current-games h2,
+.public-games h2,
+.game-actions h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.no-games {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--background-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.game-item.your-turn {
+  border-color: var(--success-color);
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.game-item.joinable {
+  border-color: var(--info-color);
+}
+
+.game-item.joinable:hover {
+  border-color: var(--primary-color);
+  background: rgba(33, 150, 243, 0.1);
+}
+
+.game-info {
+  flex: 1;
+}
+
+.game-players {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.game-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.game-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.game-status.waiting {
+  background: var(--warning-color);
+  color: white;
+}
+
+.game-status.active {
+  background: var(--success-color);
+  color: white;
+}
+
+.game-status.completed {
+  background: var(--text-secondary);
+  color: white;
+}
+
+.game-type {
+  text-transform: capitalize;
+}
+
+.turn-indicator {
+  background: var(--success-color);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.join-button {
+  background: var(--info-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-buttons button {
+  padding: 12px;
+  font-size: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-buttons button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.action-buttons button:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+  max-width: 90vw;
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.modal input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  text-align: center;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+.modal input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.modal-buttons button:first-child {
+  background: var(--primary-color);
+  color: white;
+}
+
+.modal-buttons button:first-child:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.modal-buttons button:first-child:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.modal-buttons button:last-child {
+  background: var(--border-color);
+  color: var(--text-color);
+}
+
+.modal-buttons button:last-child:hover {
+  background: var(--text-secondary);
+  color: white;
+}
+
+.error {
+  background: var(--error-color);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}

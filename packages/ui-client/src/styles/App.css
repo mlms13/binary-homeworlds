@@ -1,7 +1,86 @@
 .app {
-  width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+.connection-error {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.connection-error h2 {
+  color: var(--error-color);
+  margin-bottom: 1rem;
+}
+
+.connection-error p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+.connection-error button {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.connection-error button:hover {
+  background: var(--primary-hover);
+}
+
+.game-view {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.back-to-lobby {
+  padding: 8px 16px;
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.back-to-lobby:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: white;
+}
+
+.game-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  background: var(--surface-color);
+  border-radius: 12px;
+  padding: 3rem;
+}
+
+.game-placeholder h2 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.game-placeholder p {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
 }
