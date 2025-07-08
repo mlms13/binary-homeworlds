@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import GameLobby from './components/GameLobby';
+import GameBoard from './components/GameBoard';
 import { SocketService } from './services/SocketService';
 import { ApiService } from './services/ApiService';
 import './styles/App.css';
@@ -65,15 +66,18 @@ function App() {
             socketService={socketService}
             onGameSelected={handleGameSelected}
           />
+        ) : currentGameId ? (
+          <GameBoard
+            gameId={currentGameId}
+            socketService={socketService}
+            apiService={apiService}
+            onBackToLobby={handleBackToLobby}
+          />
         ) : (
           <div className="game-view">
-            <button className="back-to-lobby" onClick={handleBackToLobby}>
-              ← Back to Lobby
-            </button>
             <div className="game-placeholder">
-              <h2>Game View Coming Soon</h2>
-              <p>Game ID: {currentGameId}</p>
-              <p>The game board will be integrated here in the next step.</p>
+              <h2>No Game Selected</h2>
+              <button onClick={handleBackToLobby}>Back to Lobby</button>
             </div>
           </div>
         )}
