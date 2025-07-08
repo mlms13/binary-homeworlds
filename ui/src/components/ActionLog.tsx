@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameAction } from '../../../src/types';
 import { BinaryHomeworldsGameState } from '../../../src/game-state';
+import { GameEngine } from '../../../src/game-engine';
 import './ActionLog.css';
 
 interface ActionLogProps {
@@ -212,19 +213,49 @@ const ActionLog: React.FC<ActionLogProps> = ({
     }
   };
 
-  const formatAction = (action: GameAction): React.ReactNode => {
+  const formatAction = (
+    action: GameAction,
+    actionIndex: number
+  ): React.ReactNode => {
     const playerName = formatPlayerName(action.player);
 
-    // Helper function to get piece info from bank at the time of action
+    // Helper function to get piece info by reconstructing state at action time
     const getPieceInfo = (pieceId: string) => {
-      // For historical actions, we need to reconstruct the state at that time
-      // For now, we'll use the current bank state as an approximation
-      const bankPieces = gameState.getBankPieces();
-      const piece = bankPieces.find(p => p.id === pieceId);
-      if (piece) {
-        return `${getSizeText(piece.size)} ${getColorText(piece.color)}`;
+      // Reconstruct the game state at the time this action was taken
+      // by replaying all actions up to (but not including) this action
+      try {
+        const tempEngine = new GameEngine();
+        const actionsUpToThis = actions.slice(0, actionIndex);
+
+        for (const prevAction of actionsUpToThis) {
+          tempEngine.applyAction(prevAction);
+        }
+
+        const stateAtTime = tempEngine.getGameState();
+
+        // Look for the piece in the bank at that time
+        const bankPieces = stateAtTime.getBankPieces();
+        const piece = bankPieces.find(p => p.id === pieceId);
+        if (piece) {
+          return `${getSizeText(piece.size)} ${getColorText(piece.color)}`;
+        }
+
+        // If not in bank, look in systems (for ships that were already placed)
+        const systems = stateAtTime.getSystems();
+        for (const system of systems) {
+          const foundPiece = [...system.stars, ...system.ships].find(
+            p => p.id === pieceId
+          );
+          if (foundPiece) {
+            return `${getSizeText(foundPiece.size)} ${getColorText(foundPiece.color)}`;
+          }
+        }
+
+        return 'unknown';
+      } catch (error) {
+        console.warn('Error reconstructing state for piece info:', error);
+        return 'unknown';
       }
-      return 'unknown';
     };
 
     // Helper function to get ship info from systems
@@ -354,7 +385,7 @@ const ActionLog: React.FC<ActionLogProps> = ({
           <div className="actions-list">
             {actions.map((action, index) => (
               <div key={index} className="action-item">
-                <div className="action-text">{formatAction(action)}</div>
+                <div className="action-text">{formatAction(action, index)}</div>
                 <div className="action-timestamp">
                   {formatTimestamp(action.timestamp)}
                 </div>
