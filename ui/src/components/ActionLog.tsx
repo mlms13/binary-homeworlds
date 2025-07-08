@@ -1,7 +1,6 @@
 import React from 'react';
 import { GameAction } from '../../../src/types';
 import { BinaryHomeworldsGameState } from '../../../src/game-state';
-import { GameEngine } from '../../../src/game-engine';
 import './ActionLog.css';
 
 interface ActionLogProps {
@@ -216,17 +215,30 @@ const ActionLog: React.FC<ActionLogProps> = ({
   const formatAction = (action: GameAction): React.ReactNode => {
     const playerName = formatPlayerName(action.player);
 
-    // Helper function to get piece info from initial bank state
-    // Since all pieces start in the bank with unique IDs, we can look them up there
+    // Helper function to get piece info from current game state
+    // Look in both bank and systems since pieces move around
     const getPieceInfo = (pieceId: string) => {
-      // Create a fresh game state to get the initial bank
-      const initialEngine = new GameEngine();
-      const initialState = initialEngine.getGameState();
-      const initialBankPieces = initialState.getBankPieces();
-
-      const piece = initialBankPieces.find(p => p.id === pieceId);
+      // First check current bank
+      const bankPieces = gameState.getBankPieces();
+      let piece = bankPieces.find(p => p.id === pieceId);
       if (piece) {
         return `${getSizeText(piece.size)} ${getColorText(piece.color)}`;
+      }
+
+      // If not in bank, check all systems
+      const systems = gameState.getSystems();
+      for (const system of systems) {
+        // Check stars
+        piece = system.stars.find(p => p.id === pieceId);
+        if (piece) {
+          return `${getSizeText(piece.size)} ${getColorText(piece.color)}`;
+        }
+
+        // Check ships
+        piece = system.ships.find(p => p.id === pieceId);
+        if (piece) {
+          return `${getSizeText(piece.size)} ${getColorText(piece.color)}`;
+        }
       }
 
       return 'unknown';
