@@ -1,28 +1,31 @@
 {
   "name": "binary-homeworlds",
   "version": "1.0.0",
-  "description": "TypeScript rules engine for Binary Homeworlds game",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Multiplayer Binary Homeworlds game with TypeScript",
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "dev": "tsc --watch",
-    "clean": "rm -rf dist",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"ui/src/**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit && cd ui && npx tsc --noEmit",
+    "build": "npm run build --workspaces",
+    "build:shared": "npm run build -w packages/shared",
+    "build:server": "npm run build -w packages/server",
+    "build:ui": "npm run build -w packages/ui-client",
+    "test": "npm run test --workspaces",
+    "test:shared": "npm run test -w packages/shared",
+    "dev": "concurrently \"npm run dev -w packages/shared\" \"npm run dev -w packages/server\" \"npm run dev -w packages/ui-client\"",
+    "dev:shared": "npm run dev -w packages/shared",
+    "dev:server": "npm run dev -w packages/server",
+    "dev:ui": "npm run dev -w packages/ui-client",
+    "clean": "npm run clean --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "format": "npm run format --workspaces",
+    "format:check": "npm run format:check --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
     "typecheck:staged": "npm run typecheck",
-    "prepare": "husky",
-    "ui:dev": "vite --config vite.config.ui.ts",
-    "ui:build": "vite build --config vite.config.ui.ts",
-    "ui:preview": "vite preview --config vite.config.ui.ts"
+    "prepare": "husky"
   },
   "keywords": [
     "game",
@@ -33,11 +36,15 @@
   "author": "",
   "license": "ISC",
   "lint-staged": {
-    "src/**/*.{ts,tsx}": [
+    "packages/shared/src/**/*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "ui/src/**/*.{ts,tsx}": [
+    "packages/server/src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "packages/ui-client/src/**/*.{ts,tsx}": [
       "prettier --write"
     ],
     "*.{ts,tsx}": [
@@ -49,6 +56,7 @@
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
     "@vitest/ui": "^3.2.4",
+    "concurrently": "^9.1.0",
     "eslint": "^9.30.1",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
@@ -57,13 +65,5 @@
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "vite": "^5.4.19"
   }
 }

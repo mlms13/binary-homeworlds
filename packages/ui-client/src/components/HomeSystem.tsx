@@ -1,0 +1,105 @@
+import React from 'react';
+import {
+  System,
+  GameAction,
+  ActionValidationResult,
+  Piece,
+  Color,
+} from '@binary-homeworlds/shared';
+import StarSystem from './StarSystem';
+
+interface ActionOption {
+  id: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  color?: string;
+}
+
+interface HomeSystemProps {
+  system: System;
+  isCurrentPlayer: boolean;
+  isOpponent: boolean;
+  onAction: (action: GameAction) => ActionValidationResult;
+  getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
+  bankPieces: Piece[];
+  currentPlayer: 'player1' | 'player2';
+  onTradeInitiate?: (
+    shipId: string,
+    systemId: string,
+    validPieceIds: string[]
+  ) => void;
+  onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
+  onCaptureInitiate?: (
+    attackingShipId: string,
+    systemId: string,
+    validTargetShipIds: string[]
+  ) => void;
+  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  pendingCapture?: {
+    attackingShipId: string;
+    systemId: string;
+    validTargetShipIds: string[];
+  } | null;
+  onSacrificeInitiate?: (sacrificedShipId: string, systemId: string) => void;
+  pendingSacrifice?: {
+    shipColor: Color;
+    actionsRemaining: number;
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null;
+  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
+  onSystemClick?: (systemId: string) => void;
+  isMoveDestination?: boolean;
+}
+
+const HomeSystem: React.FC<HomeSystemProps> = ({
+  system,
+  isCurrentPlayer: _isCurrentPlayer,
+  isOpponent,
+  onAction,
+  getAvailableActions,
+  bankPieces,
+  currentPlayer,
+  onTradeInitiate,
+  onMoveInitiate,
+  onCaptureInitiate,
+  onShipClickForCapture,
+  pendingCapture,
+  onSacrificeInitiate,
+  pendingSacrifice,
+  onShipClickForSacrifice,
+  onSystemClick,
+  isMoveDestination = false,
+}) => {
+  // Helper function to determine home system title
+  const getSystemTitle = () => {
+    if (isOpponent) {
+      return "Opponent's Home System";
+    } else {
+      return 'Your Home System';
+    }
+  };
+
+  return (
+    <StarSystem
+      system={system}
+      onAction={onAction}
+      getAvailableActions={getAvailableActions}
+      bankPieces={bankPieces}
+      currentPlayer={currentPlayer}
+      onTradeInitiate={onTradeInitiate}
+      onMoveInitiate={onMoveInitiate}
+      onCaptureInitiate={onCaptureInitiate}
+      onShipClickForCapture={onShipClickForCapture}
+      pendingCapture={pendingCapture}
+      onSacrificeInitiate={onSacrificeInitiate}
+      pendingSacrifice={pendingSacrifice}
+      onShipClickForSacrifice={onShipClickForSacrifice}
+      onSystemClick={onSystemClick}
+      isMoveDestination={isMoveDestination}
+      title={getSystemTitle()}
+    />
+  );
+};
+
+export default HomeSystem;

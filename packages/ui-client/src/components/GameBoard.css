@@ -1,0 +1,225 @@
+.game-board {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.top-area {
+  height: 25%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px; /* Reduced padding */
+  /* Removed border for seamless integration */
+}
+
+.opponent-home {
+  transform: rotate(180deg); /* Opponent's view is upside down */
+}
+
+.main-area {
+  height: 50%;
+  display: flex;
+  position: relative;
+  padding: 10px; /* Reduced padding */
+}
+
+.bank-container {
+  position: absolute; /* Absolute positioning relative to game-board */
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
+.play-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.current-player-indicator {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.1);
+  border: 2px solid rgba(74, 222, 128, 0.3);
+  padding: 12px 24px;
+  border-radius: 12px;
+  animation: glow-turn 2s infinite;
+}
+
+@keyframes glow-turn {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.6);
+  }
+}
+
+.game-phase {
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+.player-info {
+  margin-top: 20px;
+}
+
+.player-label {
+  font-size: 16px;
+  color: #e2e8f0;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.top-right-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100; /* Ensure it's above other elements */
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.log-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100; /* Ensure it's above other elements */
+}
+
+.log-toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.log-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.settings-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.bottom-area {
+  height: 25%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px; /* Reduced padding */
+  /* Removed border for seamless integration */
+}
+
+.player-home {
+  /* Normal orientation for current player */
+}
+
+.no-system {
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  min-width: 300px;
+}
+
+.no-system-text {
+  font-size: 18px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.no-system-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.other-systems {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.other-systems-label {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.other-systems-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.other-systems-grid .home-system {
+  transform: scale(0.8); /* Make other systems slightly smaller */
+  margin: 5px;
+}
+
+/* Capture target styling */
+.ship-wrapper.capture-target {
+  position: relative;
+}
+
+.ship-wrapper.capture-target::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid #dc2626;
+  border-radius: 4px;
+  background-color: rgba(220, 38, 38, 0.1);
+  pointer-events: none;
+  animation: capture-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes capture-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}

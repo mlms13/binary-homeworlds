@@ -1,0 +1,11 @@
+.game-hint {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+  text-align: center;
+  margin: 8px 0;
+}

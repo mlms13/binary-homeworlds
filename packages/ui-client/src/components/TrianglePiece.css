@@ -1,0 +1,60 @@
+.triangle-piece {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.triangle-piece.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.triangle-piece.clickable:hover {
+  transform: scale(1.1);
+}
+
+/* Color-specific hover effects */
+.triangle-piece.clickable:hover svg.color-red {
+  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-yellow {
+  filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-green {
+  filter: drop-shadow(0 0 12px rgba(22, 163, 74, 0.8)) !important;
+}
+
+.triangle-piece.clickable:hover svg.color-blue {
+  filter: drop-shadow(0 0 12px rgba(37, 99, 235, 0.8)) !important;
+}
+
+.triangle-piece.selected svg {
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8)) !important;
+  animation: pulse-triangle 1.5s infinite;
+}
+
+@keyframes pulse-triangle {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1));
+  }
+}
+
+.triangle-piece.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.triangle-piece.disabled:hover {
+  transform: none;
+}
+
+.triangle-piece.disabled svg {
+  filter: grayscale(1) !important;
+}
