@@ -56,7 +56,7 @@ async function startServer() {
 
     // Register CORS
     await fastify.register(cors, {
-      origin: ['http://localhost:3002', 'https://localhost:3002'],
+      origin: ['http://localhost:3002'],
       credentials: true,
     });
 
@@ -150,7 +150,7 @@ async function startServer() {
     // Initialize Socket.IO
     io = new Server(fastify.server, {
       cors: {
-        origin: ['http://localhost:3002', 'https://localhost:3002'],
+        origin: ['http://localhost:3002'],
         credentials: true,
       },
     });

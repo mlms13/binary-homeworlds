@@ -92,7 +92,7 @@ npm run dev:ui
 
 ### 4. Access the Application
 
-- **UI Client**: https://localhost:3002 (HTTPS with auto-generated certificate)
+- **UI Client**: http://localhost:3002
 - **Server API**: http://localhost:3001
 - **Health Check**: http://localhost:3001/health
 
