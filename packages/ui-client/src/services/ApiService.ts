@@ -1,4 +1,4 @@
-import { GameSession, GameListItem } from './SocketService';
+import { GameListItem, GameSession } from './SocketService.js';
 
 export interface CreateGameRequest {
   type: 'local' | 'public' | 'private';
@@ -20,9 +20,12 @@ export class ApiService {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +35,9 @@ export class ApiService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: 'Unknown error' }));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
@@ -40,12 +45,16 @@ export class ApiService {
   }
 
   async getPublicGames(): Promise<GameListItem[]> {
-    const response = await this.request<{ games: GameListItem[] }>('/api/games/public');
+    const response = await this.request<{ games: GameListItem[] }>(
+      '/api/games/public'
+    );
     return response.games;
   }
 
   async getPlayerGames(playerId: string): Promise<GameListItem[]> {
-    const response = await this.request<{ games: GameListItem[] }>(`/api/games/player/${playerId}`);
+    const response = await this.request<{ games: GameListItem[] }>(
+      `/api/games/player/${playerId}`
+    );
     return response.games;
   }
 
@@ -58,15 +67,20 @@ export class ApiService {
   }
 
   async joinGame(request: JoinGameRequest): Promise<GameSession> {
-    const response = await this.request<{ game: GameSession }>('/api/games/join', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+    const response = await this.request<{ game: GameSession }>(
+      '/api/games/join',
+      {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }
+    );
     return response.game;
   }
 
   async getGame(gameId: string): Promise<GameSession> {
-    const response = await this.request<{ game: GameSession }>(`/api/games/${gameId}`);
+    const response = await this.request<{ game: GameSession }>(
+      `/api/games/${gameId}`
+    );
     return response.game;
   }
 

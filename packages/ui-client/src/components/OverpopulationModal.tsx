@@ -1,6 +1,8 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+
 import { Color } from '@binary-homeworlds/shared';
+
 import './OverpopulationModal.css';
 
 interface OverpopulationModalProps {
@@ -84,10 +86,10 @@ const OverpopulationModal: React.FC<OverpopulationModalProps> = ({
           </div>
 
           <div className="player-prompt">
-            <h3>{getPlayerName(promptPlayer)}'s Decision</h3>
+            <h3>{getPlayerName(promptPlayer)}&apos;s Decision</h3>
             <p>
               {isCurrentPlayerTurn
-                ? "It's your turn to decide about this overpopulation."
+                ? 'It&apos;s your turn to decide about this overpopulation.'
                 : `Waiting for ${getPlayerName(promptPlayer)} to decide.`}
             </p>
           </div>

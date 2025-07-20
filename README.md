@@ -1,16 +1,25 @@
-# Binary Homeworlds Game Engine
+# Binary Homeworlds - Multiplayer Game
 
-A TypeScript implementation of the Binary Homeworlds game rules engine with event sourcing architecture.
+A full-stack TypeScript implementation of Binary Homeworlds with multiplayer support, featuring a React frontend, Fastify backend server, and comprehensive game rules engine.
 
 ## Features
 
 - **Complete Rules Implementation**: Implements all Binary Homeworlds game rules as specified in RULES.md
-- **Event Sourcing**: Game state is derived by replaying actions, enabling persistence and future multiplayer support
-- **Serializable State**: Both actions and game state are fully serializable for storage and network transmission
+- **Multiplayer Support**: Real-time multiplayer gameplay with Socket.IO
+- **Modern UI**: React-based interface with lobby system and game board
+- **Event Sourcing**: Game state is derived by replaying actions, enabling persistence and replay functionality
+- **Type Safety**: Full TypeScript implementation with strict typing across all packages
 - **Comprehensive Testing**: Includes tests for all examples from RULES.md plus extensive edge case coverage
-- **Type Safety**: Full TypeScript implementation with strict typing
 
 ## Architecture
+
+The project is organized as a monorepo with three main packages:
+
+- **`packages/shared`**: Core game logic, rules engine, and shared types
+- **`packages/server`**: Fastify backend server with Socket.IO for real-time multiplayer
+- **`packages/ui-client`**: React frontend with Vite for fast development
+
+### Game Engine Components
 
 The game engine follows an event sourcing pattern where:
 
@@ -19,142 +28,226 @@ The game engine follows an event sourcing pattern where:
 - **Immutability** is maintained through proper state management
 - **Validation** ensures all actions follow the game rules
 
-## Core Components
+## Prerequisites
 
-### GameEngine
-The main class that applies actions and manages game flow:
-```typescript
-const engine = new GameEngine();
-const result = engine.applyAction(action);
+### Required Dependencies
+
+1. **Node.js** (v18 or higher)
+2. **Redis** (required for multiplayer server)
+
+#### Installing Redis
+
+**macOS:**
+```bash
+brew install redis
 ```
 
-### BinaryHomeworldsGameState
-Manages the current game state with serialization support:
-```typescript
-const gameState = engine.getGameState();
-const serialized = gameState.serialize();
-const restored = BinaryHomeworldsGameState.deserialize(serialized);
+**Ubuntu/Debian:**
+```bash
+sudo apt-get install redis-server
 ```
 
-### Action Types
-All game actions are strongly typed:
-- `SetupAction` - Initial game setup
-- `MoveAction` - Ship movement
-- `CaptureAction` - Ship capture
-- `GrowAction` - Ship creation
-- `TradeAction` - Ship color change
-- `SacrificeAction` - Ship sacrifice for multiple actions
-- `OverpopulationAction` - Overpopulation declaration
+**Windows:**
+Download from [Redis for Windows](https://github.com/microsoftarchive/redis/releases)
+
+## Development Setup
+
+### 1. Install Dependencies
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd binary-homeworlds
+
+# Install all dependencies
+npm install
+```
+
+### 2. Start Redis
+
+```bash
+# Start Redis server (required for multiplayer functionality)
+redis-server
+```
+
+### 3. Start Development Servers
+
+```bash
+# Start all services (shared, server, ui-client) concurrently
+npm run dev
+```
+
+**Or start individual services:**
+
+```bash
+# Watch mode for shared package (game logic)
+npm run dev:shared
+
+# Backend server (port 3001)
+npm run dev:server
+
+# Frontend UI (port 3002)
+npm run dev:ui
+```
+
+### 4. Access the Application
+
+- **UI Client**: https://localhost:3002 (HTTPS with auto-generated certificate)
+- **Server API**: http://localhost:3001
+- **Health Check**: http://localhost:3001/health
 
 ## Usage
 
-```typescript
-import { GameEngine, createMoveAction } from './src';
+### Multiplayer Gameplay
 
-// Create a new game
-const engine = new GameEngine();
+1. **Create a Game**: Choose between local, public, or private games
+2. **Join a Game**: Browse available public games or join with a private code
+3. **Game Setup**: Players take turns selecting stars and ships for their home systems
+4. **Play**: Take turns performing actions (move, capture, grow, trade, sacrifice)
+5. **Win**: Eliminate your opponent by capturing all their ships or destroying their home stars
 
-// Apply actions
-const moveAction = createMoveAction('player1', shipId, fromSystemId, toSystemId);
-const result = engine.applyAction(moveAction);
+### Game Actions
 
-if (result.valid) {
-  console.log('Move successful!');
-} else {
-  console.log('Move failed:', result.error);
-}
-
-// Get current state
-const gameState = engine.getGameState();
-console.log('Current player:', gameState.getCurrentPlayer());
-console.log('Game phase:', gameState.getPhase());
-```
+- **Move (Yellow)**: Move ships between systems
+- **Capture (Red)**: Take control of opponent ships
+- **Grow (Green)**: Create new ships
+- **Trade (Blue)**: Exchange ships for different colors
+- **Sacrifice**: Give up a ship for multiple actions
 
 ## Development
 
+### Available Scripts
+
 ```bash
-# Install dependencies
-npm install
+# Development
+npm run dev                    # Start all services
+npm run dev:shared            # Watch shared package
+npm run dev:server            # Start server only
+npm run dev:ui                # Start UI only
 
-# Run tests
-npm test
+# Building
+npm run build                 # Build all packages
+npm run build:shared          # Build shared package
+npm run build:server          # Build server
+npm run build:ui              # Build UI
 
-# Build the project
-npm run build
+# Testing
+npm run test                  # Run all tests
+npm run test:shared           # Run shared package tests
+npm run test:coverage -w packages/shared  # Run tests with coverage
 
-# Watch mode for development
-npm run dev
+# Code Quality
+npm run lint                  # Run ESLint
+npm run lint:fix              # Fix ESLint issues
+npm run format                # Format code with Prettier
+npm run format:check          # Check code formatting
+npm run typecheck             # Run TypeScript type checking
+```
+
+### Project Structure
+
+```
+binary-homeworlds/
+├── packages/
+│   ├── shared/              # Game logic and rules engine
+│   │   ├── src/
+│   │   │   ├── game-engine.ts
+│   │   │   ├── game-state.ts
+│   │   │   ├── action-validator.ts
+│   │   │   ├── types.ts
+│   │   │   └── utils.ts
+│   │   └── package.json
+│   ├── server/              # Backend server
+│   │   ├── src/
+│   │   │   ├── index.ts
+│   │   │   ├── services/
+│   │   │   └── types.ts
+│   │   └── package.json
+│   └── ui-client/           # React frontend
+│       ├── src/
+│       │   ├── components/
+│       │   ├── services/
+│       │   └── hooks/
+│       └── package.json
+├── RULES.md                 # Game rules documentation
+└── package.json
 ```
 
 ## Testing
 
 The project includes comprehensive tests covering:
+
 - All 11 examples from RULES.md
 - Edge cases and error conditions
 - Game setup and flow
 - Action validation
 - State management
 
-Run tests with coverage:
-```bash
-npm run test:coverage
-```
-
-## UI Development
-
-The project includes a React-based user interface for playing Binary Homeworlds.
-
-### HTTPS Setup (Recommended)
-
-For the best development experience, set up HTTPS with locally-trusted certificates:
+### Running Tests
 
 ```bash
-# Install mkcert (macOS)
-brew install mkcert
+# Run all tests
+npm run test
 
-# Install the local CA in your system trust store
-mkcert -install
+# Run tests with coverage (shared package only)
+npm run test:coverage -w packages/shared
 
-# Generate certificates (run from project root)
-mkcert localhost 127.0.0.1 ::1
+# Run tests in watch mode
+npm run test:watch -w packages/shared
 ```
 
-### Starting the UI Development Server
+## Environment Variables
+
+### Server Configuration
+
+Create a `.env` file in `packages/server/`:
+
+```env
+PORT=3001
+HOST=0.0.0.0
+REDIS_URL=redis://localhost:6379
+```
+
+### UI Client Configuration
+
+Create a `.env` file in `packages/ui-client/`:
+
+```env
+VITE_SERVER_URL=http://localhost:3001
+```
+
+## Deployment
+
+### Building for Production
 
 ```bash
-npm run ui:dev
+# Build all packages
+npm run build
+
+# Start production server
+npm run start -w packages/server
 ```
 
-The UI will be available at:
-- **HTTPS**: `https://localhost:3001` (recommended, requires mkcert setup)
-- **HTTP**: `http://localhost:3001` (fallback if HTTPS fails)
+### Docker Deployment
 
-### UI Features
-
-- **Alternating Setup Phase**: Players take turns selecting stars and ships
-- **Interactive Game Board**: Click ships to see available actions
-- **Visual Piece Types**:
-  - Stars displayed as diamonds (binary stars show nested diamonds)
-  - Ships displayed as directional triangles pointing toward opponent
-- **Enhanced Bank**: Larger triangle pieces with clear count indicators
-- **Action Guidance**: Step-by-step instructions during setup
-- **Real-time Updates**: Hot reload for immediate development feedback
-
-### Building the UI
+The server can be deployed with Docker (requires Redis):
 
 ```bash
-# Build for production
-npm run ui:build
+# Build server image
+docker build -t binary-homeworlds-server packages/server/
 
-# Preview the built UI
-npm run ui:preview
+# Run with Redis
+docker run -p 3001:3001 --link redis:redis binary-homeworlds-server
 ```
 
-## Future Enhancements
+## Contributing
 
-The architecture is designed to support:
-- Multiplayer gameplay over network
-- Game state persistence
-- Replay functionality
-- AI player integration
-- Real-time synchronization
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting: `npm run test && npm run lint`
+5. Submit a pull request
+
+## License
+
+ISC License

@@ -20,6 +20,12 @@ out/
 .env.test.local
 .env.production.local
 
+# Ignore server .env files
+packages/server/.env
+
+# Ignore client .env files
+packages/ui-client/.env
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -93,3 +99,6 @@ playwright/.cache/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Ignore Copilot rules file
+.copilot-rules.md

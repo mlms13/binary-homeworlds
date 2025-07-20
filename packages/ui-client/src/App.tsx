@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
-import GameLobby from './components/GameLobby';
-import GameBoard from './components/GameBoard';
-import { SocketService } from './services/SocketService';
-import { ApiService } from './services/ApiService';
+import { useEffect, useState } from 'react';
+
 import './styles/App.css';
+
+import GameBoard from './components/GameBoard.js';
+import GameLobby from './components/GameLobby.js';
+import { ThemeProvider } from './contexts/ThemeContext.js';
+import { ApiService } from './services/ApiService.js';
+import { SocketService } from './services/SocketService.js';
 
 function App() {
   const [socketService] = useState(() => new SocketService());
@@ -20,7 +22,9 @@ function App() {
         setConnectionError(null);
       } catch (error) {
         console.error('Failed to connect to server:', error);
-        setConnectionError('Failed to connect to server. Please make sure the server is running.');
+        setConnectionError(
+          'Failed to connect to server. Please make sure the server is running.'
+        );
       }
     };
 

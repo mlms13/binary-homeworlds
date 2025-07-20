@@ -1,6 +1,8 @@
 import React from 'react';
-import GameHint from './GameHint';
+
 import './SetupInstructions.css';
+
+import GameHint from './GameHint.js';
 
 interface SetupInstructionsProps {
   currentPlayer: string;

@@ -1,7 +1,10 @@
 import React from 'react';
-import { Piece, Color } from '@binary-homeworlds/shared';
-import TrianglePiece from './TrianglePiece';
+
+import type { Color, Piece } from '@binary-homeworlds/shared';
+
 import './Bank.css';
+
+import TrianglePiece from './TrianglePiece.js';
 
 interface BankProps {
   pieces: Piece[];

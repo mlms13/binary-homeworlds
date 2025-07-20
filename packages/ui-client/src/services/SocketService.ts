@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { GameAction } from '@binary-homeworlds/shared';
+
+import { GameAction, HoverState } from '@binary-homeworlds/shared';
 
 export interface GameSession {
   id: string;
@@ -28,11 +29,6 @@ export interface GameListItem {
   createdAt: string;
 }
 
-export interface HoverState {
-  type: 'ship' | 'star' | 'system' | 'bankPiece';
-  targetId: string;
-}
-
 export class SocketService {
   private socket: Socket | null = null;
   private playerId: string | null = null;
@@ -40,10 +36,18 @@ export class SocketService {
   private currentGameId: string | null = null;
 
   // Event callbacks
-  private onGameUpdated: ((data: { game: GameSession; lastAction: GameAction }) => void) | null = null;
-  private onPlayerJoined: ((data: { playerId: string; playerName: string }) => void) | null = null;
-  private onPlayerLeft: ((data: { playerId: string; playerName: string }) => void) | null = null;
-  private onOpponentHover: ((data: { playerId: string; hoverState: HoverState | null }) => void) | null = null;
+  private onGameUpdated:
+    | ((data: { game: GameSession; lastAction: GameAction }) => void)
+    | null = null;
+  private onPlayerJoined:
+    | ((data: { playerId: string; playerName: string }) => void)
+    | null = null;
+  private onPlayerLeft:
+    | ((data: { playerId: string; playerName: string }) => void)
+    | null = null;
+  private onOpponentHover:
+    | ((data: { playerId: string; hoverState: HoverState | null }) => void)
+    | null = null;
   private onActionError: ((data: { message: string }) => void) | null = null;
   private onError: ((data: { message: string }) => void) | null = null;
 
@@ -61,9 +65,17 @@ export class SocketService {
     if (this.playerName) localStorage.setItem('playerName', this.playerName);
   }
 
-  connect(serverUrl: string = 'http://localhost:3001'): Promise<void> {
+  connect(serverUrl?: string): Promise<void> {
+    // Vite exposes env variables via import.meta.env
+    // TypeScript needs a declaration for import.meta.env
+    const url =
+      serverUrl ||
+      (typeof import.meta.env !== 'undefined'
+        ? import.meta.env.VITE_SERVER_URL
+        : undefined) ||
+      'http://localhost:3001';
     return new Promise((resolve, reject) => {
-      this.socket = io(serverUrl, {
+      this.socket = io(url, {
         transports: ['websocket', 'polling'],
       });
 
@@ -73,7 +85,7 @@ export class SocketService {
         resolve();
       });
 
-      this.socket.on('connect_error', (error) => {
+      this.socket.on('connect_error', error => {
         console.error('Connection error:', error);
         reject(error);
       });
@@ -94,29 +106,41 @@ export class SocketService {
       console.log('Joined game:', data.gameId);
     });
 
-    this.socket.on('game_updated', (data: { game: GameSession; lastAction: GameAction }) => {
-      if (this.onGameUpdated) {
-        this.onGameUpdated(data);
+    this.socket.on(
+      'game_updated',
+      (data: { game: GameSession; lastAction: GameAction }) => {
+        if (this.onGameUpdated) {
+          this.onGameUpdated(data);
+        }
       }
-    });
+    );
 
-    this.socket.on('player_joined', (data: { playerId: string; playerName: string }) => {
-      if (this.onPlayerJoined) {
-        this.onPlayerJoined(data);
+    this.socket.on(
+      'player_joined',
+      (data: { playerId: string; playerName: string }) => {
+        if (this.onPlayerJoined) {
+          this.onPlayerJoined(data);
+        }
       }
-    });
+    );
 
-    this.socket.on('player_left', (data: { playerId: string; playerName: string }) => {
-      if (this.onPlayerLeft) {
-        this.onPlayerLeft(data);
+    this.socket.on(
+      'player_left',
+      (data: { playerId: string; playerName: string }) => {
+        if (this.onPlayerLeft) {
+          this.onPlayerLeft(data);
+        }
       }
-    });
+    );
 
-    this.socket.on('opponent_hover', (data: { playerId: string; hoverState: HoverState | null }) => {
-      if (this.onOpponentHover) {
-        this.onOpponentHover(data);
+    this.socket.on(
+      'opponent_hover',
+      (data: { playerId: string; hoverState: HoverState | null }) => {
+        if (this.onOpponentHover) {
+          this.onOpponentHover(data);
+        }
       }
-    });
+    );
 
     this.socket.on('action_error', (data: { message: string }) => {
       if (this.onActionError) {
@@ -133,12 +157,11 @@ export class SocketService {
 
   async registerPlayer(playerName: string): Promise<void> {
     if (!this.socket) throw new Error('Not connected to server');
-
     this.playerName = playerName;
     this.savePlayerData();
 
     return new Promise((resolve, reject) => {
-      this.socket!.emit('register_player', {
+      (this.socket as Socket).emit('register_player', {
         playerName,
         playerId: this.playerId,
       });
@@ -152,7 +175,7 @@ export class SocketService {
         resolve();
       });
 
-      this.socket!.once('error', (error) => {
+      this.socket!.once('error', error => {
         clearTimeout(timeout);
         reject(new Error(error.message));
       });
@@ -174,7 +197,7 @@ export class SocketService {
         resolve();
       });
 
-      this.socket!.once('error', (error) => {
+      this.socket!.once('error', error => {
         clearTimeout(timeout);
         reject(new Error(error.message));
       });
@@ -210,19 +233,30 @@ export class SocketService {
   }
 
   // Event handler setters
-  setOnGameUpdated(callback: (data: { game: GameSession; lastAction: GameAction }) => void) {
+  setOnGameUpdated(
+    callback: (data: { game: GameSession; lastAction: GameAction }) => void
+  ) {
     this.onGameUpdated = callback;
   }
 
-  setOnPlayerJoined(callback: (data: { playerId: string; playerName: string }) => void) {
+  setOnPlayerJoined(
+    callback: (data: { playerId: string; playerName: string }) => void
+  ) {
     this.onPlayerJoined = callback;
   }
 
-  setOnPlayerLeft(callback: (data: { playerId: string; playerName: string }) => void) {
+  setOnPlayerLeft(
+    callback: (data: { playerId: string; playerName: string }) => void
+  ) {
     this.onPlayerLeft = callback;
   }
 
-  setOnOpponentHover(callback: (data: { playerId: string; hoverState: HoverState | null }) => void) {
+  setOnOpponentHover(
+    callback: (data: {
+      playerId: string;
+      hoverState: HoverState | null;
+    }) => void
+  ) {
     this.onOpponentHover = callback;
   }
 

@@ -1,15 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+
 import {
-  System,
-  GameAction,
-  Piece,
   ActionValidationResult,
   Color,
+  GameAction,
+  Piece,
+  System,
 } from '@binary-homeworlds/shared';
 import { createGrowAction } from '@binary-homeworlds/shared';
-import SystemContent from './SystemContent';
-import ActionMenu from './ActionMenu';
+
 import './HomeSystem.css'; // Reuse the same styles for now
+
+import ActionMenu from './ActionMenu.js';
+import SystemContent from './SystemContent.js';
 
 interface ActionOption {
   id: string;

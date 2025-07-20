@@ -1,7 +1,10 @@
 import React from 'react';
-import { Color, Size } from '@binary-homeworlds/shared';
-import { getColorValue } from '../utils/colors';
+
+import type { Color, Size } from '@binary-homeworlds/shared';
+
 import './DiamondStar.css';
+
+import { getColorValue } from '../utils/colors.js';
 
 interface DiamondStarProps {
   color: Color;

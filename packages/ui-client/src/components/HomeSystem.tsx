@@ -1,12 +1,14 @@
 import React from 'react';
+
 import {
-  System,
-  GameAction,
   ActionValidationResult,
-  Piece,
   Color,
+  GameAction,
+  Piece,
+  System,
 } from '@binary-homeworlds/shared';
-import StarSystem from './StarSystem';
+
+import StarSystem from './StarSystem.js';
 
 interface ActionOption {
   id: string;

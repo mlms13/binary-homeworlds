@@ -1,14 +1,17 @@
 import type { RedisClientType } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
-import { PlayerSession, HoverState } from '../types.js';
+
+import type { HoverState } from '@binary-homeworlds/shared';
+
+import { PlayerSession } from '../types.js';
 
 export class PlayerService {
-  private redis: any;
+  private redis: RedisClientType;
   private readonly PLAYER_SESSION_PREFIX = 'player_session:';
   private readonly SOCKET_TO_PLAYER_PREFIX = 'socket_to_player:';
   private readonly HOVER_STATE_PREFIX = 'hover:';
 
-  constructor(redis: any) {
+  constructor(redis: RedisClientType) {
     this.redis = redis;
   }
 

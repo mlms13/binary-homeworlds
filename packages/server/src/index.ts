@@ -1,16 +1,18 @@
-import Fastify from 'fastify';
-import { Server } from 'socket.io';
 import cors from '@fastify/cors';
-import staticFiles from '@fastify/static';
-import { createClient } from 'redis';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import Fastify from 'fastify';
+import process from 'process'; // Import process from 'process' package
+import { createClient, RedisClientType } from 'redis';
+import { Server } from 'socket.io';
+
+import type { GameAction } from '@binary-homeworlds/shared';
+import type { HoverState } from '@binary-homeworlds/shared';
+
 import { GameService } from './services/GameService.js';
 import { PlayerService } from './services/PlayerService.js';
 import { CreateGameRequest, JoinGameRequest } from './types.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 // Environment configuration
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
@@ -31,7 +33,7 @@ const fastify = Fastify({
 });
 
 // Redis client
-const redis = createClient({
+const redis: RedisClientType = createClient({
   url: REDIS_URL,
 });
 
@@ -59,14 +61,14 @@ async function startServer() {
     });
 
     // Health check endpoint
-    fastify.get('/health', async (request, reply) => {
+    fastify.get('/health', async () => {
       return { status: 'ok', timestamp: new Date().toISOString() };
     });
 
     // API routes
 
     // Get public games available to join
-    fastify.get('/api/games/public', async (request, reply) => {
+    fastify.get('/api/games/public', async (_request, reply) => {
       try {
         const games = await gameService.getPublicGames();
         return { games };
@@ -174,7 +176,7 @@ async function startServer() {
             fastify.log.info(
               `Player registered: ${playerSession.playerName} (${playerSession.playerId})`
             );
-          } catch (error) {
+          } catch {
             socket.emit('error', { message: 'Failed to register player' });
           }
         }
@@ -227,7 +229,7 @@ async function startServer() {
           fastify.log.info(
             `Player ${player.playerName} joined game ${data.gameId}`
           );
-        } catch (error) {
+        } catch {
           socket.emit('error', { message: 'Failed to join game' });
         }
       });
@@ -235,7 +237,7 @@ async function startServer() {
       // Apply a game action
       socket.on(
         'game_action',
-        async (data: { gameId: string; action: any }) => {
+        async (data: { gameId: string; action: GameAction }) => {
           try {
             const player = await playerService.getPlayerBySocketId(socket.id);
             if (!player) {
@@ -268,7 +270,7 @@ async function startServer() {
       // Real-time hover states for better UX
       socket.on(
         'hover_state',
-        async (data: { gameId: string; hoverState: any }) => {
+        async (data: { gameId: string; hoverState: HoverState | null }) => {
           try {
             const player = await playerService.getPlayerBySocketId(socket.id);
             if (!player) return;
@@ -289,7 +291,7 @@ async function startServer() {
               playerId: player.playerId,
               hoverState: data.hoverState,
             });
-          } catch (error) {
+          } catch {
             // Silently fail for hover states
           }
         }

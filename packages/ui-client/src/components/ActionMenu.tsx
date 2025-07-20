@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+
 import './ActionMenu.css';
 
 interface ActionMenuProps {

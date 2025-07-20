@@ -1,7 +1,9 @@
 import React from 'react';
-import { System, Color } from '@binary-homeworlds/shared';
-import DiamondStar from './DiamondStar';
-import DirectionalShip from './DirectionalShip';
+
+import type { Color, System } from '@binary-homeworlds/shared';
+
+import DiamondStar from './DiamondStar.js';
+import DirectionalShip from './DirectionalShip.js';
 
 interface SystemContentProps {
   system: System;

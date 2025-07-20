@@ -4,14 +4,14 @@
 
 import {
   Color,
-  Size,
+  GameState,
   Piece,
+  Player,
   Ship,
+  Size,
   Star,
   System,
-  GameState,
-  Player,
-} from './types';
+} from './types.js';
 
 // Generate unique IDs
 export function generateId(): string {

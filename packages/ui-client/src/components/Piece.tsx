@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { Piece as PieceType } from '@binary-homeworlds/shared';
+
 import './Piece.css';
 
 interface PieceProps {

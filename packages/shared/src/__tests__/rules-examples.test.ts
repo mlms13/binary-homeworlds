@@ -2,23 +2,25 @@
  * Tests for all examples from RULES.md
  */
 
-import { GameEngine } from '../game-engine';
+import { describe, expect, it } from 'vitest';
+
 import {
+  createCaptureAction,
+  createGrowAction,
+  createMoveAction,
+  createOverpopulationAction,
+  createSacrificeAction,
+  createTradeAction,
+} from '../action-builders.js';
+import { GameEngine } from '../game-engine.js';
+import { Color, Ship, Size } from '../types.js';
+import {
+  createPiece,
   createShip,
   createStar,
   createSystem,
-  createPiece,
   isColorAvailable,
-} from '../utils';
-import {
-  createMoveAction,
-  createCaptureAction,
-  createGrowAction,
-  createTradeAction,
-  createSacrificeAction,
-  createOverpopulationAction,
-} from '../action-builders';
-import { Color, Size } from '../types';
+} from '../utils.js';
 
 describe('RULES.md Examples', () => {
   describe('Example 1: Basic availability', () => {
@@ -174,8 +176,7 @@ describe('RULES.md Examples', () => {
       const smallStar2 = createPiece('yellow', 1);
       const mediumStar2 = createPiece('blue', 2);
       const largeStar2 = createPiece('red', 3);
-      const testShip = createPiece('green', 2);
-      testShip.owner = 'player1'; // Ensure ship is owned by player1
+      const testShip: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
 
       // Test Case 1: Moving from [small, large] to [large] should be INVALID
       // (large star in destination matches large star in origin)
@@ -203,8 +204,7 @@ describe('RULES.md Examples', () => {
       const engine2 = new GameEngine();
       const gameState2 = engine2.getGameState();
 
-      const testShip2 = createPiece('green', 2);
-      testShip2.owner = 'player1'; // Ensure ship is owned by player1
+      const testShip2: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
       // Add a yellow star to make move action available
       const yellowStar = createPiece('yellow', 3);
       const originSystem2 = createSystem(
@@ -233,8 +233,7 @@ describe('RULES.md Examples', () => {
       const engine3 = new GameEngine();
       const gameState3 = engine3.getGameState();
 
-      const testShip3 = createPiece('green', 2);
-      testShip3.owner = 'player1'; // Ensure ship is owned by player1
+      const testShip3: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
       // smallStar2 is yellow, so move action will be available
       const originSystem3 = createSystem(
         [smallStar2, mediumStar1],
@@ -261,8 +260,7 @@ describe('RULES.md Examples', () => {
       const engine4 = new GameEngine();
       const gameState4 = engine4.getGameState();
 
-      const testShip4 = createPiece('green', 2);
-      testShip4.owner = 'player1'; // Ensure ship is owned by player1
+      const testShip4: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
       const extraStar = createPiece('green', 1);
       // smallStar1 is yellow, so move action will be available
       const originSystem4 = createSystem(

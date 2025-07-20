@@ -3,25 +3,25 @@
  */
 
 import {
+  ActionValidationResult,
+  CaptureAction,
+  Color,
   GameAction,
   GameState,
-  ActionValidationResult,
-  SetupAction,
-  MoveAction,
-  CaptureAction,
   GrowAction,
-  TradeAction,
-  SacrificeAction,
+  MoveAction,
   OverpopulationAction,
-  Color,
-} from './types';
+  SacrificeAction,
+  SetupAction,
+  TradeAction,
+} from './types.js';
 import {
-  findSystem,
   findShip,
-  isColorAvailable,
-  hasOverpopulation,
+  findSystem,
   getSmallestAvailableSize,
-} from './utils';
+  hasOverpopulation,
+  isColorAvailable,
+} from './utils.js';
 
 export class ActionValidator {
   static validate(

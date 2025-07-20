@@ -1,4 +1,4 @@
-import { GameAction, Player } from '@binary-homeworlds/shared';
+import type { GameAction, Player } from '@binary-homeworlds/shared';
 
 export interface GameSession {
   id: string;
@@ -52,12 +52,4 @@ export interface PlayerSession {
   socketId: string;
   currentGames: string[]; // Array of game IDs
   lastActivity: string;
-}
-
-export interface HoverState {
-  gameId: string;
-  playerId: string;
-  type: 'ship' | 'star' | 'system' | 'bankPiece';
-  targetId: string;
-  timestamp: string;
 }

@@ -1,6 +1,8 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+
 import { GameAction } from '@binary-homeworlds/shared';
+
 import './GameLossWarningModal.css';
 
 interface GameLossWarningModalProps {

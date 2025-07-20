@@ -1,4 +1,5 @@
-import { GameAction, Player } from '@binary-homeworlds/shared';
+import { GameAction, GameEngine, Player } from '@binary-homeworlds/shared';
+
 import './ActionLog.css';
 
 interface ActionLogProps {
@@ -7,12 +8,16 @@ interface ActionLogProps {
   getPlayerDisplayName: (player: Player) => string;
 }
 
-export default function ActionLog({ actions, onClose, getPlayerDisplayName }: ActionLogProps) {
+export default function ActionLog({
+  actions,
+  onClose,
+  getPlayerDisplayName,
+}: ActionLogProps) {
   const getActionDescription = (action: GameAction, index: number): string => {
     const playerName = getPlayerDisplayName(action.player);
 
     // Create a temporary game engine to replay up to this action
-    const tempEngine = new (require('@binary-homeworlds/shared').GameEngine)();
+    const tempEngine = new GameEngine();
 
     // Apply all actions up to (but not including) this one
     for (let i = 0; i < index; i++) {
@@ -27,13 +32,21 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
 
     switch (action.type) {
       case 'setup': {
-        const piece = stateBefore.bank.pieces.find((p: any) => p.id === action.pieceId);
+        const piece = stateBefore.bank.pieces.find(
+          (p: { id: string; color: string; size: number }) =>
+            p.id === action.pieceId
+        );
         if (!piece) return `${playerName} made a setup move`;
 
         const colorName = piece.color;
-        const sizeName = piece.size === 1 ? 'small' : piece.size === 2 ? 'medium' : 'large';
-        const roleText = action.role === 'star1' ? 'first star' :
-                        action.role === 'star2' ? 'second star' : 'ship';
+        const sizeName =
+          piece.size === 1 ? 'small' : piece.size === 2 ? 'medium' : 'large';
+        const roleText =
+          action.role === 'star1'
+            ? 'first star'
+            : action.role === 'star2'
+              ? 'second star'
+              : 'ship';
 
         return `${playerName} selected a ${sizeName} ${colorName} ${roleText}`;
       }
@@ -43,29 +56,66 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
         if (!ship) return `${playerName} moved a ship`;
 
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
-        const toSystem = action.toSystemId ?
-          stateAfter.systems.find((s: any) => s.id === action.toSystemId) : null;
+        const toSystem = action.toSystemId
+          ? (stateAfter.systems.find(
+              (s: { id: string; stars?: { size: number; color: string }[] }) =>
+                s.id === action.toSystemId
+            ) ?? null)
+          : null;
 
         const shipDesc = `${ship.size === 1 ? 'small' : ship.size === 2 ? 'medium' : 'large'} ${ship.color} ship`;
 
         if (action.toSystemId) {
-          const fromName = getSystemName(fromSystem, stateBefore);
-          const toName = getSystemName(toSystem, stateAfter);
+          const fromName = getSystemName(
+            fromSystem && 'id' in fromSystem
+              ? (fromSystem as {
+                  id: string;
+                  stars?: { size: number; color: string }[];
+                })
+              : null,
+            stateBefore as {
+              players: {
+                player1: { homeSystemId: string };
+                player2: { homeSystemId: string };
+              };
+            }
+          );
+          const toName = getSystemName(
+            toSystem && 'id' in toSystem
+              ? (toSystem as {
+                  id: string;
+                  stars?: { size: number; color: string }[];
+                })
+              : null,
+            stateAfter as {
+              players: {
+                player1: { homeSystemId: string };
+                player2: { homeSystemId: string };
+              };
+            }
+          );
           return `${playerName} moved ${shipDesc} from ${fromName} to ${toName}`;
         } else {
-          const newStar = stateBefore.bank.pieces.find((p: any) => p.id === action.newStarPieceId);
-          const starDesc = newStar ?
-            `${newStar.size === 1 ? 'small' : newStar.size === 2 ? 'medium' : 'large'} ${newStar.color}` :
-            'unknown';
+          const newStar = stateBefore.bank.pieces.find(
+            (p: { id: string; color: string; size: number }) =>
+              p.id === action.newStarPieceId
+          );
+          const starDesc = newStar
+            ? `${newStar.size === 1 ? 'small' : newStar.size === 2 ? 'medium' : 'large'} ${newStar.color}`
+            : 'unknown';
           return `${playerName} moved ${shipDesc} to a new ${starDesc} system`;
         }
       }
 
       case 'capture': {
-        const attackingShip = findShipInState(stateBefore, action.attackingShipId);
+        const attackingShip = findShipInState(
+          stateBefore,
+          action.attackingShipId
+        );
         const targetShip = findShipInState(stateBefore, action.targetShipId);
 
-        if (!attackingShip || !targetShip) return `${playerName} captured a ship`;
+        if (!attackingShip || !targetShip)
+          return `${playerName} captured a ship`;
 
         const attackerDesc = `${attackingShip.size === 1 ? 'small' : attackingShip.size === 2 ? 'medium' : 'large'} ${attackingShip.color}`;
         const targetDesc = `${targetShip.size === 1 ? 'small' : targetShip.size === 2 ? 'medium' : 'large'} ${targetShip.color}`;
@@ -75,7 +125,10 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
 
       case 'grow': {
         const actingShip = findShipInState(stateBefore, action.actingShipId);
-        const newPiece = stateBefore.bank.pieces.find((p: any) => p.id === action.newShipPieceId);
+        const newPiece = stateBefore.bank.pieces.find(
+          (p: { id: string; color: string; size: number }) =>
+            p.id === action.newShipPieceId
+        );
 
         if (!actingShip || !newPiece) return `${playerName} grew a ship`;
 
@@ -87,7 +140,10 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
 
       case 'trade': {
         const oldShip = findShipInState(stateBefore, action.shipId);
-        const newPiece = stateBefore.bank.pieces.find((p: any) => p.id === action.newPieceId);
+        const newPiece = stateBefore.bank.pieces.find(
+          (p: { id: string; color: string; size: number }) =>
+            p.id === action.newPieceId
+        );
 
         if (!oldShip || !newPiece) return `${playerName} traded a ship`;
 
@@ -98,7 +154,10 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
       }
 
       case 'sacrifice': {
-        const sacrificedShip = findShipInState(stateBefore, action.sacrificedShipId);
+        const sacrificedShip = findShipInState(
+          stateBefore,
+          action.sacrificedShipId
+        );
         if (!sacrificedShip) return `${playerName} sacrificed a ship`;
 
         const shipDesc = `${sacrificedShip.size === 1 ? 'small' : sacrificedShip.size === 2 ? 'medium' : 'large'} ${sacrificedShip.color}`;
@@ -109,7 +168,14 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
       }
 
       case 'overpopulation': {
-        const system = stateBefore.systems.find((s: any) => s.id === action.systemId);
+        const system =
+          stateBefore.systems.find(
+            (s: { id: string }) => s.id === action.systemId
+          ) ??
+          (null as {
+            id: string;
+            stars?: { size: number; color: string }[];
+          } | null);
         const systemName = getSystemName(system, stateBefore);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
@@ -120,21 +186,43 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
     }
   };
 
-  const findShipInState = (state: any, shipId: string) => {
+  const findShipInState = (
+    state: {
+      systems: {
+        ships: { id: string; color: string; size: number }[];
+      }[];
+    },
+    shipId: string
+  ) => {
     for (const system of state.systems) {
-      const ship = system.ships.find((s: any) => s.id === shipId);
+      const ship = system.ships.find(
+        (s: { id: string; color: string; size: number }) => s.id === shipId
+      );
       if (ship) return ship;
     }
     return null;
   };
 
-  const findSystemWithShip = (state: any, shipId: string) => {
-    return state.systems.find((system: any) =>
-      system.ships.some((ship: any) => ship.id === shipId)
+  const findSystemWithShip = (
+    state: { systems: { ships: { id: string }[] }[] },
+    shipId: string
+  ) => {
+    return (
+      state.systems.find((system: { ships: { id: string }[] }) =>
+        system.ships.some((ship: { id: string }) => ship.id === shipId)
+      ) ?? null
     );
   };
 
-  const getSystemName = (system: any, state: any) => {
+  const getSystemName = (
+    system: { id: string; stars?: { size: number; color: string }[] } | null,
+    state: {
+      players: {
+        player1: { homeSystemId: string };
+        player2: { homeSystemId: string };
+      };
+    }
+  ) => {
     if (!system) return 'unknown system';
 
     const player1HomeId = state.players.player1.homeSystemId;
@@ -146,37 +234,56 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
       return `${getPlayerDisplayName('player2')}'s home`;
     } else {
       // Describe by stars
-      const stars = system.stars.map((star: any) => {
-        const size = star.size === 1 ? 'small' : star.size === 2 ? 'medium' : 'large';
-        return `${size} ${star.color}`;
-      }).join(' and ');
+      const stars = (system.stars ?? [])
+        .map((star: { size: number; color: string }) => {
+          const size =
+            star.size === 1 ? 'small' : star.size === 2 ? 'medium' : 'large';
+          return `${size} ${star.color}`;
+        })
+        .join(' and ');
       return `${stars} system`;
     }
   };
 
   const getActionIcon = (action: GameAction): string => {
     switch (action.type) {
-      case 'setup': return '🏗️';
-      case 'move': return '🚀';
-      case 'capture': return '⚔️';
-      case 'grow': return '🌱';
-      case 'trade': return '🔄';
-      case 'sacrifice': return '💥';
-      case 'overpopulation': return '💥';
-      default: return '❓';
+      case 'setup':
+        return '🏗️';
+      case 'move':
+        return '🚀';
+      case 'capture':
+        return '⚔️';
+      case 'grow':
+        return '🌱';
+      case 'trade':
+        return '🔄';
+      case 'sacrifice':
+        return '💥';
+      case 'overpopulation':
+        return '💥';
+      default:
+        return '❓';
     }
   };
 
   const getActionColor = (action: GameAction): string => {
     switch (action.type) {
-      case 'setup': return '#4CAF50';
-      case 'move': return '#2196F3';
-      case 'capture': return '#F44336';
-      case 'grow': return '#8BC34A';
-      case 'trade': return '#FF9800';
-      case 'sacrifice': return '#9C27B0';
-      case 'overpopulation': return '#E91E63';
-      default: return '#757575';
+      case 'setup':
+        return '#4CAF50';
+      case 'move':
+        return '#2196F3';
+      case 'capture':
+        return '#F44336';
+      case 'grow':
+        return '#8BC34A';
+      case 'trade':
+        return '#FF9800';
+      case 'sacrifice':
+        return '#9C27B0';
+      case 'overpopulation':
+        return '#E91E63';
+      default:
+        return '#757575';
     }
   };
 
@@ -185,7 +292,9 @@ export default function ActionLog({ actions, onClose, getPlayerDisplayName }: Ac
       <div className="action-log">
         <div className="action-log-header">
           <h3>Action Log</h3>
-          <button className="close-button" onClick={onClose}>×</button>
+          <button className="close-button" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="action-log-content">

@@ -2,19 +2,21 @@
  * Edge case tests for Binary Homeworlds game engine
  */
 
-import { GameEngine } from '../game-engine';
-import { BinaryHomeworldsGameState } from '../game-state';
-import { createShip, createStar, createSystem } from '../utils';
+import { describe, expect, it } from 'vitest';
+
 import {
-  createSetupAction,
-  createMoveAction,
   createCaptureAction,
   createGrowAction,
-  createTradeAction,
-  createSacrificeAction,
+  createMoveAction,
   createOverpopulationAction,
-} from '../action-builders';
-import { Color, Size } from '../types';
+  createSacrificeAction,
+  createSetupAction,
+  createTradeAction,
+} from '../action-builders.js';
+import { GameEngine } from '../game-engine.js';
+import { BinaryHomeworldsGameState } from '../game-state.js';
+import { Color, Size } from '../types.js';
+import { createShip, createStar, createSystem } from '../utils.js';
 
 describe('Edge Cases and Error Conditions', () => {
   describe('Game Setup', () => {

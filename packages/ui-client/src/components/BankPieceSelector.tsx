@@ -1,8 +1,11 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Piece } from '@binary-homeworlds/shared';
-import TrianglePiece from './TrianglePiece';
+
+import type { Piece } from '@binary-homeworlds/shared';
+
 import './BankPieceSelector.css';
+
+import TrianglePiece from './TrianglePiece.js';
 
 interface BankPieceSelectorProps {
   isOpen: boolean;

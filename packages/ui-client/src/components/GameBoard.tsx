@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
-import { GameEngine } from '@binary-homeworlds/shared';
-import { GameAction, Player } from '@binary-homeworlds/shared';
+import { useCallback, useEffect, useState } from 'react';
 
-import { SocketService, GameSession } from '../services/SocketService';
-import { ApiService } from '../services/ApiService';
-import { useGameActions } from '../hooks/useGameActions';
-import Bank from './Bank';
-import HomeSystem from './HomeSystem';
-import StarSystem from './StarSystem';
-import ActionLog from './ActionLog';
+import { GameEngine } from '@binary-homeworlds/shared';
+import { GameAction, HoverState, Player } from '@binary-homeworlds/shared';
+
 import './GameBoard.css';
+
+import { useGameActions } from '../hooks/useGameActions.js';
+import { ApiService } from '../services/ApiService.js';
+import { GameSession, SocketService } from '../services/SocketService.js';
+import ActionLog from './ActionLog.js';
+import Bank from './Bank.js';
+import HomeSystem from './HomeSystem.js';
+import StarSystem from './StarSystem.js';
 
 interface GameBoardProps {
   gameId: string;
@@ -18,7 +20,12 @@ interface GameBoardProps {
   onBackToLobby: () => void;
 }
 
-export default function GameBoard({ gameId, socketService, apiService, onBackToLobby }: GameBoardProps) {
+export default function GameBoard({
+  gameId,
+  socketService,
+  apiService,
+  onBackToLobby,
+}: GameBoardProps) {
   const [gameEngine, setGameEngine] = useState<GameEngine>(new GameEngine());
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +80,10 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
   useEffect(() => {
     if (isLocalGame) return;
 
-    const handleGameUpdated = (data: { game: GameSession; lastAction: GameAction }) => {
+    const handleGameUpdated = (data: {
+      game: GameSession;
+      lastAction: GameAction;
+    }) => {
       setGameSession(data.game);
 
       // Reconstruct game state from actions
@@ -83,7 +93,10 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
       }
     };
 
-    const handleOpponentHover = (data: { playerId: string; hoverState: any }) => {
+    const handleOpponentHover = (data: {
+      playerId: string;
+      hoverState: HoverState | null;
+    }) => {
       if (data.playerId !== playerId) {
         // Handle opponent hover state if needed
         console.log('Opponent hover:', data.hoverState);
@@ -106,31 +119,39 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
     };
   }, [socketService, playerId, isLocalGame]);
 
-  const { actionHistory, applyAction: applyActionToEngine, getAvailableActions } = useGameActions(gameEngine);
+  const {
+    actionHistory,
+    applyAction: applyActionToEngine,
+    getAvailableActions,
+  } = useGameActions(gameEngine);
 
-  const applyAction = useCallback((action: GameAction) => {
-    try {
-      if (isLocalGame) {
-        // For local games, apply directly
-        const result = applyActionToEngine(action);
-        if (!result.valid) {
-          setError(result.error || 'Invalid action');
+  const applyAction = useCallback(
+    (action: GameAction) => {
+      try {
+        if (isLocalGame) {
+          // For local games, apply directly
+          const result = applyActionToEngine(action);
+          if (!result.valid) {
+            setError(result.error || 'Invalid action');
+          } else {
+            setGameEngine(new GameEngine(gameEngine.getGameState()));
+          }
+          return result;
         } else {
-          setGameEngine(new GameEngine(gameEngine.getGameState()));
+          // For multiplayer games, send to server
+          socketService.sendGameAction(action);
+          return { valid: true };
         }
-        return result;
-      } else {
-        // For multiplayer games, send to server
-        socketService.sendGameAction(action);
-        return { valid: true };
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to apply action');
+        return {
+          valid: false,
+          error: err instanceof Error ? err.message : 'Failed to apply action',
+        };
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to apply action');
-      return { valid: false, error: err instanceof Error ? err.message : 'Failed to apply action' };
-    }
-  }, [gameEngine, socketService, isLocalGame, applyActionToEngine]);
-
-
+    },
+    [gameEngine, socketService, isLocalGame, applyActionToEngine]
+  );
 
   if (loading) {
     return (
@@ -188,11 +209,14 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
 
         <div className="game-info">
           <div className="players">
-            {getPlayerDisplayName('player1')} vs {getPlayerDisplayName('player2')}
+            {getPlayerDisplayName('player1')} vs{' '}
+            {getPlayerDisplayName('player2')}
           </div>
           {!isLocalGame && gameSession && (
             <div className="game-type">
-              {gameSession.type === 'private' ? `Private Game (${gameSession.privateCode})` : 'Public Game'}
+              {gameSession.type === 'private'
+                ? `Private Game (${gameSession.privateCode})`
+                : 'Public Game'}
             </div>
           )}
         </div>
@@ -211,8 +235,7 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
         <div className="turn-indicator">
           {state.phase === 'setup'
             ? `${getPlayerDisplayName(currentPlayer)}'s turn to set up`
-            : `${getPlayerDisplayName(currentPlayer)}'s turn`
-          }
+            : `${getPlayerDisplayName(currentPlayer)}'s turn`}
         </div>
       </div>
 
@@ -244,9 +267,10 @@ export default function GameBoard({ gameId, socketService, apiService, onBackToL
 
           <div className="systems-grid">
             {state.systems
-              .filter(system =>
-                system.id !== state.players.player1.homeSystemId &&
-                system.id !== state.players.player2.homeSystemId
+              .filter(
+                system =>
+                  system.id !== state.players.player1.homeSystemId &&
+                  system.id !== state.players.player2.homeSystemId
               )
               .map(system => (
                 <StarSystem

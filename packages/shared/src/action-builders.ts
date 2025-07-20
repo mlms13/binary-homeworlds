@@ -3,16 +3,16 @@
  */
 
 import {
-  SetupAction,
-  MoveAction,
   CaptureAction,
+  Color,
   GrowAction,
-  TradeAction,
-  SacrificeAction,
+  MoveAction,
   OverpopulationAction,
   Player,
-  Color,
-} from './types';
+  SacrificeAction,
+  SetupAction,
+  TradeAction,
+} from './types.js';
 
 // Helper functions to create actions with proper timestamps
 

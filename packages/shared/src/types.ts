@@ -147,3 +147,11 @@ export interface GameResult {
   winner: Player;
   reason: 'no_ships_at_home' | 'home_stars_destroyed';
 }
+
+export interface HoverState {
+  gameId: string;
+  playerId: string;
+  type: 'ship' | 'star' | 'system' | 'bankPiece';
+  targetId: string;
+  timestamp: string;
+}

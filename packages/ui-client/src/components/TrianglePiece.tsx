@@ -1,7 +1,10 @@
 import React from 'react';
-import { Color, Size } from '@binary-homeworlds/shared';
-import { getColorValue } from '../utils/colors';
+
+import type { Color, Size } from '@binary-homeworlds/shared';
+
 import './TrianglePiece.css';
+
+import { getColorValue } from '../utils/colors.js';
 
 interface TrianglePieceProps {
   color: Color;

@@ -1,23 +1,25 @@
 import type { RedisClientType } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
+
+import type { GameAction } from '@binary-homeworlds/shared';
 import { GameEngine } from '@binary-homeworlds/shared';
-import { GameAction, Player } from '@binary-homeworlds/shared';
+
 import {
-  GameSession,
-  PlayerInfo,
   CreateGameRequest,
-  JoinGameRequest,
   GameListItem,
+  GameSession,
+  JoinGameRequest,
+  PlayerInfo,
 } from '../types.js';
 
 export class GameService {
-  private redis: any;
+  private redis: RedisClientType;
   private readonly GAME_PREFIX = 'game:';
   private readonly PLAYER_PREFIX = 'player:';
   private readonly PUBLIC_GAMES_SET = 'public_games';
   private readonly PRIVATE_CODES_PREFIX = 'private_code:';
 
-  constructor(redis: any) {
+  constructor(redis: RedisClientType) {
     this.redis = redis;
   }
 

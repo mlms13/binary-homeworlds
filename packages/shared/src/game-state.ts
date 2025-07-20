@@ -3,17 +3,22 @@
  */
 
 import {
-  GameState,
-  GameAction,
-  Player,
-  Color,
-  Size,
-  Piece,
-  System,
   Bank,
+  Color,
+  GameAction,
   GamePhase,
-} from './types';
-import { createPiece, cloneGameState, checkGameEnd, findSystem } from './utils';
+  GameState,
+  Piece,
+  Player,
+  Size,
+  System,
+} from './types.js';
+import {
+  checkGameEnd,
+  cloneGameState,
+  createPiece,
+  findSystem,
+} from './utils.js';
 
 export class BinaryHomeworldsGameState {
   private state: GameState;

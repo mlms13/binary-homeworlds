@@ -2,27 +2,27 @@
  * Main game engine for Binary Homeworlds
  */
 
+import { ActionValidator } from './action-validator.js';
+import { BinaryHomeworldsGameState } from './game-state.js';
 import {
-  GameAction,
   ActionValidationResult,
-  SetupAction,
-  MoveAction,
   CaptureAction,
+  GameAction,
   GrowAction,
-  TradeAction,
-  SacrificeAction,
+  MoveAction,
   OverpopulationAction,
+  SacrificeAction,
+  SetupAction,
   Ship,
   System,
-} from './types';
-import { BinaryHomeworldsGameState } from './game-state';
-import { ActionValidator } from './action-validator';
+  TradeAction,
+} from './types.js';
 import {
   createShip,
   createStar,
   createSystem,
   getPiecesOfColor,
-} from './utils';
+} from './utils.js';
 
 export class GameEngine {
   private gameState: BinaryHomeworldsGameState;
@@ -418,6 +418,6 @@ export class GameEngine {
       }
     }
 
-    return [...new Set(actions)]; // Remove duplicates
+    return Array.from(new Set(actions)); // Remove duplicates
   }
 }

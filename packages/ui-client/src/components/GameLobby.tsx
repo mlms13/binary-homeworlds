@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import { ApiService } from '../services/ApiService';
-import { SocketService, GameListItem } from '../services/SocketService';
+import { useCallback, useEffect, useState } from 'react';
+
 import './GameLobby.css';
+
+import { ApiService } from '../services/ApiService.js';
+import { GameListItem, SocketService } from '../services/SocketService.js';
 
 interface GameLobbyProps {
   apiService: ApiService;
@@ -9,8 +11,14 @@ interface GameLobbyProps {
   onGameSelected: (gameId: string) => void;
 }
 
-export default function GameLobby({ apiService, socketService, onGameSelected }: GameLobbyProps) {
-  const [playerName, setPlayerName] = useState(socketService.getPlayerName() || '');
+export default function GameLobby({
+  apiService,
+  socketService,
+  onGameSelected,
+}: GameLobbyProps) {
+  const [playerName, setPlayerName] = useState(
+    socketService.getPlayerName() || ''
+  );
   const [isRegistered, setIsRegistered] = useState(false);
   const [currentGames, setCurrentGames] = useState<GameListItem[]>([]);
   const [publicGames, setPublicGames] = useState<GameListItem[]>([]);
@@ -20,12 +28,30 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
   const [showJoinPrivate, setShowJoinPrivate] = useState(false);
   const [privateCode, setPrivateCode] = useState('');
 
+  const loadGames = useCallback(async () => {
+    const playerId = socketService.getPlayerId();
+    if (!playerId) return;
+
+    try {
+      const [currentGamesData, publicGamesData] = await Promise.all([
+        apiService.getPlayerGames(playerId),
+        apiService.getPublicGames(),
+      ]);
+
+      setCurrentGames(currentGamesData);
+      setPublicGames(publicGamesData);
+    } catch (err) {
+      console.error('Failed to load games:', err);
+      setError('Failed to load games');
+    }
+  }, [socketService, apiService]);
+
   useEffect(() => {
     if (socketService.isConnected() && socketService.getPlayerId()) {
       setIsRegistered(true);
       loadGames();
     }
-  }, []);
+  }, [socketService, loadGames]);
 
   const handleRegister = async () => {
     if (!playerName.trim()) {
@@ -44,24 +70,6 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
       setError(err instanceof Error ? err.message : 'Failed to register');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadGames = async () => {
-    const playerId = socketService.getPlayerId();
-    if (!playerId) return;
-
-    try {
-      const [currentGamesData, publicGamesData] = await Promise.all([
-        apiService.getPlayerGames(playerId),
-        apiService.getPublicGames(),
-      ]);
-
-      setCurrentGames(currentGamesData);
-      setPublicGames(publicGamesData);
-    } catch (err) {
-      console.error('Failed to load games:', err);
-      setError('Failed to load games');
     }
   };
 
@@ -88,7 +96,9 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
         setShowCreateGame(false);
 
         if (type === 'private' && game.privateCode) {
-          alert(`Private game created! Share this code with your opponent: ${game.privateCode}`);
+          alert(
+            `Private game created! Share this code with your opponent: ${game.privateCode}`
+          );
         }
       }
     } catch (err) {
@@ -149,8 +159,10 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
   };
 
   const getPlayerRole = (game: GameListItem, _playerId: string) => {
-    if (game.players.player1?.name && game.players.player1.name === playerName) return 'player1';
-    if (game.players.player2?.name && game.players.player2.name === playerName) return 'player2';
+    if (game.players.player1?.name && game.players.player1.name === playerName)
+      return 'player1';
+    if (game.players.player2?.name && game.players.player2.name === playerName)
+      return 'player2';
     return null;
   };
 
@@ -169,12 +181,15 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
             <input
               type="text"
               value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
+              onChange={e => setPlayerName(e.target.value)}
               placeholder="Your name"
               maxLength={20}
-              onKeyPress={(e) => e.key === 'Enter' && handleRegister()}
+              onKeyPress={e => e.key === 'Enter' && handleRegister()}
             />
-            <button onClick={handleRegister} disabled={loading || !playerName.trim()}>
+            <button
+              onClick={handleRegister}
+              disabled={loading || !playerName.trim()}
+            >
               {loading ? 'Connecting...' : 'Start Playing'}
             </button>
             {error && <div className="error">{error}</div>}
@@ -188,9 +203,7 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
     <div className="game-lobby">
       <header className="lobby-header">
         <h1>Binary Homeworlds</h1>
-        <div className="player-info">
-          Welcome, {playerName}!
-        </div>
+        <div className="player-info">Welcome, {playerName}!</div>
       </header>
 
       {error && <div className="error">{error}</div>}
@@ -202,7 +215,7 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
             <p className="no-games">No active games</p>
           ) : (
             <div className="games-list">
-              {currentGames.map((game) => {
+              {currentGames.map(game => {
                 const playerId = socketService.getPlayerId()!;
                 const isYourTurn = isPlayerTurn(game, playerId);
 
@@ -218,12 +231,18 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
                         {game.players.player2?.name || 'Waiting...'}
                       </div>
                       <div className="game-meta">
-                        <span className={`game-status ${game.status}`}>{game.status}</span>
+                        <span className={`game-status ${game.status}`}>
+                          {game.status}
+                        </span>
                         <span className="game-type">{game.type}</span>
-                        <span className="game-time">{formatTimeAgo(game.createdAt)}</span>
+                        <span className="game-time">
+                          {formatTimeAgo(game.createdAt)}
+                        </span>
                       </div>
                     </div>
-                    {isYourTurn && <div className="turn-indicator">Your turn!</div>}
+                    {isYourTurn && (
+                      <div className="turn-indicator">Your turn!</div>
+                    )}
                   </div>
                 );
               })}
@@ -234,7 +253,10 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
         <section className="game-actions">
           <h2>Start New Game</h2>
           <div className="action-buttons">
-            <button onClick={() => handleCreateGame('local')} disabled={loading}>
+            <button
+              onClick={() => handleCreateGame('local')}
+              disabled={loading}
+            >
               Local Game
             </button>
             <button onClick={() => setShowCreateGame(true)} disabled={loading}>
@@ -252,7 +274,7 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
             <p className="no-games">No public games available</p>
           ) : (
             <div className="games-list">
-              {publicGames.map((game) => (
+              {publicGames.map(game => (
                 <div
                   key={game.id}
                   className="game-item joinable"
@@ -263,7 +285,9 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
                       {game.players.player1?.name} is waiting for an opponent
                     </div>
                     <div className="game-meta">
-                      <span className="game-time">{formatTimeAgo(game.createdAt)}</span>
+                      <span className="game-time">
+                        {formatTimeAgo(game.createdAt)}
+                      </span>
                     </div>
                   </div>
                   <div className="join-button">Join</div>
@@ -276,13 +300,19 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
 
       {showCreateGame && (
         <div className="modal-overlay" onClick={() => setShowCreateGame(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
             <h3>Create Online Game</h3>
             <div className="modal-buttons">
-              <button onClick={() => handleCreateGame('public')} disabled={loading}>
+              <button
+                onClick={() => handleCreateGame('public')}
+                disabled={loading}
+              >
                 Public Game
               </button>
-              <button onClick={() => handleCreateGame('private')} disabled={loading}>
+              <button
+                onClick={() => handleCreateGame('private')}
+                disabled={loading}
+              >
                 Private Game
               </button>
               <button onClick={() => setShowCreateGame(false)}>Cancel</button>
@@ -292,19 +322,25 @@ export default function GameLobby({ apiService, socketService, onGameSelected }:
       )}
 
       {showJoinPrivate && (
-        <div className="modal-overlay" onClick={() => setShowJoinPrivate(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowJoinPrivate(false)}
+        >
+          <div className="modal" onClick={e => e.stopPropagation()}>
             <h3>Join Private Game</h3>
             <input
               type="text"
               value={privateCode}
-              onChange={(e) => setPrivateCode(e.target.value.toUpperCase())}
+              onChange={e => setPrivateCode(e.target.value.toUpperCase())}
               placeholder="Enter 6-character code"
               maxLength={6}
-              onKeyPress={(e) => e.key === 'Enter' && handleJoinPrivateGame()}
+              onKeyPress={e => e.key === 'Enter' && handleJoinPrivateGame()}
             />
             <div className="modal-buttons">
-              <button onClick={handleJoinPrivateGame} disabled={loading || privateCode.length !== 6}>
+              <button
+                onClick={handleJoinPrivateGame}
+                disabled={loading || privateCode.length !== 6}
+              >
                 Join Game
               </button>
               <button onClick={() => setShowJoinPrivate(false)}>Cancel</button>

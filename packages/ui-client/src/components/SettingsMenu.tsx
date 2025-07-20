@@ -1,8 +1,10 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { useTheme } from '../contexts/ThemeContext';
-import ToggleSwitch from './ToggleSwitch';
+
 import './SettingsMenu.css';
+
+import { useTheme } from '../contexts/ThemeContext.js';
+import ToggleSwitch from './ToggleSwitch.js';
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -52,7 +54,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <select
               className="setting-select"
               value={theme}
-              onChange={e => setTheme(e.target.value as any)}
+              onChange={e =>
+                setTheme(e.target.value as 'system' | 'light' | 'dark')
+              }
             >
               <option value="system">System</option>
               <option value="light">Light</option>
@@ -66,7 +70,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <select
               className="setting-select"
               value={colorScheme}
-              onChange={e => setColorScheme(e.target.value as any)}
+              onChange={e =>
+                setColorScheme(e.target.value as 'default' | 'colorblind')
+              }
             >
               <option value="default">Default</option>
               <option value="colorblind">Colorblind Friendly</option>
