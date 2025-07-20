@@ -1,11 +1,35 @@
 .game-hint {
-  font-size: 12px;
-  color: #64748b;
-  font-style: italic;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px 12px;
-  border-radius: 6px;
-  border-left: 3px solid #3b82f6;
-  text-align: center;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #4ade80;
+  font-size: 14px;
+  line-height: 1.4;
   margin: 8px 0;
+  animation: hint-glow 2s infinite;
+}
+
+@keyframes hint-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+  }
+}
+
+.game-hint button {
+  background: none;
+  border: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  margin: 0 4px;
+}
+
+.game-hint button:hover {
+  color: #22c55e;
 }

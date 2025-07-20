@@ -58,12 +58,24 @@ export class GameService {
       ); // 24 hour expiry
     }
 
+    // For local games, create both players immediately
+    const player2: PlayerInfo | undefined =
+      request.type === 'local'
+        ? {
+            id: `${playerId}_player2`, // Create a unique ID for player 2
+            name: 'Player 2',
+            isOnline: true,
+            lastSeen: now,
+          }
+        : undefined;
+
     const gameSession: GameSession = {
       id: gameId,
       type: request.type,
       status: request.type === 'local' ? 'active' : 'waiting', // Local games start immediately
       players: {
         player1,
+        ...(player2 && { player2 }),
       },
       currentPlayer: 'player1',
       actions: [],

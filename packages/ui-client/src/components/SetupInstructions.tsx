@@ -1,92 +1,87 @@
 import React from 'react';
 
+import { Player } from '@binary-homeworlds/shared';
+
 import './SetupInstructions.css';
 
-import GameHint from './GameHint.js';
-
 interface SetupInstructionsProps {
-  currentPlayer: string;
-  currentStep:
-    | 'p1-star1'
-    | 'p2-star1'
-    | 'p1-star2'
-    | 'p2-star2'
-    | 'p1-ship'
-    | 'p2-ship'
-    | 'complete';
-  player1Stars: number;
-  player2Stars: number;
-  player1Ship: boolean;
-  player2Ship: boolean;
+  currentPlayer: Player;
+  currentStep: 'star1' | 'star2' | 'ship' | null;
 }
 
 const SetupInstructions: React.FC<SetupInstructionsProps> = ({
-  currentPlayer,
+  currentPlayer: _currentPlayer,
   currentStep,
-  player1Stars: _player1Stars,
-  player2Stars: _player2Stars,
-  player1Ship: _player1Ship,
-  player2Ship: _player2Ship,
 }) => {
-  const isYourTurn = currentPlayer === 'player1';
-
-  const getInstructionText = () => {
-    switch (currentStep) {
-      case 'p1-star1':
-        return isYourTurn
-          ? 'Select your first star from the bank'
-          : 'Player 1 is selecting their first star...';
-      case 'p2-star1':
-        return isYourTurn
-          ? 'Player 1 selected their first star. Waiting for your turn...'
-          : 'Select your first star from the bank';
-      case 'p1-star2':
-        return isYourTurn
-          ? 'Select your second star from the bank'
-          : 'Player 1 is selecting their second star...';
-      case 'p2-star2':
-        return isYourTurn
-          ? 'Player 1 completed their stars. Waiting for your turn...'
-          : 'Select your second star from the bank';
-      case 'p1-ship':
-        return isYourTurn
-          ? 'Select your starting ship from the bank'
-          : 'Player 1 is selecting their starting ship...';
-      case 'p2-ship':
-        return isYourTurn
-          ? 'Player 1 completed their setup. Waiting for your turn...'
-          : 'Select your starting ship from the bank';
-      case 'complete':
-        return 'Setup complete! Game will begin shortly.';
+  const getStepDescription = (step: 'star1' | 'star2' | 'ship') => {
+    switch (step) {
+      case 'star1':
+        return 'Select your first star to create your home system';
+      case 'star2':
+        return 'Select your second star to add to your home system';
+      case 'ship':
+        return 'Select your starting ship to place in your home system';
       default:
-        return 'Setting up the game...';
+        return '';
     }
   };
 
-  const getProgressText = () => {
-    // Simplified progress - no detailed tracking needed since pieces show in home systems
-    return '';
+  const getStepNumber = (step: 'star1' | 'star2' | 'ship') => {
+    switch (step) {
+      case 'star1':
+        return 1;
+      case 'star2':
+        return 2;
+      case 'ship':
+        return 3;
+      default:
+        return 0;
+    }
   };
 
+  if (!currentStep) return null;
+
   return (
-    <div
-      className={`setup-instructions ${isYourTurn ? 'your-turn' : 'waiting'}`}
-    >
+    <div className="setup-instructions">
       <div className="setup-header">
-        <h3>Game Setup</h3>
-        <div className="setup-player">
-          {isYourTurn ? 'Your Turn' : "Opponent's Turn"}
+        <h3>Setup Phase</h3>
+        <div className="setup-progress">
+          <span className="current-step">
+            Step {getStepNumber(currentStep)} of 3
+          </span>
         </div>
       </div>
 
       <div className="setup-content">
-        <div className="instruction-text">{getInstructionText()}</div>
+        <div className="setup-description">
+          <p>{getStepDescription(currentStep)}</p>
+        </div>
 
-        {getProgressText() && (
-          <div className="progress-text">{getProgressText()}</div>
-        )}
+        <div className="setup-steps">
+          <div
+            className={`setup-step ${currentStep === 'star1' ? 'active' : ''}`}
+          >
+            <div className="step-number">1</div>
+            <div className="step-text">First Star</div>
+          </div>
+          <div
+            className={`setup-step ${currentStep === 'star2' ? 'active' : ''}`}
+          >
+            <div className="step-number">2</div>
+            <div className="step-text">Second Star</div>
+          </div>
+          <div
+            className={`setup-step ${currentStep === 'ship' ? 'active' : ''}`}
+          >
+            <div className="step-number">3</div>
+            <div className="step-text">Starting Ship</div>
+          </div>
+        </div>
 
-        <GameHint>Click pieces in the bank to select them</GameHint>
+        <div className="setup-tip">
+          <strong>Tip:</strong> Choose pieces that work well together. Your home
+          system will be your base of operations!
+        </div>
       </div>
     </div>
   );
