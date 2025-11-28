@@ -14,14 +14,14 @@ import {
   SacrificeAction,
   SetupAction,
   TradeAction,
-} from './types.js';
+} from './types';
 import {
   findShip,
   findSystem,
   getSmallestAvailableSize,
   hasOverpopulation,
   isColorAvailable,
-} from './utils.js';
+} from './utils';
 
 export class ActionValidator {
   static validate(

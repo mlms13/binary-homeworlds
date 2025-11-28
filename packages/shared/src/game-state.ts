@@ -12,14 +12,14 @@ import {
   Player,
   Size,
   System,
-} from './types.js';
+} from './types';
 import {
   checkGameEnd,
   cloneGameState,
   createPiece,
   findSystem,
   hasOverpopulation,
-} from './utils.js';
+} from './utils';
 
 export class BinaryHomeworldsGameState {
   private state: GameState;

@@ -1,7 +1,7 @@
 // test helpers to make it easy to get the game into a particular state
 
-import { createSetupAction } from '../action-builders.js';
-import { GameEngine } from '../game-engine.js';
+import { createSetupAction } from '../action-builders';
+import { GameEngine } from '../game-engine';
 
 // completes the setup phase, resulting in:
 // - player 1: large blue star, small yellow star, large green ship

@@ -11,16 +11,16 @@ import {
   createOverpopulationAction,
   createSacrificeAction,
   createTradeAction,
-} from '../action-builders.js';
-import { GameEngine } from '../game-engine.js';
-import { Color, Ship, Size } from '../types.js';
+} from '../action-builders';
+import { GameEngine } from '../game-engine';
+import { Color, Ship, Size } from '../types';
 import {
   createPiece,
   createShip,
   createStar,
   createSystem,
   isColorAvailable,
-} from '../utils.js';
+} from '../utils';
 
 describe('RULES.md Examples', () => {
   describe('Example 1: Basic availability', () => {
@@ -453,7 +453,7 @@ describe('RULES.md Examples', () => {
         'player1',
         redShip.id,
         system.id,
-        smallestRedPiece.id
+        smallestRedPiece?.id ?? ''
       );
 
       const result = engine.applyAction(growAction);
@@ -462,11 +462,11 @@ describe('RULES.md Examples', () => {
       // Check that smallest available red ship was created
       const updatedSystem = gameState.getSystem(system.id);
       const newShip = updatedSystem?.ships.find(
-        s => s.id === smallestRedPiece.id
+        s => s.id === (smallestRedPiece?.id ?? '')
       );
       expect(newShip).toBeDefined();
       expect(newShip?.color).toBe('red');
-      expect(newShip?.size).toBe(smallestRedPiece.size);
+      expect(newShip?.size).toBe(smallestRedPiece?.size ?? 0);
       expect(newShip?.owner).toBe('player1');
     });
   });
@@ -544,10 +544,10 @@ describe('RULES.md Examples', () => {
       // System should now contain only the large red star and Player B's medium yellow ship
       const updatedSystem = gameState.getSystem(system.id);
       expect(updatedSystem?.ships.length).toBe(1);
-      expect(updatedSystem?.ships[0].color).toBe('yellow');
-      expect(updatedSystem?.ships[0].owner).toBe('player2');
+      expect(updatedSystem?.ships[0]?.color).toBe('yellow');
+      expect(updatedSystem?.ships[0]?.owner).toBe('player2');
       expect(updatedSystem?.stars.length).toBe(1);
-      expect(updatedSystem?.stars[0].color).toBe('red');
+      expect(updatedSystem?.stars[0]?.color).toBe('red');
     });
   });
 

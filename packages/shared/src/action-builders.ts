@@ -12,7 +12,7 @@ import {
   SacrificeAction,
   SetupAction,
   TradeAction,
-} from './types.js';
+} from './types';
 
 // Helper functions to create actions with proper timestamps
 

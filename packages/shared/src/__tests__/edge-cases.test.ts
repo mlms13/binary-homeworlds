@@ -12,11 +12,11 @@ import {
   createSacrificeAction,
   createSetupAction,
   createTradeAction,
-} from '../action-builders.js';
-import { GameEngine } from '../game-engine.js';
-import { BinaryHomeworldsGameState } from '../game-state.js';
-import { Color, Size } from '../types.js';
-import { createShip, createStar, createSystem } from '../utils.js';
+} from '../action-builders';
+import { GameEngine } from '../game-engine';
+import { BinaryHomeworldsGameState } from '../game-state';
+import { Color, Size } from '../types';
+import { createShip, createStar, createSystem, generateId } from '../utils';
 
 describe('Edge Cases and Error Conditions', () => {
   describe('Game Setup', () => {
@@ -66,37 +66,37 @@ describe('Edge Cases and Error Conditions', () => {
 
       // Player 1 setup (all at once)
       let result = engine.applyAction(
-        createSetupAction('player1', bankPieces[0].id, 'star1')
+        createSetupAction('player1', bankPieces[0]?.id ?? generateId(), 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2'); // Now switches after each action
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[1].id, 'star1')
+        createSetupAction('player2', bankPieces[1]?.id ?? generateId(), 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[2].id, 'star2')
+        createSetupAction('player1', bankPieces[2]?.id ?? generateId(), 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[3].id, 'star2')
+        createSetupAction('player2', bankPieces[3]?.id ?? generateId(), 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[4].id, 'ship')
+        createSetupAction('player1', bankPieces[4]?.id ?? generateId(), 'ship')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[5].id, 'ship')
+        createSetupAction('player2', bankPieces[5]?.id ?? generateId(), 'ship')
       );
       expect(result.valid).toBe(true);
 
@@ -115,42 +115,42 @@ describe('Edge Cases and Error Conditions', () => {
 
       // Player 1 chooses first star
       let result = engine.applyAction(
-        createSetupAction('player1', bankPieces[0].id, 'star1')
+        createSetupAction('player1', bankPieces[0]?.id ?? generateId(), 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses first star
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[1].id, 'star1')
+        createSetupAction('player2', bankPieces[1]?.id ?? generateId(), 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses second star
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[2].id, 'star2')
+        createSetupAction('player1', bankPieces[2]?.id ?? generateId(), 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses second star
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[3].id, 'star2')
+        createSetupAction('player2', bankPieces[3]?.id ?? generateId(), 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses ship
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[4].id, 'ship')
+        createSetupAction('player1', bankPieces[4]?.id ?? generateId(), 'ship')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses ship
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[5].id, 'ship')
+        createSetupAction('player2', bankPieces[5]?.id ?? generateId(), 'ship')
       );
       expect(result.valid).toBe(true);
 
@@ -221,7 +221,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const setupAction = createSetupAction(
         'player1',
-        bankPieces[0].id,
+        bankPieces[0]?.id ?? generateId(),
         'star1'
       );
       const result = engine.applyAction(setupAction);
@@ -455,8 +455,8 @@ describe('Edge Cases and Error Conditions', () => {
 
       // The new system should contain the ship
       const systems = gameState.getSystems();
-      expect(systems[0].ships.length).toBe(1);
-      expect(systems[0].ships[0].id).toBe(ship.id);
+      expect(systems[0]?.ships.length).toBe(1);
+      expect(systems[0]?.ships[0]?.id).toBe(ship.id ?? '');
     });
 
     it('should reject movement without available yellow', () => {
@@ -703,8 +703,8 @@ describe('Edge Cases and Error Conditions', () => {
       // Should be identical
       expect(newGameState.getPhase()).toBe('normal');
       expect(newGameState.getSystems().length).toBe(1);
-      expect(newGameState.getSystems()[0].ships.length).toBe(1);
-      expect(newGameState.getSystems()[0].stars.length).toBe(1);
+      expect(newGameState.getSystems()[0]?.ships.length).toBe(1);
+      expect(newGameState.getSystems()[0]?.stars.length).toBe(1);
     });
 
     it('should maintain action history', () => {
@@ -735,8 +735,8 @@ describe('Edge Cases and Error Conditions', () => {
       // Check history
       const history = gameState.getHistory();
       expect(history.length).toBe(1);
-      expect(history[0].type).toBe('move');
-      expect(history[0].player).toBe('player1');
+      expect(history[0]?.type).toBe('move');
+      expect(history[0]?.player).toBe('player1');
     });
   });
 });

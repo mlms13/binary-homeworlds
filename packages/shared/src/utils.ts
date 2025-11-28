@@ -11,7 +11,7 @@ import {
   Size,
   Star,
   System,
-} from './types.js';
+} from './types';
 
 // Generate unique IDs
 export function generateId(): string {

@@ -2,8 +2,8 @@
  * Main game engine for Binary Homeworlds
  */
 
-import { ActionValidator } from './action-validator.js';
-import { BinaryHomeworldsGameState } from './game-state.js';
+import { ActionValidator } from './action-validator';
+import { BinaryHomeworldsGameState } from './game-state';
 import {
   ActionValidationResult,
   CaptureAction,
@@ -16,13 +16,13 @@ import {
   Ship,
   System,
   TradeAction,
-} from './types.js';
+} from './types';
 import {
   createShip,
   createStar,
   createSystem,
   getPiecesOfColor,
-} from './utils.js';
+} from './utils';
 
 export class GameEngine {
   private gameState: BinaryHomeworldsGameState;

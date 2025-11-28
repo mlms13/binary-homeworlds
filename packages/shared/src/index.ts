@@ -4,18 +4,18 @@
  */
 
 // Export all types
-export * from './types.js';
+export * from './types';
 
 // Export main classes
-export { ActionValidator } from './action-validator.js';
-export { GameEngine } from './game-engine.js';
-export { BinaryHomeworldsGameState } from './game-state.js';
+export { ActionValidator } from './action-validator';
+export { GameEngine } from './game-engine';
+export { BinaryHomeworldsGameState } from './game-state';
 
 // Export utility functions
-export * from './utils.js';
+export * from './utils';
 
 // Export action builders for convenience
-export * from './action-builders.js';
+export * from './action-builders';
 
 // Export additional types for server compatibility
 export {
@@ -41,4 +41,4 @@ export {
   Star,
   System,
   TradeAction,
-} from './types.js';
+} from './types';

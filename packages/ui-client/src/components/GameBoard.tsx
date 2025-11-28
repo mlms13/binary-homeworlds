@@ -1,14 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { GameEngine } from '@binary-homeworlds/shared';
+import {
+  BinaryHomeworldsGameState,
+  GameEngine,
+} from '@binary-homeworlds/shared';
 import {
   CaptureAction,
+  Color,
   GameAction,
   MoveAction,
   Piece,
   Player,
   SetupAction,
   TradeAction,
+} from '@binary-homeworlds/shared';
+import {
+  createOverpopulationAction,
+  createSacrificeAction,
 } from '@binary-homeworlds/shared';
 
 import './GameBoard.css';
@@ -25,7 +33,9 @@ import Bank from './Bank.js';
 import ConfirmationDialog from './ConfirmationDialog.js';
 import GameEndModal from './GameEndModal.js';
 import GameHint from './GameHint.js';
+import GameLossWarningModal from './GameLossWarningModal.js';
 import HomeSystem from './HomeSystem.js';
+import OverpopulationModal from './OverpopulationModal.js';
 import SettingsMenu from './SettingsMenu.js';
 import SetupInstructions from './SetupInstructions.js';
 import StarSystem from './StarSystem.js';
@@ -79,6 +89,27 @@ export default function GameBoard({
     attackingShipId: string;
     systemId: string;
     validTargetShipIds: string[];
+  } | null>(null);
+
+  // Sacrifice action state
+  const [pendingSacrifice, setPendingSacrifice] = useState<{
+    shipColor: Color;
+    actionsRemaining: number;
+    actionType: 'move' | 'capture' | 'grow' | 'trade';
+  } | null>(null);
+
+  // Game loss warning state
+  const [gameLossWarning, setGameLossWarning] = useState<{
+    action: GameAction;
+    warningMessage: string;
+  } | null>(null);
+
+  // Overpopulation state
+  const [overpopulationPrompt, setOverpopulationPrompt] = useState<{
+    systemId: string;
+    color: Color;
+    currentPlayerPrompted: boolean;
+    otherPlayerPrompted: boolean;
   } | null>(null);
 
   const gameState = gameEngine.getGameState();
@@ -141,48 +172,13 @@ export default function GameBoard({
     setSetupState(getCurrentSetupState());
   }, [getCurrentSetupState]);
 
-  const applyAction = useCallback(
-    (action: GameAction) => {
-      if (!gameController)
-        return { valid: false, error: 'Game controller not initialized' };
-
-      // For local games, use the hook's applyAction to maintain action history
-      if (gameController.isLocalGame()) {
-        const result = applyActionWithHistory(action);
-        if (result.valid) {
-          // Update the game session with the new action
-          const session = gameController.getGameSession();
-          if (session) {
-            session.actions.push(action);
-            session.currentPlayer =
-              session.currentPlayer === 'player1' ? 'player2' : 'player1';
-          }
-          // Trigger a re-render by updating the engine
-          setGameEngine(
-            new GameEngine(gameController.getGameEngine().getGameState())
-          );
-        }
-        return result;
-      } else {
-        // For server games, send to server and return optimistic result
-        gameController.applyAction(action).catch(err => {
-          setError(
-            err instanceof Error ? err.message : 'Failed to apply action'
-          );
-        });
-        return { valid: true };
-      }
-    },
-    [gameController, applyActionWithHistory]
-  );
-
   const confirmAction = useCallback(() => {
     if (pendingAction) {
-      applyAction(pendingAction);
+      applyActionWithHistory(pendingAction);
       setPendingAction(null);
       setShowConfirmation(false);
     }
-  }, [pendingAction, applyAction]);
+  }, [pendingAction, applyActionWithHistory]);
 
   const cancelAction = useCallback(() => {
     setPendingAction(null);
@@ -270,6 +266,93 @@ export default function GameBoard({
     setPendingMove(null);
   }, []);
 
+  // useEffect to watch overpopulations and trigger modal
+  useEffect(() => {
+    const gameState: BinaryHomeworldsGameState = gameEngine.getGameState();
+    const overpopulations = gameState.getOverpopulations();
+    const firstOverpopulation = overpopulations[0];
+    if (
+      firstOverpopulation &&
+      (!overpopulationPrompt ||
+        overpopulationPrompt.systemId !== firstOverpopulation.systemId ||
+        overpopulationPrompt.color !== firstOverpopulation.color)
+    ) {
+      setOverpopulationPrompt({
+        systemId: firstOverpopulation.systemId,
+        color: firstOverpopulation.color,
+        currentPlayerPrompted: false,
+        otherPlayerPrompted: false,
+      });
+    } else if (overpopulations.length === 0 && overpopulationPrompt) {
+      setOverpopulationPrompt(null);
+    }
+  }, [gameEngine, overpopulationPrompt]);
+
+  // Update handleDeclareOverpopulation to NOT call checkForOverpopulation
+  const handleDeclareOverpopulation = useCallback(() => {
+    if (!overpopulationPrompt) return;
+
+    const overpopulationAction = createOverpopulationAction(
+      currentPlayer,
+      overpopulationPrompt.systemId,
+      overpopulationPrompt.color
+    );
+
+    const result = applyActionWithHistory(overpopulationAction);
+    if (result.valid) {
+      setOverpopulationPrompt(null);
+      // The useEffect will pick up the next overpopulation if any
+    }
+  }, [overpopulationPrompt, currentPlayer, applyActionWithHistory]);
+
+  // Handle ignoring overpopulation
+  const handleIgnoreOverpopulation = useCallback(() => {
+    if (!overpopulationPrompt) return;
+
+    const isCurrentPlayerPrompted = overpopulationPrompt.currentPlayerPrompted;
+    const isOtherPlayerPrompted = overpopulationPrompt.otherPlayerPrompted;
+
+    if (!isCurrentPlayerPrompted) {
+      // Current player is ignoring, mark them as prompted
+      setOverpopulationPrompt(prev =>
+        prev
+          ? {
+              ...prev,
+              currentPlayerPrompted: true,
+            }
+          : null
+      );
+    } else if (!isOtherPlayerPrompted) {
+      // Other player is ignoring, mark them as prompted
+      setOverpopulationPrompt(prev =>
+        prev
+          ? {
+              ...prev,
+              otherPlayerPrompted: true,
+            }
+          : null
+      );
+    } else {
+      // Both players have been prompted and ignored, clear the prompt
+      setOverpopulationPrompt(null);
+    }
+  }, [overpopulationPrompt]);
+
+  // Handle proceeding with game loss warning
+  const handleProceedWithLoss = useCallback(() => {
+    if (!gameLossWarning) return;
+
+    // Execute the action that would cause loss
+    applyActionWithHistory(gameLossWarning.action);
+    // No need to check for overpopulation here; useEffect will handle it
+    setGameLossWarning(null);
+  }, [gameLossWarning, applyActionWithHistory]);
+
+  // Handle canceling game loss warning
+  const handleCancelLoss = useCallback(() => {
+    setGameLossWarning(null);
+  }, []);
+
   // Handle system click for move destination
   const handleSystemClick = useCallback(
     (systemId: string) => {
@@ -288,10 +371,10 @@ export default function GameBoard({
         timestamp: Date.now(),
       };
 
-      applyAction(moveAction);
+      applyActionWithHistory(moveAction);
       setPendingMove(null); // Clear pending move
     },
-    [pendingMove, state.currentPlayer, applyAction]
+    [pendingMove, state.currentPlayer, applyActionWithHistory]
   );
 
   // Handle capture initiation from StarSystem
@@ -333,10 +416,153 @@ export default function GameBoard({
         timestamp: Date.now(),
       };
 
-      applyAction(captureAction);
+      applyActionWithHistory(captureAction);
       setPendingCapture(null); // Clear pending capture
     },
-    [pendingCapture, state.currentPlayer, applyAction]
+    [pendingCapture, state.currentPlayer, applyActionWithHistory]
+  );
+
+  // Helper function to determine action type based on color
+  const getActionTypeForColor = useCallback(
+    (color: Color): 'move' | 'capture' | 'grow' | 'trade' => {
+      switch (color) {
+        case 'yellow':
+          return 'move';
+        case 'red':
+          return 'capture';
+        case 'green':
+          return 'grow';
+        case 'blue':
+          return 'trade';
+      }
+    },
+    []
+  );
+
+  // Handle sacrifice initiation from StarSystem
+  const handleSacrificeInitiate = useCallback(
+    (sacrificedShipId: string, systemId: string) => {
+      const system = state.systems.find(s => s.id === systemId);
+      const ship = system?.ships.find(s => s.id === sacrificedShipId);
+
+      if (!ship) return;
+
+      // Execute the sacrifice immediately and set up action mode
+      const sacrificeAction = createSacrificeAction(
+        currentPlayer,
+        sacrificedShipId,
+        systemId,
+        [] // No follow-up actions planned yet
+      );
+
+      // Apply the sacrifice action (removes ship, returns to bank)
+      const result = applyActionWithHistory(sacrificeAction);
+      if (result.valid) {
+        // Set up sacrifice action mode based on ship color
+        const actionType = getActionTypeForColor(ship.color);
+        setPendingSacrifice({
+          shipColor: ship.color,
+          actionsRemaining: ship.size,
+          actionType,
+        });
+      }
+    },
+    [
+      state.systems,
+      currentPlayer,
+      applyActionWithHistory,
+      getActionTypeForColor,
+    ]
+  );
+
+  // Handle sacrifice action execution
+  const handleSacrificeAction = useCallback(
+    (shipId: string, systemId: string) => {
+      if (!pendingSacrifice) return;
+
+      const actionType = pendingSacrifice.actionType;
+      const currentPlayer = state.currentPlayer;
+
+      // Create the appropriate action based on sacrifice type
+      let action: GameAction;
+
+      switch (actionType) {
+        case 'move': {
+          // For move, we need to initiate move selection
+          handleMoveInitiate(shipId, systemId);
+          return;
+        }
+        case 'capture': {
+          // For capture, we need target selection - this will be handled by existing capture flow
+          handleCaptureInitiate(shipId, systemId, []); // Will be populated by existing logic
+          return;
+        }
+        case 'grow': {
+          // For grow, we can execute immediately
+          const system = state.systems.find(s => s.id === systemId);
+          const ship = system?.ships.find(s => s.id === shipId);
+          if (!ship) return;
+
+          const availablePieces = state.bank.pieces
+            .filter(piece => piece.color === pendingSacrifice.shipColor)
+            .sort((a, b) => a.size - b.size);
+
+          const smallestPiece = availablePieces[0];
+          if (!smallestPiece) return;
+
+          action = {
+            type: 'grow',
+            player: currentPlayer,
+            actingShipId: shipId,
+            systemId,
+            newShipPieceId: smallestPiece.id,
+            timestamp: Date.now(),
+          };
+          break;
+        }
+        case 'trade': {
+          // For trade, we need piece selection - this will be handled by existing trade flow
+          const tradeSystem = state.systems.find(s => s.id === systemId);
+          const tradeShip = tradeSystem?.ships.find(s => s.id === shipId);
+          if (tradeShip) {
+            const validPieceIds = state.bank.pieces
+              .filter(piece => piece.size === tradeShip.size)
+              .map(p => p.id);
+            handleTradeInitiate(shipId, systemId, validPieceIds);
+            return;
+          }
+          return;
+        }
+      }
+
+      // Execute the action
+      const result = applyActionWithHistory(action!);
+      if (result.valid) {
+        // Decrement remaining actions
+        setPendingSacrifice(prev => {
+          if (!prev) return null;
+          const newActionsRemaining = prev.actionsRemaining - 1;
+          if (newActionsRemaining <= 0) {
+            // End sacrifice mode and end turn
+            return null;
+          }
+          return {
+            ...prev,
+            actionsRemaining: newActionsRemaining,
+          };
+        });
+      }
+    },
+    [
+      pendingSacrifice,
+      state.systems,
+      state.bank.pieces,
+      state.currentPlayer,
+      handleMoveInitiate,
+      handleCaptureInitiate,
+      handleTradeInitiate,
+      applyActionWithHistory,
+    ]
   );
 
   const handlePieceClick = useCallback(
@@ -356,7 +582,7 @@ export default function GameBoard({
           timestamp: Date.now(),
         };
 
-        applyAction(tradeAction);
+        applyActionWithHistory(tradeAction);
         setPendingTrade(null); // Clear pending trade
         return;
       }
@@ -376,7 +602,7 @@ export default function GameBoard({
           timestamp: Date.now(),
         };
 
-        applyAction(moveAction);
+        applyActionWithHistory(moveAction);
         setPendingMove(null); // Clear pending move
         return;
       }
@@ -392,13 +618,13 @@ export default function GameBoard({
         timestamp: Date.now(),
       };
 
-      applyAction(setupAction);
+      applyActionWithHistory(setupAction);
     },
     [
       state.phase,
       setupState,
       state.currentPlayer,
-      applyAction,
+      applyActionWithHistory,
       pendingTrade,
       pendingMove,
     ]
@@ -602,7 +828,7 @@ export default function GameBoard({
                   system={player2Home}
                   isCurrentPlayer={currentPlayer === 'player2'}
                   isOpponent={gameController?.getPlayerRole() === 'player1'}
-                  onAction={applyAction}
+                  onAction={applyActionWithHistory}
                   getAvailableActions={getAvailableActions}
                   bankPieces={state.bank.pieces}
                   currentPlayer={currentPlayer}
@@ -611,6 +837,9 @@ export default function GameBoard({
                   onCaptureInitiate={handleCaptureInitiate}
                   onShipClickForCapture={handleShipClickForCapture}
                   pendingCapture={pendingCapture}
+                  onSacrificeInitiate={handleSacrificeInitiate}
+                  pendingSacrifice={pendingSacrifice}
+                  onShipClickForSacrifice={handleSacrificeAction}
                   onSystemClick={handleSystemClick}
                   isMoveDestination={
                     !!pendingMove &&
@@ -639,7 +868,7 @@ export default function GameBoard({
                     <StarSystem
                       key={system.id}
                       system={system}
-                      onAction={applyAction}
+                      onAction={applyActionWithHistory}
                       getAvailableActions={getAvailableActions}
                       bankPieces={state.bank.pieces}
                       currentPlayer={currentPlayer}
@@ -648,6 +877,9 @@ export default function GameBoard({
                       onCaptureInitiate={handleCaptureInitiate}
                       onShipClickForCapture={handleShipClickForCapture}
                       pendingCapture={pendingCapture}
+                      onSacrificeInitiate={handleSacrificeInitiate}
+                      pendingSacrifice={pendingSacrifice}
+                      onShipClickForSacrifice={handleSacrificeAction}
                       onSystemClick={handleSystemClick}
                       isMoveDestination={
                         !!pendingMove &&
@@ -665,7 +897,7 @@ export default function GameBoard({
                 system={player1Home}
                 isCurrentPlayer={currentPlayer === 'player1'}
                 isOpponent={gameController?.getPlayerRole() === 'player2'}
-                onAction={applyAction}
+                onAction={applyActionWithHistory}
                 getAvailableActions={getAvailableActions}
                 bankPieces={state.bank.pieces}
                 currentPlayer={currentPlayer}
@@ -674,6 +906,9 @@ export default function GameBoard({
                 onCaptureInitiate={handleCaptureInitiate}
                 onShipClickForCapture={handleShipClickForCapture}
                 pendingCapture={pendingCapture}
+                onSacrificeInitiate={handleSacrificeInitiate}
+                pendingSacrifice={pendingSacrifice}
+                onShipClickForSacrifice={handleSacrificeAction}
                 onSystemClick={handleSystemClick}
                 isMoveDestination={
                   !!pendingMove &&
@@ -710,6 +945,29 @@ export default function GameBoard({
         onConfirm={confirmAction}
         onCancel={cancelAction}
       />
+
+      {/* Game loss warning modal */}
+      {gameLossWarning && (
+        <GameLossWarningModal
+          action={gameLossWarning.action}
+          warningMessage={gameLossWarning.warningMessage}
+          onProceed={handleProceedWithLoss}
+          onCancel={handleCancelLoss}
+        />
+      )}
+
+      {/* Overpopulation modal */}
+      {overpopulationPrompt && (
+        <OverpopulationModal
+          systemId={overpopulationPrompt.systemId}
+          color={overpopulationPrompt.color}
+          currentPlayer={currentPlayer}
+          currentPlayerPrompted={overpopulationPrompt.currentPlayerPrompted}
+          otherPlayerPrompted={overpopulationPrompt.otherPlayerPrompted}
+          onDeclareOverpopulation={handleDeclareOverpopulation}
+          onIgnoreOverpopulation={handleIgnoreOverpopulation}
+        />
+      )}
 
       {/* Game end modal */}
       {state.phase === 'ended' && state.winner && (
