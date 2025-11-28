@@ -33,10 +33,10 @@ const Bank: React.FC<BankProps> = ({
       if (!acc[piece.color]) {
         acc[piece.color] = {};
       }
-      if (!acc[piece.color][piece.size]) {
-        acc[piece.color][piece.size] = [];
+      if (!acc[piece.color]?.[piece.size]) {
+        acc[piece.color]![piece.size] = [];
       }
-      acc[piece.color][piece.size].push(piece);
+      acc[piece.color]![piece.size]!.push(piece);
       return acc;
     },
     {} as Record<string, Record<number, Piece[]>>
@@ -67,21 +67,21 @@ const Bank: React.FC<BankProps> = ({
                           size={size as 1 | 2 | 3}
                           displaySize="small"
                           onClick={() =>
-                            onPieceClick && onPieceClick(piecesOfType[0])
+                            onPieceClick && onPieceClick(piecesOfType[0]!)
                           }
                           isClickable={
                             isSetupPhase ||
                             (isTradeMode &&
-                              validTradeIds.includes(piecesOfType[0].id)) ||
+                              validTradeIds.includes(piecesOfType[0]!.id)) ||
                             (isMoveMode &&
-                              validMoveIds.includes(piecesOfType[0].id))
+                              validMoveIds.includes(piecesOfType[0]!.id))
                           }
                           isSelected={false}
                           isDisabled={
                             (isTradeMode &&
-                              !validTradeIds.includes(piecesOfType[0].id)) ||
+                              !validTradeIds.includes(piecesOfType[0]!.id)) ||
                             (isMoveMode &&
-                              !validMoveIds.includes(piecesOfType[0].id))
+                              !validMoveIds.includes(piecesOfType[0]!.id))
                           }
                         />
                         <span className="piece-count-badge">

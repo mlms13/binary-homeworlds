@@ -22,7 +22,7 @@
     "lint": "eslint \"packages/*/src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"packages/*/src/**/*.{ts,tsx}\" --fix",
     "format": "npm run format --workspaces",
-    "format:check": "npm run format:check --workspaces",
+    "format:fix": "npm run format:fix --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "typecheck:staged": "npm run typecheck",
     "prepare": "husky",
@@ -42,6 +42,10 @@
       "prettier --write"
     ],
     "packages/server/src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "packages/engine/src/**/*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],

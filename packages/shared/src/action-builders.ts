@@ -48,6 +48,38 @@ export function createMoveAction(
   };
 }
 
+export function createMoveActionExisting(
+  player: Player,
+  shipId: string,
+  fromSystemId: string,
+  toSystemId: string
+): MoveAction {
+  return {
+    type: 'move',
+    player,
+    timestamp: Date.now(),
+    shipId,
+    fromSystemId,
+    toSystemId,
+  };
+}
+
+export function createMoveActionNew(
+  player: Player,
+  shipId: string,
+  fromSystemId: string,
+  newStarPieceId: string
+): MoveAction {
+  return {
+    type: 'move',
+    player,
+    timestamp: Date.now(),
+    shipId,
+    fromSystemId,
+    newStarPieceId,
+  };
+}
+
 export function createCaptureAction(
   player: Player,
   attackingShipId: string,

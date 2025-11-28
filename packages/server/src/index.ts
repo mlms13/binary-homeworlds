@@ -75,6 +75,7 @@ async function startServer() {
       } catch (error) {
         fastify.log.error(error);
         reply.status(500).send({ error: 'Failed to fetch public games' });
+        return { error: 'Failed to fetch public games' };
       }
     });
 
@@ -87,6 +88,7 @@ async function startServer() {
       } catch (error) {
         fastify.log.error(error);
         reply.status(500).send({ error: 'Failed to fetch player games' });
+        return { error: 'Failed to fetch player games' };
       }
     });
 
@@ -105,6 +107,7 @@ async function startServer() {
       } catch (error) {
         fastify.log.error(error);
         reply.status(500).send({ error: 'Failed to create game' });
+        return { error: 'Failed to create game' };
       }
     });
 
@@ -125,6 +128,7 @@ async function startServer() {
         const message =
           error instanceof Error ? error.message : 'Unknown error';
         reply.status(400).send({ error: message });
+        return { error: message };
       }
     });
 
@@ -141,6 +145,7 @@ async function startServer() {
       } catch (error) {
         fastify.log.error(error);
         reply.status(500).send({ error: 'Failed to fetch game' });
+        return { error: 'Failed to fetch game' };
       }
     });
 

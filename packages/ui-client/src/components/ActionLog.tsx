@@ -20,8 +20,9 @@ export default function ActionLog({
     const tempEngine = new GameEngine();
 
     // Apply all actions up to (but not including) this one
-    for (let i = 0; i < index; i++) {
-      tempEngine.applyAction(actions[i]);
+    // Use a different variable name to avoid shadowing
+    for (const prevAction of actions.slice(0, index)) {
+      tempEngine.applyAction(prevAction);
     }
 
     const stateBefore = tempEngine.getGameState().getState();
@@ -30,6 +31,8 @@ export default function ActionLog({
     tempEngine.applyAction(action);
     const stateAfter = tempEngine.getGameState().getState();
 
+    // Narrow the type BEFORE using it in the switch
+    // TypeScript should properly narrow discriminated unions in switch statements
     switch (action.type) {
       case 'setup': {
         const piece = stateBefore.bank.pieces.find(
@@ -52,6 +55,8 @@ export default function ActionLog({
       }
 
       case 'move': {
+        // TypeScript should narrow 'action' to MoveAction here
+        // If it doesn't, there's likely a type resolution issue
         const ship = findShipInState(stateBefore, action.shipId);
         if (!ship) return `${playerName} moved a ship`;
 

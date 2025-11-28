@@ -384,7 +384,7 @@ export class ActionValidator {
     const wouldEndGame =
       isHomeSystem &&
       playerShipsAtHome.length === 1 &&
-      playerShipsAtHome[0].id === action.sacrificedShipId;
+      playerShipsAtHome[0]?.id === action.sacrificedShipId;
 
     // Check number of followup actions matches ship size
     // Exception: if this sacrifice would end the game, no followup actions are needed

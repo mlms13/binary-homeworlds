@@ -18,6 +18,7 @@ import {
   cloneGameState,
   createPiece,
   findSystem,
+  hasOverpopulation,
 } from './utils.js';
 
 export class BinaryHomeworldsGameState {
@@ -167,7 +168,8 @@ export class BinaryHomeworldsGameState {
     );
     if (index === -1) return null;
 
-    return this.state.bank.pieces.splice(index, 1)[0];
+    const [removed] = this.state.bank.pieces.splice(index, 1);
+    return removed ?? null;
   }
 
   // Add piece to bank
@@ -178,6 +180,19 @@ export class BinaryHomeworldsGameState {
   // Add pieces to bank (for overpopulation cleanup)
   addPiecesToBank(pieces: Piece[]): void {
     this.state.bank.pieces.push(...pieces);
+  }
+
+  getOverpopulations(): { systemId: string; color: Color }[] {
+    return this.state.systems
+      .map(system => {
+        for (const color of ['yellow', 'green', 'blue', 'red'] as Color[]) {
+          if (hasOverpopulation(system, color)) {
+            return { systemId: system.id, color };
+          }
+        }
+        return null;
+      })
+      .filter(Boolean) as { systemId: string; color: Color }[];
   }
 
   // Check and update game end condition

@@ -163,9 +163,13 @@ export default [
     },
   },
 
-  // Shared and Server packages (TypeScript only)
+  // Shared, Server, and Engine packages (TypeScript only)
   {
-    files: ['packages/shared/src/**/*.ts', 'packages/server/src/**/*.ts'],
+    files: [
+      'packages/shared/src/**/*.ts',
+      'packages/server/src/**/*.ts',
+      'packages/engine/src/**/*.ts',
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -197,7 +201,10 @@ export default [
 
   // Test files
   {
-    files: ['packages/*/src/**/*.{test,spec}.{ts,tsx}'],
+    files: [
+      'packages/*/src/**/*.{test,spec}.{ts,tsx}',
+      'packages/*/__tests__/**/*.{ts,tsx}',
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {

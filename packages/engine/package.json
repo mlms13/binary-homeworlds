@@ -1,7 +1,7 @@
 {
-  "name": "@binary-homeworlds/shared",
+  "name": "@binary-homeworlds/engine",
   "version": "1.0.0",
-  "description": "Shared game logic for Binary Homeworlds",
+  "description": "Core game engine used by both the UI and backend",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -27,8 +27,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "format": "prettier --check \"src/**/*.ts\"",
-    "format:fix": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --check \"src/**/*.ts\" \"__tests__/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\" \"__tests__/**/*.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -37,11 +37,10 @@
     "rules-engine",
     "typescript"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Michael Martin",
+  "license": "MIT",
   "devDependencies": {
-    "@types/node": "^24.0.10",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
     "prettier": "^3.6.2",
     "tsup": "^8.0.0",
     "typescript": "^5.8.3",

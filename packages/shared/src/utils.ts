@@ -113,7 +113,7 @@ export function getSmallestAvailableSize(
     .map(piece => piece.size)
     .sort((a, b) => a - b);
 
-  return availableSizes.length > 0 ? availableSizes[0] : null;
+  return availableSizes.length > 0 ? (availableSizes[0] ?? null) : null;
 }
 
 // Check if a piece of specific color and size is available in bank
@@ -133,7 +133,8 @@ export function removePieceFromBank(
   const index = bank.findIndex(piece => piece.id === pieceId);
   if (index === -1) return null;
 
-  return bank.splice(index, 1)[0];
+  const [removed] = bank.splice(index, 1);
+  return removed ?? null;
 }
 
 // Add a piece to bank

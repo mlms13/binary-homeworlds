@@ -2,18 +2,26 @@
   "name": "@binary-homeworlds/server",
   "version": "1.0.0",
   "description": "Fastify server for Binary Homeworlds multiplayer game",
-  "main": "dist/index.js",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist",
+    "lint": "eslint \"src\"",
     "lint:fix": "eslint \"src\" --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --check \"src/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -31,6 +39,7 @@
     "@types/uuid": "^10.0.0",
     "pino-pretty": "^13.0.0",
     "prettier": "^3.6.2",
+    "tsup": "^8.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"

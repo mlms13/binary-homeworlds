@@ -61,6 +61,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       return () => mediaQuery.removeEventListener('change', handleChange);
     } else {
       setEffectiveTheme(theme as 'light' | 'dark');
+      return () => {}; // no cleanup
     }
   }, [theme]);
 
