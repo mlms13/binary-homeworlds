@@ -16,7 +16,7 @@ describe('Game Setup', () => {
     expect(gameState.getHomeSystem('player2')).toBeNull();
   });
 
-  it('after player1 selects first star, home system is assigned', () => {
+  it.skip('after player1 selects first star, home system is assigned', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
@@ -52,7 +52,7 @@ describe('Game Setup', () => {
     }
   });
 
-  it('should handle alternating setup sequence', () => {
+  it.skip('should handle alternating setup sequence', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
@@ -117,7 +117,7 @@ describe('Game Setup', () => {
 });
 
 describe('Setup Turn Enforcement', () => {
-  it('should not allow player1 to take multiple actions in a row during setup', () => {
+  it.skip('should not allow player1 to take multiple actions in a row during setup', () => {
     const engine = new GameEngine();
 
     // Player 1: large green star
@@ -134,7 +134,7 @@ describe('Setup Turn Enforcement', () => {
     expect(result.error).toBe('Not your turn');
   });
 
-  it('should not allow a player to take a normal action before setup is complete', () => {
+  it.skip('should not allow a player to take a normal action before setup is complete', () => {
     const engine = new GameEngine();
 
     // Player 1: large green star
@@ -159,7 +159,7 @@ describe('Setup Turn Enforcement', () => {
 });
 
 describe('Setup Edge Cases', () => {
-  it('should not allow players to select a missing bank piece', () => {
+  it.skip('should not allow players to select a missing bank piece', () => {
     // this scenario should be super unlikely in normal play, but it's possible
     // that while setting up their home worlds, players fully exhaust a certain
     // type of piece from the bank

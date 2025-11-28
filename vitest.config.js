@@ -8,6 +8,9 @@ export default defineConfig({
       'packages/*/src/**/*.{test,spec}.{js,ts,tsx}',
       '**/__tests__/**/*.{js,ts,tsx}',
     ],
+    exclude: [
+      '**/__tests__/**/utils.{js,ts,tsx}',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
