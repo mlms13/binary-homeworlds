@@ -9,7 +9,7 @@ interface ActionMenuProps {
   shipId: GamePiece.PieceId;
   systemId: string;
   position: { x: number; y: number };
-  availableActions: ActionOption[];
+  availableActions: Array<ActionOption>;
   onClose: () => void;
   onAction: (action: string) => void;
 }

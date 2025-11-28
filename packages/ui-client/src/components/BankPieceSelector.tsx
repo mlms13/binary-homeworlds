@@ -10,8 +10,8 @@ import TrianglePiece from './TrianglePiece.js';
 interface BankPieceSelectorProps {
   isOpen: boolean;
   title: string;
-  bankPieces: GamePiece.Piece[];
-  validPieceIds: GamePiece.PieceId[];
+  bankPieces: Array<GamePiece.Piece>;
+  validPieceIds: Array<GamePiece.PieceId>;
   onPieceSelect: (piece: GamePiece.Piece) => void;
   onClose: () => void;
 }

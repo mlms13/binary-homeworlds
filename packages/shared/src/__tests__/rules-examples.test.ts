@@ -426,8 +426,8 @@ describe('RULES.md Examples', () => {
       }
 
       // Add non-red pieces (simplified for test)
-      for (const color of ['yellow', 'green', 'blue'] as GamePiece.Color[]) {
-        for (const size of [1, 2, 3] as GamePiece.Size[]) {
+      for (const color of ['yellow', 'green', 'blue'] as const) {
+        for (const size of [1, 2, 3] as const) {
           for (let i = 0; i < 3; i++) {
             gameState.addPieceToBank(createPiece(color, size));
           }
@@ -465,7 +465,7 @@ describe('RULES.md Examples', () => {
         'player1',
         redShip.id,
         system.id,
-        smallestRedPiece?.id ?? ('red-1-0' as GamePiece.PieceId)
+        smallestRedPiece?.id ?? ('red-1-0' as const)
       );
 
       const result = engine.applyAction(growAction);
@@ -508,7 +508,7 @@ describe('RULES.md Examples', () => {
         'player1',
         redShip.id,
         system.id,
-        'red-1-0' as GamePiece.PieceId // Using valid ID format but piece won't be in bank
+        'red-1-0' as const // Using valid ID format but piece won't be in bank
       );
 
       const result = engine.applyAction(growAction);
@@ -695,16 +695,8 @@ describe('RULES.md Examples', () => {
       gameState.setPhase('normal');
 
       // Add pieces to bank for trading
-      const redPiece: GamePiece.Piece = {
-        color: 'red' as GamePiece.Color,
-        size: 2 as GamePiece.Size,
-        id: 'red-2-0' as GamePiece.PieceId,
-      };
-      const yellowPiece: GamePiece.Piece = {
-        color: 'yellow' as GamePiece.Color,
-        size: 1 as GamePiece.Size,
-        id: 'yellow-1-0' as GamePiece.PieceId,
-      };
+      const redPiece = createPiece('red', 2);
+      const yellowPiece = createPiece('yellow', 1);
       gameState.addPieceToBank(redPiece);
       gameState.addPieceToBank(yellowPiece);
 

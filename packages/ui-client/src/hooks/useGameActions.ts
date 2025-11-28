@@ -6,7 +6,7 @@ import { isColorAvailable } from '@binary-homeworlds/shared';
 import { GameAction } from '@binary-homeworlds/shared';
 
 export const useGameActions = (gameEngine: GameEngine) => {
-  const [actionHistory, setActionHistory] = useState<GameAction[]>([]);
+  const [actionHistory, setActionHistory] = useState<Array<GameAction>>([]);
 
   // Reset action history when game engine changes (new game)
   useEffect(() => {

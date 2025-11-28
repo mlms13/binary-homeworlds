@@ -29,7 +29,7 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
     // Add needed pieces to the bank
-    const allPieces: GamePiece.Piece[] = [
+    const allPieces: Array<GamePiece.Piece> = [
       {
         color: 'green' as GamePiece.Color,
         size: 3 as GamePiece.Size,

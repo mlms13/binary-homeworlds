@@ -230,9 +230,9 @@ export class GameService {
     return gameSession;
   }
 
-  async getPublicGames(): Promise<GameListItem[]> {
+  async getPublicGames(): Promise<Array<GameListItem>> {
     const gameIds = await this.redis.sMembers(this.PUBLIC_GAMES_SET);
-    const games: GameListItem[] = [];
+    const games: Array<GameListItem> = [];
 
     for (const gameId of gameIds) {
       const gameSession = await this.getGame(gameId);
@@ -261,11 +261,11 @@ export class GameService {
     );
   }
 
-  async getPlayerGames(playerId: string): Promise<GameListItem[]> {
+  async getPlayerGames(playerId: string): Promise<Array<GameListItem>> {
     // This is a simplified implementation - in production, you'd want to maintain
     // an index of player -> games for better performance
     const allKeys = await this.redis.keys(`${this.GAME_PREFIX}*`);
-    const games: GameListItem[] = [];
+    const games: Array<GameListItem> = [];
 
     for (const key of allKeys) {
       const gameData = await this.redis.get(key);

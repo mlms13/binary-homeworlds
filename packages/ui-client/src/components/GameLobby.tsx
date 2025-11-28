@@ -20,8 +20,8 @@ export default function GameLobby({
     socketService.getPlayerName() || ''
   );
   const [isRegistered, setIsRegistered] = useState(false);
-  const [currentGames, setCurrentGames] = useState<GameListItem[]>([]);
-  const [publicGames, setPublicGames] = useState<GameListItem[]>([]);
+  const [currentGames, setCurrentGames] = useState<Array<GameListItem>>([]);
+  const [publicGames, setPublicGames] = useState<Array<GameListItem>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCreateGame, setShowCreateGame] = useState(false);

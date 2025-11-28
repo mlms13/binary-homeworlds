@@ -44,15 +44,15 @@ export class ApiService {
     return response.json();
   }
 
-  async getPublicGames(): Promise<GameListItem[]> {
-    const response = await this.request<{ games: GameListItem[] }>(
+  async getPublicGames(): Promise<Array<GameListItem>> {
+    const response = await this.request<{ games: Array<GameListItem> }>(
       '/api/games/public'
     );
     return response.games;
   }
 
-  async getPlayerGames(playerId: string): Promise<GameListItem[]> {
-    const response = await this.request<{ games: GameListItem[] }>(
+  async getPlayerGames(playerId: string): Promise<Array<GameListItem>> {
+    const response = await this.request<{ games: Array<GameListItem> }>(
       `/api/games/player/${playerId}`
     );
     return response.games;

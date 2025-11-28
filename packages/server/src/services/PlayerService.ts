@@ -163,10 +163,10 @@ export class PlayerService {
     await this.redis.del(key);
   }
 
-  async getAllHoverStates(gameId: string): Promise<HoverState[]> {
+  async getAllHoverStates(gameId: string): Promise<Array<HoverState>> {
     const pattern = `${this.HOVER_STATE_PREFIX}${gameId}:*`;
     const keys = await this.redis.keys(pattern);
-    const hoverStates: HoverState[] = [];
+    const hoverStates: Array<HoverState> = [];
 
     for (const key of keys) {
       const data = await this.redis.get(key);

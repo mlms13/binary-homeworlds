@@ -3,12 +3,13 @@ import {
   bankToPieces,
   GameAction,
   GameEngine,
+  System,
 } from '@binary-homeworlds/shared';
 
 import './ActionLog.css';
 
 interface ActionLogProps {
-  actions: GameAction[];
+  actions: Array<GameAction>;
   onClose: () => void;
   getPlayerDisplayName: (player: Player.Player) => string;
 }
@@ -70,35 +71,16 @@ export default function ActionLog({
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
         const toSystem = action.toSystemId
           ? (stateAfter.systems.find(
-              (s: { id: string; stars?: { size: number; color: string }[] }) =>
-                s.id === action.toSystemId
+              (s: System) => s.id === action.toSystemId
             ) ?? null)
           : null;
 
         const shipDesc = `${ship.size === 1 ? 'small' : ship.size === 2 ? 'medium' : 'large'} ${ship.color} ship`;
 
         if (action.toSystemId) {
-          const fromName = getSystemName(
-            fromSystem && 'id' in fromSystem
-              ? (fromSystem as {
-                  id: string;
-                  stars?: { size: number; color: string }[];
-                })
-              : null,
-            stateBefore as {
-              players: {
-                player1: { homeSystemId: string };
-                player2: { homeSystemId: string };
-              };
-            }
-          );
+          const fromName = getSystemName(fromSystem, stateBefore);
           const toName = getSystemName(
-            toSystem && 'id' in toSystem
-              ? (toSystem as {
-                  id: string;
-                  stars?: { size: number; color: string }[];
-                })
-              : null,
+            toSystem && 'id' in toSystem ? toSystem : null,
             stateAfter as {
               players: {
                 player1: { homeSystemId: string };
@@ -181,13 +163,8 @@ export default function ActionLog({
 
       case 'overpopulation': {
         const system =
-          stateBefore.systems.find(
-            (s: { id: string }) => s.id === action.systemId
-          ) ??
-          (null as {
-            id: string;
-            stars?: { size: number; color: string }[];
-          } | null);
+          stateBefore.systems.find((s: System) => s.id === action.systemId) ??
+          null;
         const systemName = getSystemName(system, stateBefore);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
@@ -200,34 +177,30 @@ export default function ActionLog({
 
   const findShipInState = (
     state: {
-      systems: {
-        ships: { id: string; color: string; size: number }[];
-      }[];
+      systems: Array<System>;
     },
     shipId: GamePiece.PieceId
   ) => {
     for (const system of state.systems) {
-      const ship = system.ships.find(
-        (s: { id: string; color: string; size: number }) => s.id === shipId
-      );
+      const ship = system.ships.find((s: GamePiece.Ship) => s.id === shipId);
       if (ship) return ship;
     }
     return null;
   };
 
   const findSystemWithShip = (
-    state: { systems: { ships: { id: string }[] }[] },
+    state: { systems: Array<System> },
     shipId: GamePiece.PieceId
   ) => {
     return (
-      state.systems.find((system: { ships: { id: string }[] }) =>
-        system.ships.some((ship: { id: string }) => ship.id === shipId)
+      state.systems.find((system: System) =>
+        system.ships.some((ship: GamePiece.Ship) => ship.id === shipId)
       ) ?? null
     );
   };
 
   const getSystemName = (
-    system: { id: string; stars?: { size: number; color: string }[] } | null,
+    system: System | null,
     state: {
       players: {
         player1: { homeSystemId: string };

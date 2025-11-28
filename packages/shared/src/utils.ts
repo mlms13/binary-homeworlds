@@ -13,8 +13,8 @@ export function generateId(): string {
 
 // Create a new system
 export function createSystem(
-  stars: GamePiece.Star[],
-  ships: GamePiece.Ship[] = []
+  stars: Array<GamePiece.Star>,
+  ships: Array<GamePiece.Ship> = []
 ): System {
   return {
     id: generateId(),
@@ -45,7 +45,7 @@ export function isColorAvailable(
 export function getPiecesOfColor(
   system: System,
   color: GamePiece.Color
-): (GamePiece.Star | GamePiece.Ship)[] {
+): Array<GamePiece.Star | GamePiece.Ship> {
   const stars = system.stars.filter(star => star.color === color);
   const ships = system.ships.filter(ship => ship.color === color);
   return [...stars, ...ships];
@@ -81,10 +81,10 @@ export function findOverpopulation(
 /**
  * Convert Engine Bank to an array of Pieces
  */
-export function bankToPieces(bank: Bank.Bank): GamePiece.Piece[] {
-  const pieces: GamePiece.Piece[] = [];
-  const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
-  const sizes: GamePiece.Size[] = [1, 2, 3];
+export function bankToPieces(bank: Bank.Bank): Array<GamePiece.Piece> {
+  const pieces: Array<GamePiece.Piece> = [];
+  const colors: Array<GamePiece.Color> = ['yellow', 'green', 'blue', 'red'];
+  const sizes: Array<GamePiece.Size> = [1, 2, 3];
 
   for (const color of colors) {
     for (const size of sizes) {
@@ -104,14 +104,14 @@ export function findPieceInBank(
   bank: Bank.Bank,
   pieceId: GamePiece.PieceId
 ): GamePiece.Piece | null {
-  const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
-  const sizes: GamePiece.Size[] = [1, 2, 3];
+  const colors: Array<GamePiece.Color> = ['yellow', 'green', 'blue', 'red'];
+  const sizes: Array<GamePiece.Size> = [1, 2, 3];
 
   for (const color of colors) {
     for (const size of sizes) {
       // Engine's Bank stores PieceId[], but we use arbitrary string IDs
       // This is safe at runtime since Engine's Bank just stores strings
-      const pieceIds = bank[color][size] as unknown as string[];
+      const pieceIds = bank[color][size] as unknown as Array<string>;
       const index = pieceIds.indexOf(pieceId);
       if (index !== -1) {
         return { color, size, id: pieceId };
@@ -170,7 +170,7 @@ export function addPieceToEngineBank(
  * Add multiple pieces to Engine Bank
  */
 export function addPiecesToEngineBank(
-  pieces: GamePiece.Piece[],
+  pieces: Array<GamePiece.Piece>,
   bank: Bank.Bank
 ): Bank.Bank {
   let result = bank;

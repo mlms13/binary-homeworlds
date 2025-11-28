@@ -10,7 +10,7 @@ export interface GameSession {
     player2?: PlayerInfo;
   };
   currentPlayer: Player.Player;
-  actions: GameAction[];
+  actions: Array<GameAction>;
   createdAt: string;
   updatedAt: string;
   privateCode?: string; // For private games
@@ -51,6 +51,6 @@ export interface PlayerSession {
   playerId: string; // Unique user/session identifier (UUID)
   playerName: string;
   socketId: string;
-  currentGames: string[]; // Array of game IDs
+  currentGames: Array<string>; // Array of game IDs
   lastActivity: string;
 }

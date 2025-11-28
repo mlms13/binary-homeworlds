@@ -132,7 +132,7 @@ export function createSacrificeAction(
   player: Player.Player,
   sacrificedShipId: GamePiece.PieceId,
   systemId: string,
-  followupActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[]
+  followupActions: Array<MoveAction | CaptureAction | GrowAction | TradeAction>
 ): SacrificeAction {
   return {
     type: 'sacrifice',

@@ -366,7 +366,7 @@ export class GameEngine {
   }
 
   // Replay a sequence of actions to reconstruct game state
-  static fromHistory(actions: GameAction[]): GameEngine {
+  static fromHistory(actions: Array<GameAction>): GameEngine {
     const engine = new GameEngine();
 
     for (const action of actions) {
@@ -380,9 +380,9 @@ export class GameEngine {
   }
 
   // Get available actions for current player
-  getAvailableActions(): string[] {
+  getAvailableActions(): Array<string> {
     const state = this.gameState.getState();
-    const actions: string[] = [];
+    const actions: Array<string> = [];
 
     if (state.phase === 'setup') {
       actions.push('setup');

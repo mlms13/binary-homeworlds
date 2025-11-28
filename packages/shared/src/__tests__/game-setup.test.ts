@@ -43,8 +43,8 @@ describe('Game Setup', () => {
     const engine = new GameEngine();
 
     // Should have exactly 3 of each color-size combination
-    const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
-    const sizes: GamePiece.Size[] = [1, 2, 3];
+    const colors: Array<GamePiece.Color> = ['yellow', 'green', 'blue', 'red'];
+    const sizes: Array<GamePiece.Size> = [1, 2, 3];
 
     for (const color of colors) {
       for (const size of sizes) {

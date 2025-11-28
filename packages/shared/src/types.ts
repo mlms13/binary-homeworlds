@@ -7,8 +7,8 @@ import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
 // System represents a star system with stars and ships
 export interface System {
   id: string;
-  stars: GamePiece.Star[];
-  ships: GamePiece.Ship[];
+  stars: Array<GamePiece.Star>;
+  ships: Array<GamePiece.Ship>;
 }
 
 // Player state
@@ -24,14 +24,14 @@ export interface GameState {
   phase: GamePhase;
   currentPlayer: Player.Player;
   turnNumber: number;
-  systems: System[];
+  systems: Array<System>;
   bank: Bank.Bank;
   players: {
     player1: PlayerState;
     player2: PlayerState;
   };
   winner?: Player.Player;
-  gameHistory: GameAction[];
+  gameHistory: Array<GameAction>;
 }
 
 // Action types
@@ -93,7 +93,7 @@ export interface SacrificeAction extends BaseAction {
   type: 'sacrifice';
   sacrificedShipId: GamePiece.PieceId;
   systemId: string;
-  followupActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[];
+  followupActions: Array<MoveAction | CaptureAction | GrowAction | TradeAction>;
 }
 
 // Overpopulation action

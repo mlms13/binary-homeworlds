@@ -14,7 +14,7 @@ interface SystemContentProps {
   pendingCapture?: {
     attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: GamePiece.PieceId[];
+    validTargetShipIds: Array<GamePiece.PieceId>;
   } | null;
   onShipClickForCapture?: (
     targetShipId: GamePiece.PieceId,

@@ -11,7 +11,7 @@ export interface GameSession {
     player2?: { id: string; name: string; isOnline: boolean };
   };
   currentPlayer: 'player1' | 'player2';
-  actions: GameAction[];
+  actions: Array<GameAction>;
   createdAt: string;
   updatedAt: string;
   privateCode?: string;

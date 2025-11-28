@@ -72,17 +72,17 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get available pieces in bank
-  getBankPieces(): GamePiece.Piece[] {
+  getBankPieces(): Array<GamePiece.Piece> {
     return bankToPieces(this.state.bank);
   }
 
   // Get all systems (copies)
-  getSystems(): System[] {
+  getSystems(): Array<System> {
     return this.state.systems.map(system => ({ ...system }));
   }
 
   // Get direct reference to systems (for internal use)
-  getSystemsRef(): System[] {
+  getSystemsRef(): Array<System> {
     return this.state.systems;
   }
 
@@ -97,7 +97,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get game history
-  getHistory(): GameAction[] {
+  getHistory(): Array<GameAction> {
     return [...this.state.gameHistory];
   }
 
@@ -158,11 +158,11 @@ export class BinaryHomeworldsGameState {
   }
 
   // Add pieces to bank (for overpopulation cleanup)
-  addPiecesToBank(pieces: GamePiece.Piece[]): void {
+  addPiecesToBank(pieces: Array<GamePiece.Piece>): void {
     this.state.bank = addPiecesToEngineBank(pieces, this.state.bank);
   }
 
-  getOverpopulations(): { systemId: string; color: GamePiece.Color }[] {
+  getOverpopulations(): Array<{ systemId: string; color: GamePiece.Color }> {
     return this.state.systems.flatMap(system => {
       for (const color of ['yellow', 'green', 'blue', 'red'] as const) {
         if (hasOverpopulation(system, color)) {
@@ -195,7 +195,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Create a new game state from action history (replay)
-  static fromHistory(_actions: GameAction[]): BinaryHomeworldsGameState {
+  static fromHistory(_actions: Array<GameAction>): BinaryHomeworldsGameState {
     const gameState = new BinaryHomeworldsGameState();
 
     // This would be implemented by the GameEngine
@@ -205,8 +205,8 @@ export class BinaryHomeworldsGameState {
   }
 
   // Validate that the current state is consistent
-  validateState(): { valid: boolean; errors: string[] } {
-    const errors: string[] = [];
+  validateState(): { valid: boolean; errors: Array<string> } {
+    const errors: Array<string> = [];
 
     // Check that all systems have at least one star (except during setup)
     if (this.state.phase !== 'setup') {

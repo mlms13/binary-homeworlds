@@ -72,22 +72,22 @@ export default function GameBoard({
   const [pendingTrade, setPendingTrade] = useState<{
     shipId: GamePiece.PieceId;
     systemId: string;
-    validPieceIds: GamePiece.PieceId[];
+    validPieceIds: Array<GamePiece.PieceId>;
   } | null>(null);
 
   // Move action state
   const [pendingMove, setPendingMove] = useState<{
     shipId: GamePiece.PieceId;
     fromSystemId: string;
-    validDestinationIds: string[];
-    validBankPieceIds: GamePiece.PieceId[];
+    validDestinationIds: Array<string>;
+    validBankPieceIds: Array<GamePiece.PieceId>;
   } | null>(null);
 
   // Capture action state
   const [pendingCapture, setPendingCapture] = useState<{
     attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: GamePiece.PieceId[];
+    validTargetShipIds: Array<GamePiece.PieceId>;
   } | null>(null);
 
   // Sacrifice action state
@@ -200,7 +200,7 @@ export default function GameBoard({
     (
       shipId: GamePiece.PieceId,
       systemId: string,
-      validPieceIds: GamePiece.PieceId[]
+      validPieceIds: Array<GamePiece.PieceId>
     ) => {
       // Check if game has ended
       if (state.phase === 'ended') return;
@@ -385,7 +385,7 @@ export default function GameBoard({
     (
       attackingShipId: GamePiece.PieceId,
       systemId: string,
-      validTargetShipIds: GamePiece.PieceId[]
+      validTargetShipIds: Array<GamePiece.PieceId>
     ) => {
       // Check if game has ended
       if (state.phase === 'ended') return;

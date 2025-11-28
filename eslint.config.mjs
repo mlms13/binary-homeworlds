@@ -37,6 +37,7 @@ const commonTypeScriptRules = {
   '@typescript-eslint/explicit-module-boundary-types': 'off',
   '@typescript-eslint/no-explicit-any': 'warn',
   '@typescript-eslint/no-non-null-assertion': 'off',
+  '@typescript-eslint/array-type': ['error', { default: 'generic' }],
 };
 
 // Common TypeScript plugins

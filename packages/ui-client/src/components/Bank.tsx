@@ -7,13 +7,13 @@ import './Bank.css';
 import TrianglePiece from './TrianglePiece.js';
 
 interface BankProps {
-  pieces: GamePiece.Piece[];
+  pieces: Array<GamePiece.Piece>;
   onPieceClick?: (piece: GamePiece.Piece) => void;
   isSetupPhase?: boolean;
-  selectedPieces?: GamePiece.Piece[];
-  validTradeIds?: GamePiece.PieceId[];
+  selectedPieces?: Array<GamePiece.Piece>;
+  validTradeIds?: Array<GamePiece.PieceId>;
   isTradeMode?: boolean;
-  validMoveIds?: GamePiece.PieceId[];
+  validMoveIds?: Array<GamePiece.PieceId>;
   isMoveMode?: boolean;
 }
 
@@ -39,11 +39,11 @@ const Bank: React.FC<BankProps> = ({
       acc[piece.color]![piece.size]!.push(piece);
       return acc;
     },
-    {} as Record<string, Record<number, GamePiece.Piece[]>>
+    {} as Record<string, Record<number, Array<GamePiece.Piece>>>
   );
 
   // Define color order for consistent display
-  const colorOrder: GamePiece.Color[] = ['red', 'yellow', 'green', 'blue'];
+  const colorOrder: Array<GamePiece.Color> = ['red', 'yellow', 'green', 'blue'];
   const sizeOrder = [3, 2, 1]; // Reversed: large to small
 
   return (

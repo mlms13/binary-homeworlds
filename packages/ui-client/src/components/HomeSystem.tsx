@@ -25,19 +25,19 @@ interface HomeSystemProps {
   getAvailableActions: (
     shipId: GamePiece.PieceId,
     systemId: string
-  ) => ActionOption[];
-  bankPieces: GamePiece.Piece[];
+  ) => Array<ActionOption>;
+  bankPieces: Array<GamePiece.Piece>;
   currentPlayer: 'player1' | 'player2';
   onTradeInitiate?: (
     shipId: GamePiece.PieceId,
     systemId: string,
-    validPieceIds: GamePiece.PieceId[]
+    validPieceIds: Array<GamePiece.PieceId>
   ) => void;
   onMoveInitiate?: (shipId: GamePiece.PieceId, fromSystemId: string) => void;
   onCaptureInitiate?: (
     attackingShipId: GamePiece.PieceId,
     systemId: string,
-    validTargetShipIds: GamePiece.PieceId[]
+    validTargetShipIds: Array<GamePiece.PieceId>
   ) => void;
   onShipClickForCapture?: (
     targetShipId: GamePiece.PieceId,
@@ -46,7 +46,7 @@ interface HomeSystemProps {
   pendingCapture?: {
     attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: GamePiece.PieceId[];
+    validTargetShipIds: Array<GamePiece.PieceId>;
   } | null;
   onSacrificeInitiate?: (
     sacrificedShipId: GamePiece.PieceId,
