@@ -281,10 +281,12 @@ async function startServer() {
             if (!player) return;
 
             if (data.hoverState) {
+              const { playerId: _, ...hoverStateWithoutPlayerId } =
+                data.hoverState;
               await playerService.setHoverState({
-                ...data.hoverState,
+                ...hoverStateWithoutPlayerId,
                 gameId: data.gameId,
-                playerId: player.playerId,
+                playerId: player.playerId, // Override with server-side user ID
                 timestamp: new Date().toISOString(),
               });
             } else {

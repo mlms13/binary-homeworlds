@@ -48,7 +48,7 @@ export interface GameListItem {
 }
 
 export interface PlayerSession {
-  playerId: Player.Player;
+  playerId: string; // Unique user/session identifier (UUID)
   playerName: string;
   socketId: string;
   currentGames: string[]; // Array of game IDs

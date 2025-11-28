@@ -7,86 +7,47 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-// Base TypeScript configuration
-const typescriptConfig = {
-  languageOptions: {
-    parser: typescriptParser,
-    parserOptions: {
-      ecmaVersion: 2020,
-      sourceType: 'module',
-    },
-  },
-  plugins: {
-    '@typescript-eslint': typescript,
-    prettier: prettier,
-  },
-  rules: {
-    ...js.configs.recommended.rules,
-    ...typescript.configs.recommended.rules,
-    ...prettierConfig.rules,
-    'prettier/prettier': 'error',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-non-null-assertion': 'off',
+// ============================================================================
+// Base TypeScript Configuration
+// ============================================================================
+
+const baseTypeScriptParser = {
+  parser: typescriptParser,
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
   },
 };
 
-// React-specific configuration
-const reactConfig = {
-  languageOptions: {
-    globals: {
-      React: 'readonly',
-      JSX: 'readonly',
-      document: 'readonly',
-      window: 'readonly',
-      console: 'readonly',
-      HTMLElement: 'readonly',
-      Node: 'readonly',
-      MouseEvent: 'readonly',
-      KeyboardEvent: 'readonly',
-      localStorage: 'readonly',
-      setTimeout: 'readonly',
-      clearTimeout: 'readonly',
-      alert: 'readonly',
-      fetch: 'readonly',
-      RequestInit: 'readonly',
-      MediaQueryListEvent: 'readonly',
-      HTMLDivElement: 'readonly',
+// Common TypeScript rules applied to all packages
+const commonTypeScriptRules = {
+  ...js.configs.recommended.rules,
+  ...typescript.configs.recommended.rules,
+  ...prettierConfig.rules,
+  'prettier/prettier': 'error',
+  '@typescript-eslint/no-unused-vars': [
+    'error',
+    {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_',
+      caughtErrorsIgnorePattern: '^_',
     },
-  },
-  plugins: {
-    react: react,
-    'react-hooks': reactHooks,
-  },
-  rules: {
-    ...react.configs.recommended.rules,
-    ...reactHooks.configs.recommended.rules,
-    'react/react-in-jsx-scope': 'off', // Not needed with React 17+
-    'react/prop-types': 'off', // Using TypeScript for prop validation
-  },
+  ],
+  '@typescript-eslint/explicit-function-return-type': 'off',
+  '@typescript-eslint/explicit-module-boundary-types': 'off',
+  '@typescript-eslint/no-explicit-any': 'warn',
+  '@typescript-eslint/no-non-null-assertion': 'off',
 };
 
-// Test configuration
-const testConfig = {
-  languageOptions: {
-    globals: {
-      describe: 'readonly',
-      it: 'readonly',
-      expect: 'readonly',
-      beforeEach: 'readonly',
-      afterEach: 'readonly',
-      beforeAll: 'readonly',
-      afterAll: 'readonly',
-      test: 'readonly',
-      vi: 'readonly',
-    },
-  },
+// Common TypeScript plugins
+const commonTypeScriptPlugins = {
+  '@typescript-eslint': typescript,
+  prettier: prettier,
+  'simple-import-sort': simpleImportSort,
 };
 
-// Import sorting configuration for all packages
-const importSortConfig = {
+// Import sorting configuration
+const importSortRules = {
   'simple-import-sort/imports': [
     'error',
     {
@@ -105,65 +66,75 @@ const importSortConfig = {
   'simple-import-sort/exports': 'error',
 };
 
+// ============================================================================
+// Browser Globals (for UI Client)
+// ============================================================================
+
+const browserGlobals = {
+  React: 'readonly',
+  JSX: 'readonly',
+  document: 'readonly',
+  window: 'readonly',
+  console: 'readonly',
+  HTMLElement: 'readonly',
+  Node: 'readonly',
+  MouseEvent: 'readonly',
+  KeyboardEvent: 'readonly',
+  localStorage: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
+  alert: 'readonly',
+  fetch: 'readonly',
+  RequestInit: 'readonly',
+  MediaQueryListEvent: 'readonly',
+  HTMLDivElement: 'readonly',
+};
+
+// ============================================================================
+// React Configuration (for UI Client)
+// ============================================================================
+
+const reactPlugins = {
+  react: react,
+  'react-hooks': reactHooks,
+};
+
+const reactRules = {
+  ...react.configs.recommended.rules,
+  ...reactHooks.configs.recommended.rules,
+  'react/react-in-jsx-scope': 'off', // Not needed with React 17+
+  'react/prop-types': 'off', // Using TypeScript for prop validation
+};
+
+// ============================================================================
+// Configuration Exports
+// ============================================================================
+
 export default [
-  // UI Client (React + TypeScript)
+  // UI Client (React + TypeScript + Browser)
   {
     files: ['packages/ui-client/src/**/*.{ts,tsx}'],
     languageOptions: {
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-      },
-      globals: {
-        React: 'readonly',
-        JSX: 'readonly',
-        document: 'readonly',
-        window: 'readonly',
-        console: 'readonly',
-        HTMLElement: 'readonly',
-        Node: 'readonly',
-        MouseEvent: 'readonly',
-        KeyboardEvent: 'readonly',
-        localStorage: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        alert: 'readonly',
-        fetch: 'readonly',
-        RequestInit: 'readonly',
-        MediaQueryListEvent: 'readonly',
-        HTMLDivElement: 'readonly',
-      },
+      ...baseTypeScriptParser,
+      globals: browserGlobals,
     },
     plugins: {
-      '@typescript-eslint': typescript,
-      prettier: prettier,
-      react: react,
-      'react-hooks': reactHooks,
-      'simple-import-sort': simpleImportSort,
+      ...commonTypeScriptPlugins,
+      ...reactPlugins,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...typescript.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      ...prettierConfig.rules,
-      'prettier/prettier': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      ...importSortConfig,
+      ...commonTypeScriptRules,
+      ...reactRules,
+      ...importSortRules,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
   },
 
-  // Shared, Server, and Engine packages (TypeScript only)
+  // Shared, Server, and Engine packages (TypeScript only, no globals)
   {
     files: [
       'packages/shared/src/**/*.ts',
@@ -171,77 +142,33 @@ export default [
       'packages/engine/src/**/*.ts',
     ],
     languageOptions: {
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-      },
+      ...baseTypeScriptParser,
     },
     plugins: {
-      '@typescript-eslint': typescript,
-      prettier: prettier,
-      'simple-import-sort': simpleImportSort,
+      ...commonTypeScriptPlugins,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...typescript.configs.recommended.rules,
-      ...prettierConfig.rules,
-      'prettier/prettier': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      ...importSortConfig,
+      ...commonTypeScriptRules,
+      ...importSortRules,
     },
   },
 
-  // Test files
+  // Test files (TypeScript, no test globals - helpers must be imported)
   {
     files: [
       'packages/*/src/**/*.{test,spec}.{ts,tsx}',
       'packages/*/__tests__/**/*.{ts,tsx}',
     ],
     languageOptions: {
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-      },
-      globals: {
-        describe: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        test: 'readonly',
-        vi: 'readonly',
-      },
+      ...baseTypeScriptParser,
+      // No globals - test helpers like describe, expect, etc. must be imported
     },
     plugins: {
-      '@typescript-eslint': typescript,
-      prettier: prettier,
-      'simple-import-sort': simpleImportSort,
+      ...commonTypeScriptPlugins,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...typescript.configs.recommended.rules,
-      ...prettierConfig.rules,
-      'prettier/prettier': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      ...importSortConfig,
+      ...commonTypeScriptRules,
+      ...importSortRules,
     },
   },
 

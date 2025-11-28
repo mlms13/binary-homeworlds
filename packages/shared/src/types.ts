@@ -127,7 +127,7 @@ export interface GameResult {
 
 export interface HoverState {
   gameId: string;
-  playerId: Player.Player;
+  playerId: string; // Unique user/session identifier (UUID), not game role
   type: 'ship' | 'star' | 'system' | 'bankPiece';
   targetId: GamePiece.PieceId;
   timestamp: string;
