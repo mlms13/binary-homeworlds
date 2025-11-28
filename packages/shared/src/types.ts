@@ -2,33 +2,13 @@
  * Core types for Binary Homeworlds game
  */
 
-import { Bank as BankModule } from '@binary-homeworlds/engine';
-
-// Basic game piece properties
-export type Color = 'yellow' | 'green' | 'blue' | 'red';
-export type Size = 1 | 2 | 3; // small, medium, large
-export type Player = 'player1' | 'player2';
-
-// Game piece representation
-export interface Piece {
-  color: Color;
-  size: Size;
-  id: string; // unique identifier for tracking
-}
-
-// Ship extends piece with ownership
-export interface Ship extends Piece {
-  owner: Player;
-}
-
-// Star is just a piece (no owner)
-export type Star = Piece;
+import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
 
 // System represents a star system with stars and ships
 export interface System {
   id: string;
-  stars: Star[];
-  ships: Ship[];
+  stars: GamePiece.Star[];
+  ships: GamePiece.Ship[];
 }
 
 // Player state
@@ -42,15 +22,15 @@ export type GamePhase = 'setup' | 'normal' | 'ended';
 // Game state
 export interface GameState {
   phase: GamePhase;
-  currentPlayer: Player;
+  currentPlayer: Player.Player;
   turnNumber: number;
   systems: System[];
-  bank: BankModule.Bank;
+  bank: Bank.Bank;
   players: {
     player1: PlayerState;
     player2: PlayerState;
   };
-  winner?: Player;
+  winner?: Player.Player;
   gameHistory: GameAction[];
 }
 
@@ -67,51 +47,51 @@ export type ActionType =
 // Base action interface
 export interface BaseAction {
   type: ActionType;
-  player: Player;
+  player: Player.Player;
   timestamp: number;
 }
 
 // Setup actions (initial phase)
 export interface SetupAction extends BaseAction {
   type: 'setup';
-  pieceId: string;
+  pieceId: GamePiece.PieceId;
   role: 'star1' | 'star2' | 'ship';
 }
 
 // Basic actions
 export interface MoveAction extends BaseAction {
   type: 'move';
-  shipId: string;
+  shipId: GamePiece.PieceId;
   fromSystemId: string;
   toSystemId?: string; // undefined if creating new system
-  newStarPieceId?: string; // required if creating new system
+  newStarPieceId?: GamePiece.PieceId; // required if creating new system
 }
 
 export interface CaptureAction extends BaseAction {
   type: 'capture';
-  attackingShipId: string;
-  targetShipId: string;
+  attackingShipId: GamePiece.PieceId;
+  targetShipId: GamePiece.PieceId;
   systemId: string;
 }
 
 export interface GrowAction extends BaseAction {
   type: 'grow';
-  actingShipId: string;
+  actingShipId: GamePiece.PieceId;
   systemId: string;
-  newShipPieceId: string;
+  newShipPieceId: GamePiece.PieceId;
 }
 
 export interface TradeAction extends BaseAction {
   type: 'trade';
-  shipId: string;
+  shipId: GamePiece.PieceId;
   systemId: string;
-  newPieceId: string;
+  newPieceId: GamePiece.PieceId;
 }
 
 // Sacrifice action
 export interface SacrificeAction extends BaseAction {
   type: 'sacrifice';
-  sacrificedShipId: string;
+  sacrificedShipId: GamePiece.PieceId;
   systemId: string;
   followupActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[];
 }
@@ -120,7 +100,7 @@ export interface SacrificeAction extends BaseAction {
 export interface OverpopulationAction extends BaseAction {
   type: 'overpopulation';
   systemId: string;
-  color: Color;
+  color: GamePiece.Color;
 }
 
 // Union type for all actions
@@ -141,14 +121,14 @@ export interface ActionValidationResult {
 
 // Game result
 export interface GameResult {
-  winner: Player;
+  winner: Player.Player;
   reason: 'no_ships_at_home' | 'home_stars_destroyed';
 }
 
 export interface HoverState {
   gameId: string;
-  playerId: string;
+  playerId: Player.Player;
   type: 'ship' | 'star' | 'system' | 'bankPiece';
-  targetId: string;
+  targetId: GamePiece.PieceId;
   timestamp: string;
 }

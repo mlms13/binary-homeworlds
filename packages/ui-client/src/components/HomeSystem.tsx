@@ -1,10 +1,9 @@
 import React from 'react';
 
+import { GamePiece } from '@binary-homeworlds/engine';
 import {
   ActionValidationResult,
-  Color,
   GameAction,
-  Piece,
   System,
 } from '@binary-homeworlds/shared';
 
@@ -23,33 +22,45 @@ interface HomeSystemProps {
   isCurrentPlayer: boolean;
   isOpponent: boolean;
   onAction: (action: GameAction) => ActionValidationResult;
-  getAvailableActions: (shipId: string, systemId: string) => ActionOption[];
-  bankPieces: Piece[];
+  getAvailableActions: (
+    shipId: GamePiece.PieceId,
+    systemId: string
+  ) => ActionOption[];
+  bankPieces: GamePiece.Piece[];
   currentPlayer: 'player1' | 'player2';
   onTradeInitiate?: (
-    shipId: string,
+    shipId: GamePiece.PieceId,
     systemId: string,
-    validPieceIds: string[]
+    validPieceIds: GamePiece.PieceId[]
   ) => void;
-  onMoveInitiate?: (shipId: string, fromSystemId: string) => void;
+  onMoveInitiate?: (shipId: GamePiece.PieceId, fromSystemId: string) => void;
   onCaptureInitiate?: (
-    attackingShipId: string,
+    attackingShipId: GamePiece.PieceId,
     systemId: string,
-    validTargetShipIds: string[]
+    validTargetShipIds: GamePiece.PieceId[]
   ) => void;
-  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  onShipClickForCapture?: (
+    targetShipId: GamePiece.PieceId,
+    systemId: string
+  ) => void;
   pendingCapture?: {
-    attackingShipId: string;
+    attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: string[];
+    validTargetShipIds: GamePiece.PieceId[];
   } | null;
-  onSacrificeInitiate?: (sacrificedShipId: string, systemId: string) => void;
+  onSacrificeInitiate?: (
+    sacrificedShipId: GamePiece.PieceId,
+    systemId: string
+  ) => void;
   pendingSacrifice?: {
-    shipColor: Color;
+    shipColor: GamePiece.Color;
     actionsRemaining: number;
     actionType: 'move' | 'capture' | 'grow' | 'trade';
   } | null;
-  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
+  onShipClickForSacrifice?: (
+    shipId: GamePiece.PieceId,
+    systemId: string
+  ) => void;
   onSystemClick?: (systemId: string) => void;
   isMoveDestination?: boolean;
 }

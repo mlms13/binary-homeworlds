@@ -2,10 +2,11 @@
  * Action validation for Binary Homeworlds game
  */
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import {
   ActionValidationResult,
   CaptureAction,
-  Color,
   GameAction,
   GameState,
   GrowAction,
@@ -408,7 +409,7 @@ export class ActionValidator {
     // Check that all followup actions have the same color as sacrificed ship
     for (const followupAction of action.followupActions) {
       const expectedColor = sacrificedShip.color;
-      let actionColor: Color;
+      let actionColor: GamePiece.Color;
 
       switch (followupAction.type) {
         case 'move':

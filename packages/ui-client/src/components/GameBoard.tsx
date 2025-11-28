@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { GamePiece, Player } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
   BinaryHomeworldsGameState,
@@ -7,11 +8,8 @@ import {
 } from '@binary-homeworlds/shared';
 import {
   CaptureAction,
-  Color,
   GameAction,
   MoveAction,
-  Piece,
-  Player,
   SetupAction,
   TradeAction,
 } from '@binary-homeworlds/shared';
@@ -72,29 +70,29 @@ export default function GameBoard({
 
   // Trade action state
   const [pendingTrade, setPendingTrade] = useState<{
-    shipId: string;
+    shipId: GamePiece.PieceId;
     systemId: string;
-    validPieceIds: string[];
+    validPieceIds: GamePiece.PieceId[];
   } | null>(null);
 
   // Move action state
   const [pendingMove, setPendingMove] = useState<{
-    shipId: string;
+    shipId: GamePiece.PieceId;
     fromSystemId: string;
     validDestinationIds: string[];
-    validBankPieceIds: string[];
+    validBankPieceIds: GamePiece.PieceId[];
   } | null>(null);
 
   // Capture action state
   const [pendingCapture, setPendingCapture] = useState<{
-    attackingShipId: string;
+    attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: string[];
+    validTargetShipIds: GamePiece.PieceId[];
   } | null>(null);
 
   // Sacrifice action state
   const [pendingSacrifice, setPendingSacrifice] = useState<{
-    shipColor: Color;
+    shipColor: GamePiece.Color;
     actionsRemaining: number;
     actionType: 'move' | 'capture' | 'grow' | 'trade';
   } | null>(null);
@@ -108,7 +106,7 @@ export default function GameBoard({
   // Overpopulation state
   const [overpopulationPrompt, setOverpopulationPrompt] = useState<{
     systemId: string;
-    color: Color;
+    color: GamePiece.Color;
     currentPlayerPrompted: boolean;
     otherPlayerPrompted: boolean;
   } | null>(null);
@@ -199,7 +197,11 @@ export default function GameBoard({
 
   // Handle trade initiation from HomeSystem
   const handleTradeInitiate = useCallback(
-    (shipId: string, systemId: string, validPieceIds: string[]) => {
+    (
+      shipId: GamePiece.PieceId,
+      systemId: string,
+      validPieceIds: GamePiece.PieceId[]
+    ) => {
       // Check if game has ended
       if (state.phase === 'ended') return;
 
@@ -218,7 +220,7 @@ export default function GameBoard({
 
   // Handle move initiation from HomeSystem
   const handleMoveInitiate = useCallback(
-    (shipId: string, fromSystemId: string) => {
+    (shipId: GamePiece.PieceId, fromSystemId: string) => {
       // Check if game has ended
       if (state.phase === 'ended') return;
 
@@ -381,9 +383,9 @@ export default function GameBoard({
   // Handle capture initiation from StarSystem
   const handleCaptureInitiate = useCallback(
     (
-      attackingShipId: string,
+      attackingShipId: GamePiece.PieceId,
       systemId: string,
-      validTargetShipIds: string[]
+      validTargetShipIds: GamePiece.PieceId[]
     ) => {
       // Check if game has ended
       if (state.phase === 'ended') return;
@@ -398,7 +400,7 @@ export default function GameBoard({
 
   // Handle ship clicks during capture target selection
   const handleShipClickForCapture = useCallback(
-    (targetShipId: string, systemId: string) => {
+    (targetShipId: GamePiece.PieceId, systemId: string) => {
       if (!pendingCapture) return;
 
       // Check if this ship is a valid target
@@ -424,8 +426,9 @@ export default function GameBoard({
   );
 
   // Helper function to determine action type based on color
+  // BKMRK: move this helper to the engine
   const getActionTypeForColor = useCallback(
-    (color: Color): 'move' | 'capture' | 'grow' | 'trade' => {
+    (color: GamePiece.Color): 'move' | 'capture' | 'grow' | 'trade' => {
       switch (color) {
         case 'yellow':
           return 'move';
@@ -442,7 +445,7 @@ export default function GameBoard({
 
   // Handle sacrifice initiation from StarSystem
   const handleSacrificeInitiate = useCallback(
-    (sacrificedShipId: string, systemId: string) => {
+    (sacrificedShipId: GamePiece.PieceId, systemId: string) => {
       const system = state.systems.find(s => s.id === systemId);
       const ship = system?.ships.find(s => s.id === sacrificedShipId);
 
@@ -478,7 +481,7 @@ export default function GameBoard({
 
   // Handle sacrifice action execution
   const handleSacrificeAction = useCallback(
-    (shipId: string, systemId: string) => {
+    (shipId: GamePiece.PieceId, systemId: string) => {
       if (!pendingSacrifice) return;
 
       const actionType = pendingSacrifice.actionType;
@@ -567,7 +570,7 @@ export default function GameBoard({
   );
 
   const handlePieceClick = useCallback(
-    (piece: Piece) => {
+    (piece: GamePiece.Piece) => {
       // Handle trade actions during normal play
       if (state.phase === 'normal' && pendingTrade) {
         // Check if this piece is valid for the trade
@@ -662,7 +665,7 @@ export default function GameBoard({
     );
   }
 
-  const getPlayerDisplayName = (player: Player) => {
+  const getPlayerDisplayName = (player: Player.Player) => {
     if (!gameController) return player === 'player1' ? 'Player 1' : 'Player 2';
     return gameController.getPlayerDisplayName(player);
   };

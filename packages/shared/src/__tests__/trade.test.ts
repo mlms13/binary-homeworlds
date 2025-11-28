@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { createTradeAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Trade Edge Cases', () => {
   it('should reject trade when blue not available', () => {

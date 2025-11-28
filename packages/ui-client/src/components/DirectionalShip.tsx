@@ -1,14 +1,14 @@
 import React from 'react';
 
-import type { Color, Size } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './DirectionalShip.css';
 
 import { getColorValue } from '../utils/colors.js';
 
 interface DirectionalShipProps {
-  color: Color;
-  size: Size;
+  color: GamePiece.Color;
+  size: GamePiece.Size;
   displaySize?: 'small' | 'medium' | 'large';
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
@@ -27,7 +27,7 @@ const DirectionalShip: React.FC<DirectionalShipProps> = ({
   direction,
   isCurrentPlayer = false,
 }) => {
-  const getSizeMultiplier = (size: Size): number => {
+  const getSizeMultiplier = (size: GamePiece.Size): number => {
     switch (size) {
       case 1:
         return 0.8;

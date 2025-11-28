@@ -1,14 +1,14 @@
 import React from 'react';
 
-import type { Color, Size } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './DiamondStar.css';
 
 import { getColorValue } from '../utils/colors.js';
 
 interface DiamondStarProps {
-  color: Color;
-  size: Size;
+  color: GamePiece.Color;
+  size: GamePiece.Size;
   displaySize?: 'small' | 'medium' | 'large';
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
@@ -25,7 +25,7 @@ const DiamondStar: React.FC<DiamondStarProps> = ({
   isClickable = false,
   isBinary = false,
 }) => {
-  const getSizeMultiplier = (size: Size): number => {
+  const getSizeMultiplier = (size: GamePiece.Size): number => {
     switch (size) {
       case 1:
         return 0.8;

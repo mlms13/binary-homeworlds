@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import type { Piece } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './BankPieceSelector.css';
 
@@ -10,9 +10,9 @@ import TrianglePiece from './TrianglePiece.js';
 interface BankPieceSelectorProps {
   isOpen: boolean;
   title: string;
-  bankPieces: Piece[];
-  validPieceIds: string[];
-  onPieceSelect: (piece: Piece) => void;
+  bankPieces: GamePiece.Piece[];
+  validPieceIds: GamePiece.PieceId[];
+  onPieceSelect: (piece: GamePiece.Piece) => void;
   onClose: () => void;
 }
 

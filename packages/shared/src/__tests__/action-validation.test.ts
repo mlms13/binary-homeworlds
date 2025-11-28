@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import { createMoveAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem, generateId } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Action Validation', () => {
   it('should reject actions from wrong player', () => {
@@ -54,7 +57,7 @@ describe('Action Validation', () => {
 
     const setupAction = createSetupAction(
       'player1',
-      bankPieces[0]?.id ?? generateId(),
+      bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
       'star1'
     );
     const result = engine.applyAction(setupAction);

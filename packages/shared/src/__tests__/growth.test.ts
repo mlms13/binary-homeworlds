@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { createGrowAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Growth Edge Cases', () => {
   it('should reject growth when green not available', () => {

@@ -37,26 +37,6 @@
   ],
   "author": "",
   "license": "ISC",
-  "lint-staged": {
-    "packages/shared/src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "packages/server/src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "packages/engine/src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "packages/ui-client/src/**/*.{ts,tsx}": [
-      "prettier --write"
-    ],
-    "*.{ts,tsx}": [
-      "bash -c 'npm run typecheck'"
-    ]
-  },
   "devDependencies": {
     "@types/node": "^24.0.10",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
@@ -72,6 +52,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
+    "tsc-files": "^1.1.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }

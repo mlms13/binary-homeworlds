@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { Color, System } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
+import type { System } from '@binary-homeworlds/shared';
 
 import DiamondStar from './DiamondStar.js';
 import DirectionalShip from './DirectionalShip.js';
@@ -8,20 +9,26 @@ import DirectionalShip from './DirectionalShip.js';
 interface SystemContentProps {
   system: System;
   currentPlayer: 'player1' | 'player2';
-  selectedShipId?: string | null;
-  onShipClick?: (shipId: string, event: React.MouseEvent) => void;
+  selectedShipId?: GamePiece.PieceId | null;
+  onShipClick?: (shipId: GamePiece.PieceId, event: React.MouseEvent) => void;
   pendingCapture?: {
-    attackingShipId: string;
+    attackingShipId: GamePiece.PieceId;
     systemId: string;
-    validTargetShipIds: string[];
+    validTargetShipIds: GamePiece.PieceId[];
   } | null;
-  onShipClickForCapture?: (targetShipId: string, systemId: string) => void;
+  onShipClickForCapture?: (
+    targetShipId: GamePiece.PieceId,
+    systemId: string
+  ) => void;
   pendingSacrifice?: {
-    shipColor: Color;
+    shipColor: GamePiece.Color;
     actionsRemaining: number;
     actionType: 'move' | 'capture' | 'grow' | 'trade';
   } | null;
-  onShipClickForSacrifice?: (shipId: string, systemId: string) => void;
+  onShipClickForSacrifice?: (
+    shipId: GamePiece.PieceId,
+    systemId: string
+  ) => void;
 }
 
 const SystemContent: React.FC<SystemContentProps> = ({
@@ -34,7 +41,10 @@ const SystemContent: React.FC<SystemContentProps> = ({
   pendingSacrifice,
   onShipClickForSacrifice,
 }) => {
-  const handleShipClick = (shipId: string, event: React.MouseEvent) => {
+  const handleShipClick = (
+    shipId: GamePiece.PieceId,
+    event: React.MouseEvent
+  ) => {
     // If we're in sacrifice mode, handle sacrifice action
     if (pendingSacrifice && onShipClickForSacrifice) {
       const ship = system.ships.find(s => s.id === shipId);

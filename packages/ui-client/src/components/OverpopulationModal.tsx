@@ -1,13 +1,13 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { Color } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './OverpopulationModal.css';
 
 interface OverpopulationModalProps {
   systemId: string;
-  color: Color;
+  color: GamePiece.Color;
   currentPlayer: 'player1' | 'player2';
   currentPlayerPrompted: boolean;
   otherPlayerPrompted: boolean;
@@ -24,7 +24,7 @@ const OverpopulationModal: React.FC<OverpopulationModalProps> = ({
   onDeclareOverpopulation,
   onIgnoreOverpopulation,
 }) => {
-  const getColorName = (color: Color): string => {
+  const getColorName = (color: GamePiece.Color): string => {
     const colorNames = {
       yellow: 'Yellow',
       green: 'Green',
@@ -138,7 +138,7 @@ const OverpopulationModal: React.FC<OverpopulationModalProps> = ({
   );
 };
 
-const getColorDisplayColor = (color: Color): string => {
+const getColorDisplayColor = (color: GamePiece.Color): string => {
   const colorMap = {
     yellow: '#eab308',
     green: '#16a34a',

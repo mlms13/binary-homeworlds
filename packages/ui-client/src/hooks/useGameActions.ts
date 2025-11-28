@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { GamePiece } from '@binary-homeworlds/engine';
 import { GameEngine } from '@binary-homeworlds/shared';
 import { isColorAvailable } from '@binary-homeworlds/shared';
 import { GameAction } from '@binary-homeworlds/shared';
@@ -24,7 +25,7 @@ export const useGameActions = (gameEngine: GameEngine) => {
   );
 
   const getAvailableActions = useCallback(
-    (shipId: string, systemId: string) => {
+    (shipId: GamePiece.PieceId, systemId: string) => {
       // Get the current game state
       const gameState = gameEngine.getGameState();
       const system = gameState.getSystem(systemId);

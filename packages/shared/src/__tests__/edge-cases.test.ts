@@ -4,6 +4,8 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import {
   createCaptureAction,
   createGrowAction,
@@ -15,8 +17,8 @@ import {
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { Color, Size } from '../types';
-import { createShip, createStar, createSystem, generateId } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Edge Cases and Error Conditions', () => {
   describe('Game Setup', () => {
@@ -46,8 +48,8 @@ describe('Edge Cases and Error Conditions', () => {
       }
 
       // Should have exactly 3 of each color-size combination
-      const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
-      const sizes: Size[] = [1, 2, 3];
+      const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
+      const sizes: GamePiece.Size[] = [1, 2, 3];
 
       for (const color of colors) {
         for (const size of sizes) {
@@ -66,37 +68,61 @@ describe('Edge Cases and Error Conditions', () => {
 
       // Player 1 setup (all at once)
       let result = engine.applyAction(
-        createSetupAction('player1', bankPieces[0]?.id ?? generateId(), 'star1')
+        createSetupAction(
+          'player1',
+          bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
+          'star1'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2'); // Now switches after each action
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[1]?.id ?? generateId(), 'star1')
+        createSetupAction(
+          'player2',
+          bankPieces[1]?.id ?? ('yellow-1-1' as GamePiece.PieceId),
+          'star1'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[2]?.id ?? generateId(), 'star2')
+        createSetupAction(
+          'player1',
+          bankPieces[2]?.id ?? ('yellow-1-2' as GamePiece.PieceId),
+          'star2'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[3]?.id ?? generateId(), 'star2')
+        createSetupAction(
+          'player2',
+          bankPieces[3]?.id ?? ('yellow-2-0' as GamePiece.PieceId),
+          'star2'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[4]?.id ?? generateId(), 'ship')
+        createSetupAction(
+          'player1',
+          bankPieces[4]?.id ?? ('yellow-2-1' as GamePiece.PieceId),
+          'ship'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[5]?.id ?? generateId(), 'ship')
+        createSetupAction(
+          'player2',
+          bankPieces[5]?.id ?? ('yellow-2-2' as GamePiece.PieceId),
+          'ship'
+        )
       );
       expect(result.valid).toBe(true);
 
@@ -115,42 +141,66 @@ describe('Edge Cases and Error Conditions', () => {
 
       // Player 1 chooses first star
       let result = engine.applyAction(
-        createSetupAction('player1', bankPieces[0]?.id ?? generateId(), 'star1')
+        createSetupAction(
+          'player1',
+          bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
+          'star1'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses first star
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[1]?.id ?? generateId(), 'star1')
+        createSetupAction(
+          'player2',
+          bankPieces[1]?.id ?? ('yellow-1-1' as GamePiece.PieceId),
+          'star1'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses second star
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[2]?.id ?? generateId(), 'star2')
+        createSetupAction(
+          'player1',
+          bankPieces[2]?.id ?? ('yellow-1-2' as GamePiece.PieceId),
+          'star2'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses second star
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[3]?.id ?? generateId(), 'star2')
+        createSetupAction(
+          'player2',
+          bankPieces[3]?.id ?? ('yellow-2-0' as GamePiece.PieceId),
+          'star2'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses ship
       result = engine.applyAction(
-        createSetupAction('player1', bankPieces[4]?.id ?? generateId(), 'ship')
+        createSetupAction(
+          'player1',
+          bankPieces[4]?.id ?? ('yellow-2-1' as GamePiece.PieceId),
+          'ship'
+        )
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses ship
       result = engine.applyAction(
-        createSetupAction('player2', bankPieces[5]?.id ?? generateId(), 'ship')
+        createSetupAction(
+          'player2',
+          bankPieces[5]?.id ?? ('yellow-2-2' as GamePiece.PieceId),
+          'ship'
+        )
       );
       expect(result.valid).toBe(true);
 
@@ -221,7 +271,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const setupAction = createSetupAction(
         'player1',
-        bankPieces[0]?.id ?? generateId(),
+        bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
         'star1'
       );
       const result = engine.applyAction(setupAction);

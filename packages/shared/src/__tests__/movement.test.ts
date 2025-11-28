@@ -5,7 +5,8 @@ import {
   createMoveActionNew,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Movement Edge Cases', () => {
   it('should reject movement to system with same size stars', () => {

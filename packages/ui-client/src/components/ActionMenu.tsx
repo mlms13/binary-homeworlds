@@ -1,10 +1,12 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import './ActionMenu.css';
 
 interface ActionMenuProps {
-  shipId: string;
+  shipId: GamePiece.PieceId;
   systemId: string;
   position: { x: number; y: number };
   availableActions: ActionOption[];

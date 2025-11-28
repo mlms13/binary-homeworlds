@@ -1,19 +1,19 @@
 import React from 'react';
 
-import type { Color, Piece } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './Bank.css';
 
 import TrianglePiece from './TrianglePiece.js';
 
 interface BankProps {
-  pieces: Piece[];
-  onPieceClick?: (piece: Piece) => void;
+  pieces: GamePiece.Piece[];
+  onPieceClick?: (piece: GamePiece.Piece) => void;
   isSetupPhase?: boolean;
-  selectedPieces?: Piece[];
-  validTradeIds?: string[];
+  selectedPieces?: GamePiece.Piece[];
+  validTradeIds?: GamePiece.PieceId[];
   isTradeMode?: boolean;
-  validMoveIds?: string[];
+  validMoveIds?: GamePiece.PieceId[];
   isMoveMode?: boolean;
 }
 
@@ -39,11 +39,11 @@ const Bank: React.FC<BankProps> = ({
       acc[piece.color]![piece.size]!.push(piece);
       return acc;
     },
-    {} as Record<string, Record<number, Piece[]>>
+    {} as Record<string, Record<number, GamePiece.Piece[]>>
   );
 
   // Define color order for consistent display
-  const colorOrder: Color[] = ['red', 'yellow', 'green', 'blue'];
+  const colorOrder: GamePiece.Color[] = ['red', 'yellow', 'green', 'blue'];
   const sizeOrder = [3, 2, 1]; // Reversed: large to small
 
   return (
@@ -63,7 +63,7 @@ const Bank: React.FC<BankProps> = ({
                     {piecesOfType.length > 0 ? (
                       <div className="piece-stack">
                         <TrianglePiece
-                          color={color}
+                          color={color as GamePiece.Color}
                           size={size as 1 | 2 | 3}
                           displaySize="small"
                           onClick={() =>

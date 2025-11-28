@@ -2,6 +2,8 @@
  * Main game engine for Binary Homeworlds
  */
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import { ActionValidator } from './action-validator';
 import { BinaryHomeworldsGameState } from './game-state';
 import {
@@ -13,16 +15,10 @@ import {
   OverpopulationAction,
   SacrificeAction,
   SetupAction,
-  Ship,
   System,
   TradeAction,
 } from './types';
-import {
-  createShip,
-  createStar,
-  createSystem,
-  getPiecesOfColor,
-} from './utils';
+import { createSystem, getPiecesOfColor } from './utils';
 
 export class GameEngine {
   private gameState: BinaryHomeworldsGameState;
@@ -127,9 +123,7 @@ export class GameEngine {
 
     if (action.role === 'star1') {
       // Create new home system with first star
-      const star = createStar(piece.color, piece.size);
-      star.id = piece.id; // Keep the same ID
-      const system = createSystem([star]);
+      const system = createSystem([piece]);
       this.gameState.addSystem(system);
       this.gameState.setHomeSystem(currentPlayer, system.id);
     } else if (action.role === 'star2') {
@@ -138,24 +132,20 @@ export class GameEngine {
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
-      const star = createStar(piece.color, piece.size);
-      star.id = piece.id; // Keep the same ID
-      homeSystem.stars.push(star);
+      homeSystem.stars.push(piece);
     } else if (action.role === 'ship') {
       // Add starting ship to home system
       const homeSystem = this.gameState.getHomeSystem(currentPlayer);
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
-      const ship = createShip(piece.color, piece.size, currentPlayer);
-      ship.id = piece.id; // Keep the same ID
-      homeSystem.ships.push(ship);
+      homeSystem.ships.push({ ...piece, owner: currentPlayer });
     }
   }
 
   private applyMoveAction(action: MoveAction): void {
     // Find the ship in the actual game state (not a copy)
-    let ship: Ship | null = null;
+    let ship: GamePiece.Ship | null = null;
     let fromSystem: System | null = null;
 
     for (const system of this.gameState.getSystemsRef()) {
@@ -201,9 +191,7 @@ export class GameEngine {
         throw new Error('New star piece not found in bank');
       }
 
-      const newStar = createStar(newStarPiece.color, newStarPiece.size);
-      newStar.id = newStarPiece.id;
-      const newSystem = createSystem([newStar], [ship]);
+      const newSystem = createSystem([newStarPiece], [ship]);
       this.gameState.addSystem(newSystem);
     }
   }
@@ -236,12 +224,7 @@ export class GameEngine {
       throw new Error('New ship piece not found in bank');
     }
 
-    const newShip = createShip(
-      newShipPiece.color,
-      newShipPiece.size,
-      action.player
-    );
-    newShip.id = newShipPiece.id;
+    const newShip = { ...newShipPiece, owner: action.player };
     system.ships.push(newShip);
   }
 

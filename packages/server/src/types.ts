@@ -1,4 +1,5 @@
-import type { GameAction, Player } from '@binary-homeworlds/shared';
+import { Player } from '@binary-homeworlds/engine';
+import type { GameAction } from '@binary-homeworlds/shared';
 
 export interface GameSession {
   id: string;
@@ -8,7 +9,7 @@ export interface GameSession {
     player1?: PlayerInfo;
     player2?: PlayerInfo;
   };
-  currentPlayer: Player;
+  currentPlayer: Player.Player;
   actions: GameAction[];
   createdAt: string;
   updatedAt: string;
@@ -42,12 +43,12 @@ export interface GameListItem {
     player1?: { name: string };
     player2?: { name: string };
   };
-  currentPlayer: Player;
+  currentPlayer: Player.Player;
   createdAt: string;
 }
 
 export interface PlayerSession {
-  playerId: string;
+  playerId: Player.Player;
   playerName: string;
   socketId: string;
   currentGames: string[]; // Array of game IDs

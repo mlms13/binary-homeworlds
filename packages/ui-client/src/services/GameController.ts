@@ -1,9 +1,5 @@
-import {
-  GameAction,
-  GameEngine,
-  HoverState,
-  Player,
-} from '@binary-homeworlds/shared';
+import { Player } from '@binary-homeworlds/engine';
+import { GameAction, GameEngine, HoverState } from '@binary-homeworlds/shared';
 
 import { ApiService } from './ApiService.js';
 import { GameSession, SocketService } from './SocketService.js';
@@ -17,8 +13,8 @@ export interface GameControllerCallbacks {
 export interface GameControllerInterface {
   loadGame(gameId: string): Promise<void>;
   applyAction(action: GameAction): Promise<{ valid: boolean; error?: string }>;
-  getPlayerRole(): Player | null;
-  getPlayerDisplayName(player: Player): string;
+  getPlayerRole(): Player.Player | null;
+  getPlayerDisplayName(player: Player.Player): string;
   isLocalGame(): boolean;
   cleanup(): void;
 }
@@ -99,7 +95,7 @@ export class GameController implements GameControllerInterface {
     }
   }
 
-  getPlayerRole(): Player | null {
+  getPlayerRole(): Player.Player | null {
     if (this.isLocal) {
       // For local games, we don't need a specific player role
       return null;
@@ -115,7 +111,7 @@ export class GameController implements GameControllerInterface {
     return null;
   }
 
-  getPlayerDisplayName(player: Player): string {
+  getPlayerDisplayName(player: Player.Player): string {
     if (this.isLocal) {
       return player === 'player1' ? 'Player 1' : 'Player 2';
     }

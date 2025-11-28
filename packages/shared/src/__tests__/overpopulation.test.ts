@@ -1,6 +1,8 @@
 /* global console */
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import {
   createGrowAction,
   createMoveAction,
@@ -8,12 +10,11 @@ import {
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { Color, Size } from '../types';
 
 // Helper to pick the smallest available piece of a color
 function pickSmallestAvailable(
   gameState: BinaryHomeworldsGameState,
-  color: Color
+  color: GamePiece.Color
 ) {
   const pieces = gameState
     .getBankPieces()
@@ -28,29 +29,69 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
     // Add needed pieces to the bank
-    const allPieces = [
-      { color: 'green' as Color, size: 3 as Size, id: 'p1-star1' },
-      { color: 'red' as Color, size: 1 as Size, id: 'p1-star2' },
-      { color: 'blue' as Color, size: 3 as Size, id: 'p1-ship' },
-      { color: 'blue' as Color, size: 1 as Size, id: 'grow-1' },
-      { color: 'blue' as Color, size: 1 as Size, id: 'grow-2' },
-      { color: 'blue' as Color, size: 1 as Size, id: 'grow-3' },
-      { color: 'blue' as Color, size: 1 as Size, id: 'blue-star' },
+    const allPieces: GamePiece.Piece[] = [
+      {
+        color: 'green' as GamePiece.Color,
+        size: 3 as GamePiece.Size,
+        id: 'green-3-0' as GamePiece.PieceId,
+      },
+      {
+        color: 'red' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'red-1-0' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 3 as GamePiece.Size,
+        id: 'blue-3-0' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'blue-1-0' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'blue-1-1' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'blue-1-2' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'blue-1-0' as GamePiece.PieceId,
+      },
       // Player 2 setup
-      { color: 'yellow' as Color, size: 2 as Size, id: 'p2-star1' },
-      { color: 'blue' as Color, size: 1 as Size, id: 'p2-star2' },
-      { color: 'green' as Color, size: 3 as Size, id: 'p2-ship' },
+      {
+        color: 'yellow' as GamePiece.Color,
+        size: 2 as GamePiece.Size,
+        id: 'yellow-2-0' as GamePiece.PieceId,
+      },
+      {
+        color: 'blue' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'blue-1-1' as GamePiece.PieceId,
+      },
+      {
+        color: 'green' as GamePiece.Color,
+        size: 3 as GamePiece.Size,
+        id: 'green-3-1' as GamePiece.PieceId,
+      },
     ];
     for (const piece of allPieces) {
       gameState.addPieceToBank(piece);
     }
-    // Player 1 setup
-    engine.applyAction(createSetupAction('player1', 'p1-star1', 'star1'));
-    engine.applyAction(createSetupAction('player2', 'p2-star1', 'star1'));
-    engine.applyAction(createSetupAction('player1', 'p1-star2', 'star2'));
-    engine.applyAction(createSetupAction('player2', 'p2-star2', 'star2'));
-    engine.applyAction(createSetupAction('player1', 'p1-ship', 'ship'));
-    engine.applyAction(createSetupAction('player2', 'p2-ship', 'ship'));
+    // Player 1 setup - use actual PieceIds from allPieces
+    engine.applyAction(createSetupAction('player1', allPieces[0]!.id, 'star1')); // green-3-0
+    engine.applyAction(createSetupAction('player2', allPieces[7]!.id, 'star1')); // yellow-2-0
+    engine.applyAction(createSetupAction('player1', allPieces[1]!.id, 'star2')); // red-1-0
+    engine.applyAction(createSetupAction('player2', allPieces[8]!.id, 'star2')); // blue-1-1
+    engine.applyAction(createSetupAction('player1', allPieces[2]!.id, 'ship')); // blue-3-0
+    engine.applyAction(createSetupAction('player2', allPieces[9]!.id, 'ship')); // green-3-1
     // Now there should be 2 blue ships and 2 blue stars (4 blue pieces)
     let homeSystem = gameState.getHomeSystem('player1')!;
     const blueCount =
@@ -66,17 +107,53 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     const gameState = engine.getGameState();
     // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
     const p1Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player1', p1Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star1 ?? ('green-1-0' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p2Star1 = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player2', p2Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star1 ?? ('yellow-1-0' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p1Star2 = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player1', p1Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star2 ?? ('blue-1-0' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p2Star2 = pickSmallestAvailable(gameState, 'red');
-    engine.applyAction(createSetupAction('player2', p2Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star2 ?? ('red-1-0' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p1Ship = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player1', p1Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Ship ?? ('blue-1-0' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     const p2Ship = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player2', p2Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Ship ?? ('green-1-0' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     // Now both home systems are established
     const homeSystem = gameState.getHomeSystem('player1')!;
     // Grow 3 more blue ships (total 4 blue ships)
@@ -90,11 +167,13 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
         `[OVERPOP TEST DEBUG] Grow ${i + 1}: actingShip:`,
         actingShip
       );
+      const bluePieceId = pickSmallestAvailable(gameState, 'blue');
+      if (!bluePieceId) break;
       const growAction = createGrowAction(
         'player1',
         actingShip.id,
         homeSystem.id,
-        'blue'
+        bluePieceId
       );
       engine.applyAction(growAction);
       // Re-fetch the home system after each action to avoid stale references
@@ -126,43 +205,83 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     const gameState = engine.getGameState();
     // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
     const p1Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player1', p1Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star1 ?? ('green-1-0' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p2Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player2', p2Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star1 ?? ('green-1-1' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p1Star2 = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player1', p1Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star2 ?? ('blue-1-0' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p2Star2 = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player2', p2Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star2 ?? ('blue-1-1' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p1Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player1', p1Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Ship ?? ('yellow-1-0' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     const p2Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player2', p2Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Ship ?? ('yellow-1-1' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     // Each player grows 2 new yellow ships (total 3 per player)
-    let p1LastShip = p1Ship ?? '';
-    let p2LastShip = p2Ship ?? '';
+    let p1LastShip = p1Ship ?? ('blue-1-0' as GamePiece.PieceId);
+    let p2LastShip = p2Ship ?? ('green-1-0' as GamePiece.PieceId);
     for (let i = 0; i < 2; i++) {
+      const yellowPieceId1 = pickSmallestAvailable(gameState, 'yellow');
+      if (!yellowPieceId1) break;
       const growAction1 = createGrowAction(
         'player1',
         p1LastShip,
         gameState.getHomeSystem('player1')!.id,
-        'yellow'
+        yellowPieceId1
       );
       engine.applyAction(growAction1);
       p1LastShip =
         gameState.getHomeSystem('player1')!.ships[
           gameState.getHomeSystem('player1')!.ships.length - 1
-        ]?.id ?? '';
+        ]?.id ?? ('yellow-1-0' as GamePiece.PieceId);
+      const yellowPieceId2 = pickSmallestAvailable(gameState, 'yellow');
+      if (!yellowPieceId2) break;
       const growAction2 = createGrowAction(
         'player2',
         p2LastShip,
         gameState.getHomeSystem('player2')!.id,
-        'yellow'
+        yellowPieceId2
       );
       engine.applyAction(growAction2);
       p2LastShip =
         gameState.getHomeSystem('player2')!.ships[
           gameState.getHomeSystem('player2')!.ships.length - 1
-        ]?.id ?? '';
+        ]?.id ?? ('yellow-1-1' as GamePiece.PieceId);
     }
     // Create a new system with a yellow star
     const yellowStarId = pickSmallestAvailable(gameState, 'yellow');
@@ -180,12 +299,15 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     // Let player2 take their turn
     const p2HomeSystem = gameState.getHomeSystem('player2')!;
     const p2LastShipId =
-      p2HomeSystem.ships[p2HomeSystem.ships.length - 1]?.id ?? '';
+      p2HomeSystem.ships[p2HomeSystem.ships.length - 1]?.id ??
+      ('yellow-1-0' as GamePiece.PieceId);
+    const yellowPieceId = pickSmallestAvailable(gameState, 'yellow');
+    if (!yellowPieceId) throw new Error('No yellow piece available');
     const p2GrowAction = createGrowAction(
       'player2',
       p2LastShipId,
       p2HomeSystem.id,
-      'yellow'
+      yellowPieceId
     );
     engine.applyAction(p2GrowAction);
     // Find the new system
@@ -207,11 +329,13 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     );
     engine.applyAction(moveAction1);
     // Let player2 take their turn
+    const yellowPieceId2 = pickSmallestAvailable(gameState, 'yellow');
+    if (!yellowPieceId2) throw new Error('No yellow piece available');
     const p2GrowAction2 = createGrowAction(
       'player2',
       p2LastShipId,
       p2HomeSystem.id,
-      'yellow'
+      yellowPieceId2
     );
     engine.applyAction(p2GrowAction2);
     // Player1 moves another ship
@@ -241,43 +365,83 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     const gameState = engine.getGameState();
     // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
     const p1Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player1', p1Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star1 ?? ('green-1-0' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p2Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player2', p2Star1 ?? '', 'star1'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star1 ?? ('green-1-1' as GamePiece.PieceId),
+        'star1'
+      )
+    );
     const p1Star2 = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player1', p1Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Star2 ?? ('blue-1-0' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p2Star2 = pickSmallestAvailable(gameState, 'blue');
-    engine.applyAction(createSetupAction('player2', p2Star2 ?? '', 'star2'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Star2 ?? ('blue-1-1' as GamePiece.PieceId),
+        'star2'
+      )
+    );
     const p1Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player1', p1Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player1',
+        p1Ship ?? ('yellow-1-0' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     const p2Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player2', p2Ship ?? '', 'ship'));
+    engine.applyAction(
+      createSetupAction(
+        'player2',
+        p2Ship ?? ('yellow-1-1' as GamePiece.PieceId),
+        'ship'
+      )
+    );
     // Each player grows 2 new yellow ships (total 3 per player)
-    let p1LastShip = p1Ship ?? '';
-    let p2LastShip = p2Ship ?? '';
+    let p1LastShip = p1Ship ?? ('blue-1-0' as GamePiece.PieceId);
+    let p2LastShip = p2Ship ?? ('green-1-0' as GamePiece.PieceId);
     for (let i = 0; i < 2; i++) {
+      const yellowPieceId1 = pickSmallestAvailable(gameState, 'yellow');
+      if (!yellowPieceId1) break;
       const growAction1 = createGrowAction(
         'player1',
         p1LastShip,
         gameState.getHomeSystem('player1')!.id,
-        'yellow'
+        yellowPieceId1
       );
       engine.applyAction(growAction1);
       p1LastShip =
         gameState.getHomeSystem('player1')!.ships[
           gameState.getHomeSystem('player1')!.ships.length - 1
-        ]?.id ?? '';
+        ]?.id ?? ('yellow-1-0' as GamePiece.PieceId);
+      const yellowPieceId2 = pickSmallestAvailable(gameState, 'yellow');
+      if (!yellowPieceId2) break;
       const growAction2 = createGrowAction(
         'player2',
         p2LastShip,
         gameState.getHomeSystem('player2')!.id,
-        'yellow'
+        yellowPieceId2
       );
       engine.applyAction(growAction2);
       p2LastShip =
         gameState.getHomeSystem('player2')!.ships[
           gameState.getHomeSystem('player2')!.ships.length - 1
-        ]?.id ?? '';
+        ]?.id ?? ('yellow-1-1' as GamePiece.PieceId);
     }
     // Create a new system with a yellow star
     const yellowStarId = pickSmallestAvailable(gameState, 'yellow');
@@ -295,12 +459,15 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     // Let player2 take their turn
     const p2HomeSystem = gameState.getHomeSystem('player2')!;
     const p2LastShipId =
-      p2HomeSystem.ships[p2HomeSystem.ships.length - 1]?.id ?? '';
+      p2HomeSystem.ships[p2HomeSystem.ships.length - 1]?.id ??
+      ('yellow-1-0' as GamePiece.PieceId);
+    const yellowPieceId = pickSmallestAvailable(gameState, 'yellow');
+    if (!yellowPieceId) throw new Error('No yellow piece available');
     const p2GrowAction = createGrowAction(
       'player2',
       p2LastShipId,
       p2HomeSystem.id,
-      'yellow'
+      yellowPieceId
     );
     engine.applyAction(p2GrowAction);
     // Find the new system
@@ -322,11 +489,13 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     );
     engine.applyAction(moveAction1);
     // Let player2 take their turn
+    const yellowPieceId2 = pickSmallestAvailable(gameState, 'yellow');
+    if (!yellowPieceId2) throw new Error('No yellow piece available');
     const p2GrowAction2 = createGrowAction(
       'player2',
       p2LastShipId,
       p2HomeSystem.id,
-      'yellow'
+      yellowPieceId2
     );
     engine.applyAction(p2GrowAction2);
     // Player1 moves another ship

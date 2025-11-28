@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { Piece as PieceType } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 import './Piece.css';
 
 interface PieceProps {
-  piece: PieceType;
-  size?: 'small' | 'medium' | 'large';
+  piece: GamePiece.Piece;
+  size?: GamePiece.Size;
   onClick?: (event: React.MouseEvent) => void;
   isSelected?: boolean;
   isClickable?: boolean;
@@ -15,7 +15,7 @@ interface PieceProps {
 
 const Piece: React.FC<PieceProps> = ({
   piece,
-  size = 'medium',
+  size = 2,
   onClick,
   isSelected = false,
   isClickable = false,

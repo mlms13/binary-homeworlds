@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { createCaptureAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Capture Edge Cases', () => {
   it('should reject capturing own ship', () => {

@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createMoveAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Serialization and History', () => {
   it('should serialize and deserialize game state correctly', () => {

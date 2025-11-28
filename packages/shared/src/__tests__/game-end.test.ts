@@ -6,7 +6,8 @@ import {
   createSacrificeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar, createSystem } from '../utils';
+import { createSystem } from '../utils';
+import { createShip, createStar } from './utils';
 
 describe('Game End Conditions', () => {
   it('should end game when player has no ships at home', () => {

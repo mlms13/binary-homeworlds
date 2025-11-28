@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Player } from '@binary-homeworlds/shared';
+import { Player } from '@binary-homeworlds/engine';
 
 import './SetupInstructions.css';
 
 interface SetupInstructionsProps {
-  currentPlayer: Player;
+  currentPlayer: Player.Player;
   currentStep: 'star1' | 'star2' | 'ship' | null;
 }
 

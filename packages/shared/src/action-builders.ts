@@ -2,13 +2,13 @@
  * Action builder utilities for Binary Homeworlds
  */
 
+import { GamePiece, Player } from '@binary-homeworlds/engine';
+
 import {
   CaptureAction,
-  Color,
   GrowAction,
   MoveAction,
   OverpopulationAction,
-  Player,
   SacrificeAction,
   SetupAction,
   TradeAction,
@@ -17,8 +17,8 @@ import {
 // Helper functions to create actions with proper timestamps
 
 export function createSetupAction(
-  player: Player,
-  pieceId: string,
+  player: Player.Player,
+  pieceId: GamePiece.PieceId,
   role: 'star1' | 'star2' | 'ship'
 ): SetupAction {
   return {
@@ -31,11 +31,11 @@ export function createSetupAction(
 }
 
 export function createMoveAction(
-  player: Player,
-  shipId: string,
+  player: Player.Player,
+  shipId: GamePiece.PieceId,
   fromSystemId: string,
   toSystemId?: string,
-  newStarPieceId?: string
+  newStarPieceId?: GamePiece.PieceId
 ): MoveAction {
   return {
     type: 'move',
@@ -49,8 +49,8 @@ export function createMoveAction(
 }
 
 export function createMoveActionExisting(
-  player: Player,
-  shipId: string,
+  player: Player.Player,
+  shipId: GamePiece.PieceId,
   fromSystemId: string,
   toSystemId: string
 ): MoveAction {
@@ -65,10 +65,10 @@ export function createMoveActionExisting(
 }
 
 export function createMoveActionNew(
-  player: Player,
-  shipId: string,
+  player: Player.Player,
+  shipId: GamePiece.PieceId,
   fromSystemId: string,
-  newStarPieceId: string
+  newStarPieceId: GamePiece.PieceId
 ): MoveAction {
   return {
     type: 'move',
@@ -81,9 +81,9 @@ export function createMoveActionNew(
 }
 
 export function createCaptureAction(
-  player: Player,
-  attackingShipId: string,
-  targetShipId: string,
+  player: Player.Player,
+  attackingShipId: GamePiece.PieceId,
+  targetShipId: GamePiece.PieceId,
   systemId: string
 ): CaptureAction {
   return {
@@ -97,10 +97,10 @@ export function createCaptureAction(
 }
 
 export function createGrowAction(
-  player: Player,
-  actingShipId: string,
+  player: Player.Player,
+  actingShipId: GamePiece.PieceId,
   systemId: string,
-  newShipPieceId: string
+  newShipPieceId: GamePiece.PieceId
 ): GrowAction {
   return {
     type: 'grow',
@@ -113,10 +113,10 @@ export function createGrowAction(
 }
 
 export function createTradeAction(
-  player: Player,
-  shipId: string,
+  player: Player.Player,
+  shipId: GamePiece.PieceId,
   systemId: string,
-  newPieceId: string
+  newPieceId: GamePiece.PieceId
 ): TradeAction {
   return {
     type: 'trade',
@@ -129,8 +129,8 @@ export function createTradeAction(
 }
 
 export function createSacrificeAction(
-  player: Player,
-  sacrificedShipId: string,
+  player: Player.Player,
+  sacrificedShipId: GamePiece.PieceId,
   systemId: string,
   followupActions: (MoveAction | CaptureAction | GrowAction | TradeAction)[]
 ): SacrificeAction {
@@ -145,9 +145,9 @@ export function createSacrificeAction(
 }
 
 export function createOverpopulationAction(
-  player: Player,
+  player: Player.Player,
   systemId: string,
-  color: Color
+  color: GamePiece.Color
 ): OverpopulationAction {
   return {
     type: 'overpopulation',

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import { createMoveAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { Color, Size } from '../types';
+import { asPieceId } from './utils';
 
 describe('Game Setup', () => {
   it('should start with correct initial state', () => {
@@ -12,8 +14,8 @@ describe('Game Setup', () => {
     expect(gameState.getCurrentPlayer()).toBe('player1');
     expect(gameState.getSystems().length).toBe(0);
     expect(gameState.getBankPieces().length).toBe(36);
-    expect(gameState.getHomeSystem('player1')).toBeNull();
-    expect(gameState.getHomeSystem('player2')).toBeNull();
+    expect(gameState.getHomeSystem('player1')).toBeUndefined();
+    expect(gameState.getHomeSystem('player2')).toBeUndefined();
   });
 
   it.skip('after player1 selects first star, home system is assigned', () => {
@@ -21,11 +23,14 @@ describe('Game Setup', () => {
     const gameState = engine.getGameState();
 
     // Action: player 1 selects a star
-    engine.applyAction(createSetupAction('player1', 'p1-star1', 'star1'));
+    const bankPieces = gameState.getBankPieces();
+    const firstPiece = bankPieces[0];
+    if (!firstPiece) throw new Error('No pieces in bank');
+    engine.applyAction(createSetupAction('player1', firstPiece.id, 'star1'));
 
     const homeSystem = gameState.getHomeSystem('player1');
     // Home system should now be assigned with one star, no ships
-    expect(homeSystem).not.toBeNull();
+    expect(homeSystem).not.toBeUndefined();
     expect(homeSystem!.stars.length).toBe(1);
     expect(homeSystem!.ships.length).toBe(0);
 
@@ -38,8 +43,8 @@ describe('Game Setup', () => {
     const engine = new GameEngine();
 
     // Should have exactly 3 of each color-size combination
-    const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
-    const sizes: Size[] = [1, 2, 3];
+    const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
+    const sizes: GamePiece.Size[] = [1, 2, 3];
 
     for (const color of colors) {
       for (const size of sizes) {
@@ -60,42 +65,42 @@ describe('Game Setup', () => {
 
     // Player 1 chooses first star (large blue)
     let result = engine.applyAction(
-      createSetupAction('player1', 'p1-star1', 'star1')
+      createSetupAction('player1', asPieceId('p1-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
     expect(gameState.getCurrentPlayer()).toBe('player2');
 
     // Player 2 chooses first star (medium yellow)
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-star1', 'star1')
+      createSetupAction('player2', asPieceId('p2-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
     expect(gameState.getCurrentPlayer()).toBe('player1');
 
     // Player 1 chooses second star (small yellow)
     result = engine.applyAction(
-      createSetupAction('player1', 'p1-star2', 'star2')
+      createSetupAction('player1', asPieceId('p1-star2'), 'star2')
     );
     expect(result.valid).toBe(true);
     expect(gameState.getCurrentPlayer()).toBe('player2');
 
     // Player 2 chooses second star (small green)
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-star2', 'star2')
+      createSetupAction('player2', asPieceId('p2-star2'), 'star2')
     );
     expect(result.valid).toBe(true);
     expect(gameState.getCurrentPlayer()).toBe('player1');
 
     // Player 1 chooses ship (large green)
     result = engine.applyAction(
-      createSetupAction('player1', 'p1-ship', 'ship')
+      createSetupAction('player1', asPieceId('p1-ship'), 'ship')
     );
     expect(result.valid).toBe(true);
     expect(gameState.getCurrentPlayer()).toBe('player2');
 
     // Player 2 chooses ship (large red)
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-ship', 'ship')
+      createSetupAction('player2', asPieceId('p2-ship'), 'ship')
     );
     expect(result.valid).toBe(true);
 
@@ -122,13 +127,13 @@ describe('Setup Turn Enforcement', () => {
 
     // Player 1: large green star
     let result = engine.applyAction(
-      createSetupAction('player1', 'p1-star1', 'star1')
+      createSetupAction('player1', asPieceId('p1-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
 
     // Player 1 tries to take another setup action before player2
     result = engine.applyAction(
-      createSetupAction('player1', 'p1-star2', 'star2')
+      createSetupAction('player1', asPieceId('p1-star2'), 'star2')
     );
     expect(result.valid).toBe(false);
     expect(result.error).toBe('Not your turn');
@@ -139,19 +144,24 @@ describe('Setup Turn Enforcement', () => {
 
     // Player 1: large green star
     let result = engine.applyAction(
-      createSetupAction('player1', 'p1-star1', 'star1')
+      createSetupAction('player1', asPieceId('p1-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
 
     // Player 2: large red star
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-star1', 'star1')
+      createSetupAction('player2', asPieceId('p2-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
 
     // Player 1 tries to move a ship
     result = engine.applyAction(
-      createMoveAction('player1', 'p1-ship', 'p1-star1', 'system1')
+      createMoveAction(
+        'player1',
+        asPieceId('p1-ship'),
+        asPieceId('p1-star1'),
+        'system1'
+      )
     );
     expect(result.valid).toBe(false);
     expect(result.error).toBe('Move actions only allowed during normal play');
@@ -167,37 +177,37 @@ describe('Setup Edge Cases', () => {
 
     // Player 1: large green star
     let result = engine.applyAction(
-      createSetupAction('player1', 'p1-star1', 'star1')
+      createSetupAction('player1', asPieceId('p1-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
 
     // Player 2: large green star
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-star1', 'star1')
+      createSetupAction('player2', asPieceId('p2-star1'), 'star1')
     );
     expect(result.valid).toBe(true);
 
     // Player 1: small green star
     result = engine.applyAction(
-      createSetupAction('player1', 'p1-star2', 'star2')
+      createSetupAction('player1', asPieceId('p1-star2'), 'star2')
     );
     expect(result.valid).toBe(true);
 
     // Player 2: small green star
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-star2', 'star2')
+      createSetupAction('player2', asPieceId('p2-star2'), 'star2')
     );
     expect(result.valid).toBe(true);
 
     // Player 1: large green ship
     result = engine.applyAction(
-      createSetupAction('player1', 'p1-ship', 'ship')
+      createSetupAction('player1', asPieceId('p1-ship'), 'ship')
     );
     expect(result.valid).toBe(true); // this is ok... third piece of this type
 
     // Player 2: large green ship
     result = engine.applyAction(
-      createSetupAction('player2', 'p2-ship', 'ship')
+      createSetupAction('player2', asPieceId('p2-ship'), 'ship')
     );
     expect(result.valid).toBe(false); // not ok... no more large green pieces
   });

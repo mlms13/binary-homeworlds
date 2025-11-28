@@ -4,6 +4,8 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import {
   createCaptureAction,
   createGrowAction,
@@ -13,14 +15,8 @@ import {
   createTradeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { Color, Ship, Size } from '../types';
-import {
-  createShip,
-  createStar,
-  createSystem,
-  isColorAvailable,
-} from '../utils';
-import { createPiece } from './utils';
+import { createSystem, isColorAvailable } from '../utils';
+import { createPiece, createShip, createStar } from './utils';
 
 describe('RULES.md Examples', () => {
   describe('Example 1: Basic availability', () => {
@@ -176,7 +172,10 @@ describe('RULES.md Examples', () => {
       const smallStar2 = createPiece('yellow', 1);
       const mediumStar2 = createPiece('blue', 2);
       const largeStar2 = createPiece('red', 3);
-      const testShip: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
+      const testShip: GamePiece.Ship = {
+        ...createPiece('green', 2),
+        owner: 'player1',
+      }; // Ensure ship is owned by player1
 
       // Test Case 1: Moving from [small, large] to [large] should be INVALID
       // (large star in destination matches large star in origin)
@@ -204,7 +203,10 @@ describe('RULES.md Examples', () => {
       const engine2 = new GameEngine();
       const gameState2 = engine2.getGameState();
 
-      const testShip2: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
+      const testShip2: GamePiece.Ship = {
+        ...createPiece('green', 2),
+        owner: 'player1',
+      }; // Ensure ship is owned by player1
       // Add a yellow star to make move action available
       const yellowStar = createPiece('yellow', 3);
       const originSystem2 = createSystem(
@@ -233,7 +235,10 @@ describe('RULES.md Examples', () => {
       const engine3 = new GameEngine();
       const gameState3 = engine3.getGameState();
 
-      const testShip3: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
+      const testShip3: GamePiece.Ship = {
+        ...createPiece('green', 2),
+        owner: 'player1',
+      }; // Ensure ship is owned by player1
       // smallStar2 is yellow, so move action will be available
       const originSystem3 = createSystem(
         [smallStar2, mediumStar1],
@@ -260,7 +265,10 @@ describe('RULES.md Examples', () => {
       const engine4 = new GameEngine();
       const gameState4 = engine4.getGameState();
 
-      const testShip4: Ship = { ...createPiece('green', 2), owner: 'player1' }; // Ensure ship is owned by player1
+      const testShip4: GamePiece.Ship = {
+        ...createPiece('green', 2),
+        owner: 'player1',
+      }; // Ensure ship is owned by player1
       const extraStar = createPiece('green', 1);
       // smallStar1 is yellow, so move action will be available
       const originSystem4 = createSystem(
@@ -323,7 +331,7 @@ describe('RULES.md Examples', () => {
 
       // The system should be removed
       expect(gameState.getSystems().length).toBe(initialSystemCount - 1);
-      expect(gameState.getSystem(system.id)).toBeNull();
+      expect(gameState.getSystem(system.id)).toBeUndefined();
     });
   });
 
@@ -418,8 +426,8 @@ describe('RULES.md Examples', () => {
       }
 
       // Add non-red pieces (simplified for test)
-      for (const color of ['yellow', 'green', 'blue'] as Color[]) {
-        for (const size of [1, 2, 3] as Size[]) {
+      for (const color of ['yellow', 'green', 'blue'] as GamePiece.Color[]) {
+        for (const size of [1, 2, 3] as GamePiece.Size[]) {
           for (let i = 0; i < 3; i++) {
             gameState.addPieceToBank(createPiece(color, size));
           }
@@ -457,7 +465,7 @@ describe('RULES.md Examples', () => {
         'player1',
         redShip.id,
         system.id,
-        smallestRedPiece?.id ?? ''
+        smallestRedPiece?.id ?? ('red-1-0' as GamePiece.PieceId)
       );
 
       const result = engine.applyAction(growAction);
@@ -500,7 +508,7 @@ describe('RULES.md Examples', () => {
         'player1',
         redShip.id,
         system.id,
-        'nonexistent-piece'
+        'red-1-0' as GamePiece.PieceId // Using valid ID format but piece won't be in bank
       );
 
       const result = engine.applyAction(growAction);
@@ -600,7 +608,7 @@ describe('RULES.md Examples', () => {
 
       // The star system should be destroyed
       expect(gameState.getSystems().length).toBe(initialSystemCount - 1);
-      expect(gameState.getSystem(system.id)).toBeNull();
+      expect(gameState.getSystem(system.id)).toBeUndefined();
     });
   });
 
@@ -660,8 +668,8 @@ describe('RULES.md Examples', () => {
       expect(gameState.getSystem(destSystem3.id)?.ships.length).toBe(1);
 
       // Original systems should be cleaned up
-      expect(gameState.getSystem(system1.id)).toBeNull(); // Sacrificed ship was only ship
-      expect(gameState.getSystem(system2.id)).toBeNull(); // All ships moved away
+      expect(gameState.getSystem(system1.id)).toBeUndefined(); // Sacrificed ship was only ship
+      expect(gameState.getSystem(system2.id)).toBeUndefined(); // All ships moved away
     });
   });
 
@@ -687,15 +695,15 @@ describe('RULES.md Examples', () => {
       gameState.setPhase('normal');
 
       // Add pieces to bank for trading
-      const redPiece = {
-        color: 'red' as Color,
-        size: 2 as Size,
-        id: 'red-piece',
+      const redPiece: GamePiece.Piece = {
+        color: 'red' as GamePiece.Color,
+        size: 2 as GamePiece.Size,
+        id: 'red-2-0' as GamePiece.PieceId,
       };
-      const yellowPiece = {
-        color: 'yellow' as Color,
-        size: 1 as Size,
-        id: 'yellow-piece',
+      const yellowPiece: GamePiece.Piece = {
+        color: 'yellow' as GamePiece.Color,
+        size: 1 as GamePiece.Size,
+        id: 'yellow-1-0' as GamePiece.PieceId,
       };
       gameState.addPieceToBank(redPiece);
       gameState.addPieceToBank(yellowPiece);
@@ -730,7 +738,7 @@ describe('RULES.md Examples', () => {
 
       // The original system should be destroyed (no ships remain after sacrifice)
       expect(gameState.getSystems().length).toBe(initialSystemCount - 1);
-      expect(gameState.getSystem(system.id)).toBeNull();
+      expect(gameState.getSystem(system.id)).toBeUndefined();
 
       // The red star should be returned to bank
       const bankPieces = gameState.getBankPieces();

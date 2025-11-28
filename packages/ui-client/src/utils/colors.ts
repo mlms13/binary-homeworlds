@@ -1,10 +1,10 @@
-import { Color } from '@binary-homeworlds/shared';
+import { GamePiece } from '@binary-homeworlds/engine';
 
 /**
  * Get the CSS variable name for a color
  * This allows the color to be themed via CSS variables
  */
-export const getColorVariable = (color: Color): string => {
+export const getColorVariable = (color: GamePiece.Color): string => {
   return `var(--color-${color})`;
 };
 
@@ -12,7 +12,7 @@ export const getColorVariable = (color: Color): string => {
  * Get the fallback color value for a color
  * Used as fallback if CSS variables are not supported
  */
-export const getFallbackColor = (color: Color): string => {
+export const getFallbackColor = (color: GamePiece.Color): string => {
   switch (color) {
     case 'red':
       return '#ef4444';
@@ -30,6 +30,6 @@ export const getFallbackColor = (color: Color): string => {
 /**
  * Get the color value with CSS variable and fallback
  */
-export const getColorValue = (color: Color): string => {
+export const getColorValue = (color: GamePiece.Color): string => {
   return getColorVariable(color);
 };

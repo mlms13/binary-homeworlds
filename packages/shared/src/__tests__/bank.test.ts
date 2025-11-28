@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
+import { GamePiece } from '@binary-homeworlds/engine';
+
 import { createGrowAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { Color } from '../types';
 
 // Helper to pick the smallest available piece of a color
 function pickSmallestAvailable(
   gameState: BinaryHomeworldsGameState,
-  color: Color
+  color: GamePiece.Color
 ) {
   const pieces = gameState
     .getBankPieces()
@@ -37,7 +38,7 @@ describe('Bank depletion edge cases', () => {
     // Now both home systems are established, and 6 yellow pieces have been used (2 stars + 1 ship per player)
     type Player = 'player1' | 'player2';
     let currentPlayer: Player = 'player1';
-    let lastShip: Record<Player, string> = {
+    let lastShip: Record<Player, GamePiece.PieceId> = {
       player1: p1Ship!,
       player2: p2Ship!,
     };
@@ -65,7 +66,7 @@ describe('Bank depletion edge cases', () => {
       currentPlayer,
       lastShip[currentPlayer],
       gameState.getHomeSystem(currentPlayer)!.id,
-      'nonexistent-yellow-id' // purposely invalid
+      'yellow-1-0' as GamePiece.PieceId // Using valid ID but piece won't be in bank
     );
     const failResult = engine.applyAction(failGrowAction);
     expect(failResult.valid).toBe(false);
@@ -86,8 +87,8 @@ it('should validate piece counts in bank', () => {
   }
 
   // Should have exactly 3 of each color-size combination
-  const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
-  const sizes: number[] = [1, 2, 3];
+  const colors: GamePiece.Color[] = ['yellow', 'green', 'blue', 'red'];
+  const sizes: GamePiece.Size[] = [1, 2, 3];
 
   for (const color of colors) {
     for (const size of sizes) {

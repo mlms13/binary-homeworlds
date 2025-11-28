@@ -2,17 +2,9 @@
  * GameState management class for Binary Homeworlds
  */
 
-import { Bank } from '@binary-homeworlds/engine';
+import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
 
-import {
-  Color,
-  GameAction,
-  GamePhase,
-  GameState,
-  Piece,
-  Player,
-  System,
-} from './types';
+import { GameAction, GamePhase, GameState, System } from './types';
 import {
   addPiecesToEngineBank,
   addPieceToEngineBank,
@@ -60,7 +52,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get current player
-  getCurrentPlayer(): Player {
+  getCurrentPlayer(): Player.Player {
     return this.state.currentPlayer;
   }
 
@@ -70,7 +62,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get winner (if game has ended)
-  getWinner(): Player | null {
+  getWinner(): Player.Player | null {
     return this.state.winner || null;
   }
 
@@ -80,7 +72,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get available pieces in bank
-  getBankPieces(): Piece[] {
+  getBankPieces(): GamePiece.Piece[] {
     return bankToPieces(this.state.bank);
   }
 
@@ -95,14 +87,13 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get a specific system by ID
-  getSystem(systemId: string): System | null {
+  getSystem(systemId: string): System | undefined {
     return findSystem(this.state, systemId);
   }
 
   // Get player's home system
-  getHomeSystem(player: Player): System | null {
-    const homeSystemId = this.state.players[player].homeSystemId;
-    return homeSystemId ? findSystem(this.state, homeSystemId) : null;
+  getHomeSystem(player: Player.Player): System | undefined {
+    return findSystem(this.state, this.state.players[player].homeSystemId);
   }
 
   // Get game history
@@ -130,7 +121,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Set winner and end game
-  setWinner(winner: Player): void {
+  setWinner(winner: Player.Player): void {
     this.state.winner = winner;
     this.state.phase = 'ended';
   }
@@ -148,12 +139,12 @@ export class BinaryHomeworldsGameState {
   }
 
   // Set player's home system
-  setHomeSystem(player: Player, systemId: string): void {
+  setHomeSystem(player: Player.Player, systemId: string): void {
     this.state.players[player].homeSystemId = systemId;
   }
 
   // Remove piece from bank
-  removePieceFromBank(pieceId: string): Piece | null {
+  removePieceFromBank(pieceId: GamePiece.PieceId): GamePiece.Piece | null {
     const [piece, newBank] = removePieceFromBankById(this.state.bank, pieceId);
     if (piece) {
       this.state.bank = newBank;
@@ -162,26 +153,24 @@ export class BinaryHomeworldsGameState {
   }
 
   // Add piece to bank
-  addPieceToBank(piece: Piece): void {
+  addPieceToBank(piece: GamePiece.Piece): void {
     this.state.bank = addPieceToEngineBank(piece, this.state.bank);
   }
 
   // Add pieces to bank (for overpopulation cleanup)
-  addPiecesToBank(pieces: Piece[]): void {
+  addPiecesToBank(pieces: GamePiece.Piece[]): void {
     this.state.bank = addPiecesToEngineBank(pieces, this.state.bank);
   }
 
-  getOverpopulations(): { systemId: string; color: Color }[] {
-    return this.state.systems
-      .map(system => {
-        for (const color of ['yellow', 'green', 'blue', 'red'] as Color[]) {
-          if (hasOverpopulation(system, color)) {
-            return { systemId: system.id, color };
-          }
+  getOverpopulations(): { systemId: string; color: GamePiece.Color }[] {
+    return this.state.systems.flatMap(system => {
+      for (const color of ['yellow', 'green', 'blue', 'red'] as const) {
+        if (hasOverpopulation(system, color)) {
+          return [{ systemId: system.id, color }];
         }
-        return null;
-      })
-      .filter(Boolean) as { systemId: string; color: Color }[];
+      }
+      return [];
+    });
   }
 
   // Check and update game end condition

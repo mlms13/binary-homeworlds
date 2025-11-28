@@ -1,8 +1,8 @@
+import { GamePiece, Player } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
   GameAction,
   GameEngine,
-  Player,
 } from '@binary-homeworlds/shared';
 
 import './ActionLog.css';
@@ -10,7 +10,7 @@ import './ActionLog.css';
 interface ActionLogProps {
   actions: GameAction[];
   onClose: () => void;
-  getPlayerDisplayName: (player: Player) => string;
+  getPlayerDisplayName: (player: Player.Player) => string;
 }
 
 export default function ActionLog({
@@ -204,7 +204,7 @@ export default function ActionLog({
         ships: { id: string; color: string; size: number }[];
       }[];
     },
-    shipId: string
+    shipId: GamePiece.PieceId
   ) => {
     for (const system of state.systems) {
       const ship = system.ships.find(
@@ -217,7 +217,7 @@ export default function ActionLog({
 
   const findSystemWithShip = (
     state: { systems: { ships: { id: string }[] }[] },
-    shipId: string
+    shipId: GamePiece.PieceId
   ) => {
     return (
       state.systems.find((system: { ships: { id: string }[] }) =>

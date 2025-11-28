@@ -1,15 +1,16 @@
 import React from 'react';
 
-import { Player } from '@binary-homeworlds/shared';
+import { Player } from '@binary-homeworlds/engine';
 
 import './GameEndModal.css';
 
 interface GameEndModalProps {
-  winner: Player;
+  winner: Player.Player;
   onNewGame: () => void;
 }
 
 const GameEndModal: React.FC<GameEndModalProps> = ({ winner, onNewGame }) => {
+  // BKMRK: replace with getPlayerDisplayName
   const winnerName = winner === 'player1' ? 'Player 1' : 'Player 2';
 
   return (
