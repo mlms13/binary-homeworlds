@@ -15,12 +15,12 @@ import {
 import { GameEngine } from '../game-engine';
 import { Color, Ship, Size } from '../types';
 import {
-  createPiece,
   createShip,
   createStar,
   createSystem,
   isColorAvailable,
 } from '../utils';
+import { createPiece } from './utils';
 
 describe('RULES.md Examples', () => {
   describe('Example 1: Basic availability', () => {
@@ -411,7 +411,11 @@ describe('RULES.md Examples', () => {
       const gameState = engine.getGameState();
 
       // Clear the bank and add only specific pieces
-      gameState.getState().bank.pieces = [];
+      // Remove all pieces from bank first
+      const allBankPieces = gameState.getBankPieces();
+      for (const piece of allBankPieces) {
+        gameState.removePieceFromBank(piece.id);
+      }
 
       // Add non-red pieces (simplified for test)
       for (const color of ['yellow', 'green', 'blue'] as Color[]) {
@@ -478,8 +482,10 @@ describe('RULES.md Examples', () => {
 
       // Remove all red pieces from bank
       const bankPieces = gameState.getBankPieces();
-      const nonRedPieces = bankPieces.filter(p => p.color !== 'red');
-      gameState.getState().bank.pieces = nonRedPieces;
+      const redPieces = bankPieces.filter(p => p.color === 'red');
+      for (const piece of redPieces) {
+        gameState.removePieceFromBank(piece.id);
+      }
 
       // Player has: Red ship attempting to grow
       const redShip = createShip('red', 1, 'player1');

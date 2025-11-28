@@ -2,6 +2,8 @@
  * Utility functions for Binary Homeworlds game
  */
 
+import { Bank } from '@binary-homeworlds/engine';
+
 import {
   Color,
   GameState,
@@ -16,15 +18,6 @@ import {
 // Generate unique IDs
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
-}
-
-// Create a new piece
-export function createPiece(color: Color, size: Size): Piece {
-  return {
-    color,
-    size,
-    id: generateId(),
-  };
 }
 
 // Create a new ship
@@ -103,12 +96,126 @@ export function findOverpopulation(
   return null;
 }
 
-// Get the smallest available size of a color from the bank
+// ============================================================================
+// Bank adapter functions - bridge between Engine Bank and Shared Piece[]
+// ============================================================================
+
+/**
+ * Convert Engine Bank to an array of Pieces
+ */
+export function bankToPieces(bank: Bank.Bank): Piece[] {
+  const pieces: Piece[] = [];
+  const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
+  const sizes: Size[] = [1, 2, 3];
+
+  for (const color of colors) {
+    for (const size of sizes) {
+      for (const id of bank[color][size]) {
+        pieces.push({ color, size, id: id as string });
+      }
+    }
+  }
+
+  return pieces;
+}
+
+/**
+ * Find a piece by ID in Engine Bank
+ */
+export function findPieceInBank(
+  bank: Bank.Bank,
+  pieceId: string
+): Piece | null {
+  const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
+  const sizes: Size[] = [1, 2, 3];
+
+  for (const color of colors) {
+    for (const size of sizes) {
+      // Engine's Bank stores PieceId[], but we use arbitrary string IDs
+      // This is safe at runtime since Engine's Bank just stores strings
+      const pieceIds = bank[color][size] as unknown as string[];
+      const index = pieceIds.indexOf(pieceId);
+      if (index !== -1) {
+        return { color, size, id: pieceId };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Remove a piece from Engine Bank by ID
+ */
+export function removePieceFromBankById(
+  bank: Bank.Bank,
+  pieceId: string
+): [Piece | null, Bank.Bank] {
+  const piece = findPieceInBank(bank, pieceId);
+  if (!piece) {
+    return [null, bank];
+  }
+
+  // Create a new bank with the piece removed
+  const pieceIds = bank[piece.color][piece.size] as unknown as string[];
+  const filteredIds = pieceIds.filter((id: string) => id !== pieceId);
+  const pieceColor = piece.color;
+  const pieceSize = piece.size;
+  const newBank = {
+    ...bank,
+    [pieceColor]: {
+      ...bank[pieceColor],
+      [pieceSize]:
+        filteredIds as unknown as (typeof bank)[typeof pieceColor][typeof pieceSize],
+    },
+  };
+
+  return [piece, newBank];
+}
+
+/**
+ * Add a piece to Engine Bank
+ */
+export function addPieceToEngineBank(piece: Piece, bank: Bank.Bank): Bank.Bank {
+  // Engine's Bank expects PieceId type, but we use arbitrary string IDs
+  // This is safe at runtime since Engine's Bank just stores strings
+  return Bank.addPiece(
+    {
+      color: piece.color,
+      size: piece.size,
+      id: piece.id as unknown as `${Color}-${Size}-${0 | 1 | 2}`,
+    },
+    bank
+  );
+}
+
+/**
+ * Add multiple pieces to Engine Bank
+ */
+export function addPiecesToEngineBank(
+  pieces: Piece[],
+  bank: Bank.Bank
+): Bank.Bank {
+  let result = bank;
+  for (const piece of pieces) {
+    result = addPieceToEngineBank(piece, result);
+  }
+  return result;
+}
+
+// ============================================================================
+// Legacy bank utility functions (now using Engine Bank)
+// ============================================================================
+
+/**
+ * Get the smallest available size of a color from the bank
+ */
 export function getSmallestAvailableSize(
-  bank: Piece[],
+  bank: Bank.Bank,
   color: Color
 ): Size | null {
-  const availableSizes = bank
+  const pieces = bankToPieces(bank);
+  const availableSizes = pieces
     .filter(piece => piece.color === color)
     .map(piece => piece.size)
     .sort((a, b) => a - b);
@@ -116,30 +223,15 @@ export function getSmallestAvailableSize(
   return availableSizes.length > 0 ? (availableSizes[0] ?? null) : null;
 }
 
-// Check if a piece of specific color and size is available in bank
-export function isPieceAvailableInBank(
-  bank: Piece[],
-  color: Color,
-  size: Size
-): boolean {
-  return bank.some(piece => piece.color === color && piece.size === size);
-}
-
-// Remove a piece from bank by ID
+/**
+ * Remove a piece from bank by ID (legacy function signature)
+ * Note: This returns a new bank (immutable), unlike the old mutable version
+ */
 export function removePieceFromBank(
-  bank: Piece[],
+  bank: Bank.Bank,
   pieceId: string
-): Piece | null {
-  const index = bank.findIndex(piece => piece.id === pieceId);
-  if (index === -1) return null;
-
-  const [removed] = bank.splice(index, 1);
-  return removed ?? null;
-}
-
-// Add a piece to bank
-export function addPieceToBank(bank: Piece[], piece: Piece): void {
-  bank.push(piece);
+): [Piece | null, Bank.Bank] {
+  return removePieceFromBankById(bank, pieceId);
 }
 
 // Find a system by ID

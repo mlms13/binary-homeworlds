@@ -1,4 +1,9 @@
-import { GameAction, GameEngine, Player } from '@binary-homeworlds/shared';
+import {
+  bankToPieces,
+  GameAction,
+  GameEngine,
+  Player,
+} from '@binary-homeworlds/shared';
 
 import './ActionLog.css';
 
@@ -33,9 +38,11 @@ export default function ActionLog({
 
     // Narrow the type BEFORE using it in the switch
     // TypeScript should properly narrow discriminated unions in switch statements
+    const bankPiecesBefore = bankToPieces(stateBefore.bank);
+
     switch (action.type) {
       case 'setup': {
-        const piece = stateBefore.bank.pieces.find(
+        const piece = bankPiecesBefore.find(
           (p: { id: string; color: string; size: number }) =>
             p.id === action.pieceId
         );
@@ -101,7 +108,7 @@ export default function ActionLog({
           );
           return `${playerName} moved ${shipDesc} from ${fromName} to ${toName}`;
         } else {
-          const newStar = stateBefore.bank.pieces.find(
+          const newStar = bankPiecesBefore.find(
             (p: { id: string; color: string; size: number }) =>
               p.id === action.newStarPieceId
           );
@@ -130,7 +137,7 @@ export default function ActionLog({
 
       case 'grow': {
         const actingShip = findShipInState(stateBefore, action.actingShipId);
-        const newPiece = stateBefore.bank.pieces.find(
+        const newPiece = bankPiecesBefore.find(
           (p: { id: string; color: string; size: number }) =>
             p.id === action.newShipPieceId
         );
@@ -145,7 +152,7 @@ export default function ActionLog({
 
       case 'trade': {
         const oldShip = findShipInState(stateBefore, action.shipId);
-        const newPiece = stateBefore.bank.pieces.find(
+        const newPiece = bankPiecesBefore.find(
           (p: { id: string; color: string; size: number }) =>
             p.id === action.newPieceId
         );

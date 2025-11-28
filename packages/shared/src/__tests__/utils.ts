@@ -2,6 +2,8 @@
 
 import { createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
+import { Color, Piece, Size } from '../types';
+import { generateId } from '../utils';
 
 // completes the setup phase, resulting in:
 // - player 1: large blue star, small yellow star, large green ship
@@ -25,4 +27,13 @@ export function createNormalGameSetup() {
 
   // Player 2 chooses ship (large red)
   engine.applyAction(createSetupAction('player2', 'p2-ship', 'ship'));
+}
+
+// Create a new piece (for testing only)
+export function createPiece(color: Color, size: Size): Piece {
+  return {
+    color,
+    size,
+    id: generateId(),
+  };
 }

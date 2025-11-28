@@ -21,7 +21,6 @@ export * from './action-builders';
 export {
   ActionType,
   ActionValidationResult,
-  Bank,
   BaseAction,
   CaptureAction,
   Color,

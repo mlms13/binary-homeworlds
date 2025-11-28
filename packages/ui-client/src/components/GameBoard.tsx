@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import {
+  bankToPieces,
   BinaryHomeworldsGameState,
   GameEngine,
 } from '@binary-homeworlds/shared';
@@ -247,7 +248,7 @@ export default function GameBoard({
 
       // Valid bank pieces for creating new systems
       // Rule: New star must be different size than origin system stars
-      const validBankPieceIds = state.bank.pieces
+      const validBankPieceIds = bankToPieces(state.bank)
         .filter(piece => !originStarSizes.includes(piece.size))
         .map(p => p.id);
 
@@ -258,7 +259,7 @@ export default function GameBoard({
         validBankPieceIds,
       });
     },
-    [state.phase, state.systems, state.bank.pieces, clearAllPendingActions]
+    [state.phase, state.systems, state.bank, clearAllPendingActions]
   );
 
   // Handle move cancellation
@@ -503,7 +504,7 @@ export default function GameBoard({
           const ship = system?.ships.find(s => s.id === shipId);
           if (!ship) return;
 
-          const availablePieces = state.bank.pieces
+          const availablePieces = bankToPieces(state.bank)
             .filter(piece => piece.color === pendingSacrifice.shipColor)
             .sort((a, b) => a.size - b.size);
 
@@ -525,7 +526,7 @@ export default function GameBoard({
           const tradeSystem = state.systems.find(s => s.id === systemId);
           const tradeShip = tradeSystem?.ships.find(s => s.id === shipId);
           if (tradeShip) {
-            const validPieceIds = state.bank.pieces
+            const validPieceIds = bankToPieces(state.bank)
               .filter(piece => piece.size === tradeShip.size)
               .map(p => p.id);
             handleTradeInitiate(shipId, systemId, validPieceIds);
@@ -556,7 +557,7 @@ export default function GameBoard({
     [
       pendingSacrifice,
       state.systems,
-      state.bank.pieces,
+      state.bank,
       state.currentPlayer,
       handleMoveInitiate,
       handleCaptureInitiate,
@@ -809,7 +810,7 @@ export default function GameBoard({
       <div className="main-area">
         <div className="bank-container">
           <Bank
-            pieces={state.bank.pieces}
+            pieces={bankToPieces(state.bank)}
             selectedPieces={[]}
             onPieceClick={handlePieceClick}
             isSetupPhase={state.phase === 'setup'}
@@ -830,7 +831,7 @@ export default function GameBoard({
                   isOpponent={gameController?.getPlayerRole() === 'player1'}
                   onAction={applyActionWithHistory}
                   getAvailableActions={getAvailableActions}
-                  bankPieces={state.bank.pieces}
+                  bankPieces={bankToPieces(state.bank)}
                   currentPlayer={currentPlayer}
                   onTradeInitiate={handleTradeInitiate}
                   onMoveInitiate={handleMoveInitiate}
@@ -870,7 +871,7 @@ export default function GameBoard({
                       system={system}
                       onAction={applyActionWithHistory}
                       getAvailableActions={getAvailableActions}
-                      bankPieces={state.bank.pieces}
+                      bankPieces={bankToPieces(state.bank)}
                       currentPlayer={currentPlayer}
                       onTradeInitiate={handleTradeInitiate}
                       onMoveInitiate={handleMoveInitiate}
@@ -899,7 +900,7 @@ export default function GameBoard({
                 isOpponent={gameController?.getPlayerRole() === 'player2'}
                 onAction={applyActionWithHistory}
                 getAvailableActions={getAvailableActions}
-                bankPieces={state.bank.pieces}
+                bankPieces={bankToPieces(state.bank)}
                 currentPlayer={currentPlayer}
                 onTradeInitiate={handleTradeInitiate}
                 onMoveInitiate={handleMoveInitiate}

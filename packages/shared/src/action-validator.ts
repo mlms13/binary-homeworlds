@@ -16,6 +16,7 @@ import {
   TradeAction,
 } from './types';
 import {
+  findPieceInBank,
   findShip,
   findSystem,
   getSmallestAvailableSize,
@@ -70,7 +71,7 @@ export class ActionValidator {
     }
 
     // Check if piece exists in bank
-    const piece = gameState.bank.pieces.find(p => p.id === action.pieceId);
+    const piece = findPieceInBank(gameState.bank, action.pieceId);
     if (!piece) {
       return { valid: false, error: 'Piece not found in bank' };
     }
@@ -144,8 +145,9 @@ export class ActionValidator {
         };
       }
 
-      const newStarPiece = gameState.bank.pieces.find(
-        p => p.id === action.newStarPieceId
+      const newStarPiece = findPieceInBank(
+        gameState.bank,
+        action.newStarPieceId
       );
       if (!newStarPiece) {
         return { valid: false, error: 'New star piece not found in bank' };
@@ -256,9 +258,7 @@ export class ActionValidator {
     }
 
     // Check if new ship piece exists in bank
-    const newShipPiece = gameState.bank.pieces.find(
-      p => p.id === action.newShipPieceId
-    );
+    const newShipPiece = findPieceInBank(gameState.bank, action.newShipPieceId);
     if (!newShipPiece) {
       return { valid: false, error: 'New ship piece not found in bank' };
     }
@@ -273,7 +273,7 @@ export class ActionValidator {
 
     // Check if new ship is smallest available size of that color
     const smallestSize = getSmallestAvailableSize(
-      gameState.bank.pieces,
+      gameState.bank,
       actingShip.color
     );
     if (smallestSize === null || newShipPiece.size !== smallestSize) {
@@ -321,9 +321,7 @@ export class ActionValidator {
     }
 
     // Check if new piece exists in bank
-    const newPiece = gameState.bank.pieces.find(
-      p => p.id === action.newPieceId
-    );
+    const newPiece = findPieceInBank(gameState.bank, action.newPieceId);
     if (!newPiece) {
       return { valid: false, error: 'New piece not found in bank' };
     }

@@ -2,23 +2,26 @@
  * GameState management class for Binary Homeworlds
  */
 
+import { Bank } from '@binary-homeworlds/engine';
+
 import {
-  Bank,
   Color,
   GameAction,
   GamePhase,
   GameState,
   Piece,
   Player,
-  Size,
   System,
 } from './types';
 import {
+  addPiecesToEngineBank,
+  addPieceToEngineBank,
+  bankToPieces,
   checkGameEnd,
   cloneGameState,
-  createPiece,
   findSystem,
   hasOverpopulation,
+  removePieceFromBankById,
 } from './utils';
 
 export class BinaryHomeworldsGameState {
@@ -34,20 +37,8 @@ export class BinaryHomeworldsGameState {
 
   // Create the initial game state
   private createInitialState(): GameState {
-    // Create the bank with all 36 pieces
-    const bank: Bank = { pieces: [] };
-
-    const colors: Color[] = ['yellow', 'green', 'blue', 'red'];
-    const sizes: Size[] = [1, 2, 3];
-
-    // 3 pieces of each color-size combination
-    for (const color of colors) {
-      for (const size of sizes) {
-        for (let i = 0; i < 3; i++) {
-          bank.pieces.push(createPiece(color, size));
-        }
-      }
-    }
+    // Use Engine's full bank which contains all 36 pieces
+    const bank = Bank.full;
 
     return {
       phase: 'setup',
@@ -90,7 +81,7 @@ export class BinaryHomeworldsGameState {
 
   // Get available pieces in bank
   getBankPieces(): Piece[] {
-    return [...this.state.bank.pieces];
+    return bankToPieces(this.state.bank);
   }
 
   // Get all systems (copies)
@@ -163,23 +154,21 @@ export class BinaryHomeworldsGameState {
 
   // Remove piece from bank
   removePieceFromBank(pieceId: string): Piece | null {
-    const index = this.state.bank.pieces.findIndex(
-      piece => piece.id === pieceId
-    );
-    if (index === -1) return null;
-
-    const [removed] = this.state.bank.pieces.splice(index, 1);
-    return removed ?? null;
+    const [piece, newBank] = removePieceFromBankById(this.state.bank, pieceId);
+    if (piece) {
+      this.state.bank = newBank;
+    }
+    return piece;
   }
 
   // Add piece to bank
   addPieceToBank(piece: Piece): void {
-    this.state.bank.pieces.push(piece);
+    this.state.bank = addPieceToEngineBank(piece, this.state.bank);
   }
 
   // Add pieces to bank (for overpopulation cleanup)
   addPiecesToBank(pieces: Piece[]): void {
-    this.state.bank.pieces.push(...pieces);
+    this.state.bank = addPiecesToEngineBank(pieces, this.state.bank);
   }
 
   getOverpopulations(): { systemId: string; color: Color }[] {
@@ -250,7 +239,8 @@ export class BinaryHomeworldsGameState {
     }
 
     // Check that bank + all pieces in systems = 36 pieces
-    let totalPieces = this.state.bank.pieces.length;
+    const bankPieces = bankToPieces(this.state.bank);
+    let totalPieces = bankPieces.length;
     for (const system of this.state.systems) {
       totalPieces += system.stars.length + system.ships.length;
     }

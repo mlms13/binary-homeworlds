@@ -2,6 +2,8 @@
  * Core types for Binary Homeworlds game
  */
 
+import { Bank as BankModule } from '@binary-homeworlds/engine';
+
 // Basic game piece properties
 export type Color = 'yellow' | 'green' | 'blue' | 'red';
 export type Size = 1 | 2 | 3; // small, medium, large
@@ -29,11 +31,6 @@ export interface System {
   ships: Ship[];
 }
 
-// Bank tracks available pieces
-export interface Bank {
-  pieces: Piece[];
-}
-
 // Player state
 export interface PlayerState {
   homeSystemId: string;
@@ -48,7 +45,7 @@ export interface GameState {
   currentPlayer: Player;
   turnNumber: number;
   systems: System[];
-  bank: Bank;
+  bank: BankModule.Bank;
   players: {
     player1: PlayerState;
     player2: PlayerState;

@@ -53,7 +53,7 @@ export const full: Bank = {
   },
 };
 
-export const toArray = ({ green, yellow, blue, red }: Bank) => [
+export const toArray = ({ green, yellow, blue, red }: Bank): Array<PieceId> => [
   ...sizesToArray(green),
   ...sizesToArray(yellow),
   ...sizesToArray(blue),
@@ -87,7 +87,7 @@ export const hasPieceBySizeAndColor = (
 
 /**
  * Immutably removes a piece from the bank (by size and color) if that piece
- * exists in the bank. IF a matching piece exists in the bank, that piece is
+ * exists in the bank. If a matching piece exists in the bank, that piece is
  * returned along with an updated bank (with the target piece omitted). If no
  * matching piece exists in the bank, the original bank is returned and the
  * returned piece will be undefined.
