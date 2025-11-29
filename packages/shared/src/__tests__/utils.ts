@@ -62,12 +62,6 @@ export function getPieceIdFromBank(
   return pieces[0]?.id;
 }
 
-// Helper to cast a string to PieceId for test purposes
-// Use this when tests need to use arbitrary string IDs
-export function asPieceId(id: string): GamePiece.PieceId {
-  return id as GamePiece.PieceId;
-}
-
 // completes the setup phase, resulting in:
 // - player 1: large blue star, small yellow star, large green ship
 // - player 2: medium yellow star, small green star, large red ship

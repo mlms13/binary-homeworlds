@@ -1,4 +1,3 @@
-/* global console */
 import { describe, expect, it } from 'vitest';
 
 import { GamePiece } from '@binary-homeworlds/engine';
@@ -102,7 +101,7 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
     expect(gameState.getOverpopulations().length).toBe(0);
   });
 
-  it.skip('detects overpopulation with blue star and 3 blue ships', () => {
+  it('detects overpopulation with blue star and 3 blue ships', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
     // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
@@ -162,11 +161,6 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
       const currentHomeSystem = gameState.getHomeSystem('player1')!;
       const blueShips = currentHomeSystem.ships.filter(s => s.color === 'blue');
       const actingShip = blueShips.reduce((a, b) => (a.size > b.size ? a : b));
-      // Debug output
-      console.log(
-        `[OVERPOP TEST DEBUG] Grow ${i + 1}: actingShip:`,
-        actingShip
-      );
       const bluePieceId = pickSmallestAvailable(gameState, 'blue');
       if (!bluePieceId) break;
       const growAction = createGrowAction(
@@ -176,19 +170,6 @@ describe('Overpopulation cache (rules-accurate scenarios)', () => {
         bluePieceId
       );
       engine.applyAction(growAction);
-      // Re-fetch the home system after each action to avoid stale references
-      console.log(
-        `[TEST DEBUG] After grow ${i + 1}: blue ships count:`,
-        currentHomeSystem.ships.filter(s => s.color === 'blue').length
-      );
-      console.log(
-        `[TEST DEBUG] After grow ${i + 1}: all ships:`,
-        JSON.stringify(currentHomeSystem.ships, null, 2)
-      );
-      console.log(
-        `[TEST DEBUG] After grow ${i + 1}: overpopulations:`,
-        JSON.stringify(gameState.getOverpopulations(), null, 2)
-      );
     }
     // NOTE: With only public engine actions, it is not possible to accumulate 4 blue ships in a single system.
     // The maximum achievable is 2 blue ships (via grow). This test asserts the maximum achievable state and documents the limitation.
