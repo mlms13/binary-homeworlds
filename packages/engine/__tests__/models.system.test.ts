@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { Ship, Star } from '../src/models/GamePiece';
 import {
   addShip,
+  addStar,
+  createBinary,
   createNormal,
   getOverpopulations,
   hasOverpopulation,
@@ -23,6 +25,16 @@ describe('Star System', () => {
     const system = createNormal(star, ships);
     expect(system.stars.length).toBe(1);
     expect(system.ships.length).toBe(1);
+  });
+
+  it('should create a binary star system', () => {
+    const star1: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const star2: Star = { color: 'green', size: 1, id: 'green-1-0' };
+    const ships: Array<Ship> = [
+      { color: 'yellow', size: 1, id: 'yellow-1-0', owner: 'player1' },
+    ];
+    const system = createBinary('player1', star1, star2, ships);
+    expect(system.stars.length).toBe(2);
   });
 
   it('should determine that a system contains a ship', () => {
@@ -79,6 +91,17 @@ describe('Star System', () => {
     // the star itself is included as a piece to be cleaned up
     expect(result.piecesToCleanUp[0]?.color).toBe('blue');
     expect(result.piecesToCleanUp[0]?.size).toBe(2);
+  });
+
+  it('should allow adding a star to a star system', () => {
+    const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const system = createNormal(star, []);
+    const newStar: Star = { color: 'green', size: 1, id: 'green-1-0' };
+    const newSystem = addStar(newStar, system);
+
+    expect(newSystem.stars.length).toBe(2);
+    expect(newSystem.stars).toContain(newStar);
+    expect(newSystem.stars).toContain(star);
   });
 
   it('should allow adding a ship to a star system', () => {

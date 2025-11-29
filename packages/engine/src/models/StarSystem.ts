@@ -1,8 +1,9 @@
 import { Color, Piece, PieceId, Ship, shipToPiece, Star } from './GamePiece';
+import { Player } from './Player';
 
 // star system IDs either match the star piece of the system or they are one
 // of the two player home systems (with two stars, so they get a special ID)
-export type StarSystemId = PieceId | 'player-1-home' | 'player-2-home';
+export type StarSystemId = PieceId | `${Player}-home`;
 
 export type StarSystem = {
   id: StarSystemId;
@@ -22,10 +23,30 @@ export type SystemValidationResult =
  * Create a "normal" star system (one with a single star and any number of
  * initial ships).
  */
-export const createNormal = (star: Star, ships: Array<Ship>): StarSystem => {
+export const createNormal = (
+  star: Star,
+  ships: Array<Ship> = []
+): StarSystem => {
   return {
     id: star.id,
     stars: [star],
+    ships,
+  };
+};
+
+/**
+ * Create a binary star system (one with two stars) for a specific player to
+ * use as their home system.
+ */
+export const createBinary = (
+  player: Player,
+  star1: Star,
+  star2: Star,
+  ships: Array<Ship> = []
+): StarSystem => {
+  return {
+    id: `${player}-home`,
+    stars: [star1, star2],
     ships,
   };
 };
@@ -68,6 +89,18 @@ export const addShip = (ship: Ship, system: StarSystem): StarSystem => {
   return {
     ...system,
     ships: [...system.ships, ship],
+  };
+};
+
+/**
+ * Immutably add a new star to a system.
+ *
+ * While this won't happen during regular gameplay, it's useful for setup.
+ */
+export const addStar = (star: Star, system: StarSystem): StarSystem => {
+  return {
+    ...system,
+    stars: [...system.stars, star],
   };
 };
 

@@ -130,9 +130,8 @@ export class GameEngine {
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
-      // For home systems with multiple stars, we need to mutate directly
-      // since createNormal only handles single-star systems
-      homeSystem.stars.push(piece);
+      const updatedSystem = StarSystem.addStar(piece, homeSystem);
+      this.gameState.setSystem(homeSystem.id, updatedSystem);
     } else if (action.role === 'ship') {
       // Add starting ship to home system
       const homeSystem = this.gameState.getHomeSystem(currentPlayer);
