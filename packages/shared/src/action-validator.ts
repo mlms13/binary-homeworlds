@@ -2,7 +2,7 @@
  * Action validation for Binary Homeworlds game
  */
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import {
   ActionValidationResult,
@@ -21,7 +21,6 @@ import {
   findShip,
   findSystem,
   getSmallestAvailableSize,
-  hasOverpopulation,
   isColorAvailable,
 } from './utils';
 
@@ -454,7 +453,7 @@ export class ActionValidator {
     }
 
     // Check if the specified color actually has overpopulation
-    if (!hasOverpopulation(system, action.color)) {
+    if (!StarSystem.hasOverpopulation(system, action.color)) {
       return {
         valid: false,
         error: `No overpopulation of ${action.color} in this system`,

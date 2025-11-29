@@ -10,10 +10,12 @@
 import * as BankModule from './models/Bank';
 import * as GamePieceModule from './models/GamePiece';
 import * as PlayerModule from './models/Player';
+import * as StarSystemModule from './models/StarSystem';
 
 // Export namespaces - provides clear context for all exports
 export {
   BankModule as Bank,
   GamePieceModule as GamePiece,
   PlayerModule as Player,
+  StarSystemModule as StarSystem,
 };

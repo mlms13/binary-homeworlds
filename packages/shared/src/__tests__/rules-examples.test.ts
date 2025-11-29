@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import {
   createCaptureAction,
@@ -15,8 +15,8 @@ import {
   createTradeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem, isColorAvailable } from '../utils';
-import { createPiece, createShip, createStar } from './utils';
+import { isColorAvailable } from '../utils';
+import { createPiece, createShip, createStar, createSystem } from './utils';
 
 describe('RULES.md Examples', () => {
   describe('Example 1: Basic availability', () => {
@@ -29,7 +29,10 @@ describe('RULES.md Examples', () => {
       const playerAShip = createShip('green', 3, 'player1');
       const playerBShip = createShip('red', 2, 'player2');
 
-      const system = createSystem([yellowStar], [playerAShip, playerBShip]);
+      const system = StarSystem.createNormal(yellowStar, [
+        playerAShip,
+        playerBShip,
+      ]);
 
       // Player A can move (yellow star) or grow (green ship)
       expect(isColorAvailable(system, 'yellow', 'player1')).toBe(true); // move
@@ -67,7 +70,7 @@ describe('RULES.md Examples', () => {
       // Player A elsewhere: Small red ship
       const redShip = createShip('red', 1, 'player1');
       const redStar = createStar('green', 2); // Different color star
-      const otherSystem = createSystem([redStar], [redShip]);
+      const otherSystem = StarSystem.createNormal(redStar, [redShip]);
       gameState.addSystem(otherSystem);
 
       gameState.setPhase('normal');
@@ -122,12 +125,12 @@ describe('RULES.md Examples', () => {
 
       // Valid destinations: systems with only small stars
       const smallRedStar = createStar('red', 1);
-      const validDestSystem = createSystem([smallRedStar]);
+      const validDestSystem = StarSystem.createNormal(smallRedStar, []);
       gameState.addSystem(validDestSystem);
 
       // Invalid destinations: systems containing medium or large stars
       const mediumGreenStar = createStar('green', 2);
-      const invalidDestSystem = createSystem([mediumGreenStar]);
+      const invalidDestSystem = StarSystem.createNormal(mediumGreenStar, []);
       gameState.addSystem(invalidDestSystem);
 
       // Valid move to system with small star
@@ -181,7 +184,7 @@ describe('RULES.md Examples', () => {
       // (large star in destination matches large star in origin)
       // Note: smallStar1 is yellow, so move action will be available
       const originSystem1 = createSystem([smallStar1, largeStar1], [testShip]);
-      const destSystem1 = createSystem([largeStar2], []);
+      const destSystem1 = StarSystem.createNormal(largeStar2, []);
 
       gameState.addSystem(originSystem1);
       gameState.addSystem(destSystem1);
@@ -244,7 +247,7 @@ describe('RULES.md Examples', () => {
         [smallStar2, mediumStar1],
         [testShip3]
       );
-      const destSystem3 = createSystem([largeStar2], []);
+      const destSystem3 = StarSystem.createNormal(largeStar2, []);
 
       gameState3.addSystem(originSystem3);
       gameState3.addSystem(destSystem3);
@@ -275,7 +278,7 @@ describe('RULES.md Examples', () => {
         [smallStar1, mediumStar2, largeStar1],
         [testShip4]
       );
-      const destSystem4 = createSystem([extraStar], []); // Size 1 matches small star in origin
+      const destSystem4 = StarSystem.createNormal(extraStar, []); // Size 1 matches small star in origin
 
       gameState4.addSystem(originSystem4);
       gameState4.addSystem(destSystem4);
@@ -302,14 +305,14 @@ describe('RULES.md Examples', () => {
       // System: Large red star with only one ship (medium yellow)
       const redStar = createStar('red', 3);
       const yellowShip = createShip('yellow', 2, 'player1');
-      const system = createSystem([redStar], [yellowShip]);
+      const system = StarSystem.createNormal(redStar, [yellowShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
 
       // Create destination system
       const destStar = createStar('blue', 1); // Different size
-      const destSystem = createSystem([destStar]);
+      const destSystem = StarSystem.createNormal(destStar, []);
       gameState.addSystem(destSystem);
 
       const initialBankSize = gameState.getBankPieces().length;
@@ -348,10 +351,11 @@ describe('RULES.md Examples', () => {
       const playerBShip1 = createShip('blue', 2, 'player2');
       const playerBShip2 = createShip('green', 1, 'player2');
 
-      const system = createSystem(
-        [redStar],
-        [playerAShip, playerBShip1, playerBShip2]
-      );
+      const system = StarSystem.createNormal(redStar, [
+        playerAShip,
+        playerBShip1,
+        playerBShip2,
+      ]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
 
@@ -369,10 +373,11 @@ describe('RULES.md Examples', () => {
       // Reset for next test
       const engine2 = new GameEngine();
       const gameState2 = engine2.getGameState();
-      const system2 = createSystem(
-        [redStar],
-        [playerAShip, playerBShip1, playerBShip2]
-      );
+      const system2 = StarSystem.createNormal(redStar, [
+        playerAShip,
+        playerBShip1,
+        playerBShip2,
+      ]);
       gameState2.addSystem(system2);
       gameState2.setPhase('normal');
 
@@ -395,7 +400,10 @@ describe('RULES.md Examples', () => {
       const playerBShip3 = createShip('blue', 2, 'player2');
       const redStar3 = createStar('red', 1);
 
-      const system3 = createSystem([redStar3], [playerAShip3, playerBShip3]);
+      const system3 = StarSystem.createNormal(redStar3, [
+        playerAShip3,
+        playerBShip3,
+      ]);
       gameState3.addSystem(system3);
       gameState3.setPhase('normal');
       gameState3.switchPlayer(); // Make it player2's turn
@@ -444,7 +452,7 @@ describe('RULES.md Examples', () => {
       // Need green star to make green action available
       const redShip = createShip('red', 2, 'player1');
       const greenStar = createStar('green', 2);
-      const system = createSystem([greenStar], [redShip]);
+      const system = StarSystem.createNormal(greenStar, [redShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -498,7 +506,7 @@ describe('RULES.md Examples', () => {
       // Player has: Red ship attempting to grow
       const redShip = createShip('red', 1, 'player1');
       const greenStar = createStar('green', 2);
-      const system = createSystem([greenStar], [redShip]);
+      const system = StarSystem.createNormal(greenStar, [redShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -533,10 +541,13 @@ describe('RULES.md Examples', () => {
       const blueShip4 = createShip('blue', 1, 'player1'); // 4th blue piece
       const yellowShip = createShip('yellow', 2, 'player2');
 
-      const system = createSystem(
-        [redStar],
-        [blueShip1, blueShip2, blueShip3, blueShip4, yellowShip]
-      );
+      const system = StarSystem.createNormal(redStar, [
+        blueShip1,
+        blueShip2,
+        blueShip3,
+        blueShip4,
+        yellowShip,
+      ]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
 
@@ -578,10 +589,12 @@ describe('RULES.md Examples', () => {
       const greenShip = createShip('green', 3, 'player1');
       const yellowShip = createShip('yellow', 1, 'player1');
 
-      const system = createSystem(
-        [redStar],
-        [redShip1, redShip2, greenShip, yellowShip]
-      );
+      const system = StarSystem.createNormal(redStar, [
+        redShip1,
+        redShip2,
+        greenShip,
+        yellowShip,
+      ]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
       gameState.switchPlayer(); // Make it player2's turn
@@ -620,7 +633,7 @@ describe('RULES.md Examples', () => {
       // Set up a scenario where player can sacrifice large yellow ship for 3 move actions
       const yellowShip = createShip('yellow', 3, 'player1'); // Large ship = 3 actions
       const blueStar = createStar('blue', 2);
-      const system1 = createSystem([blueStar], [yellowShip]);
+      const system1 = StarSystem.createNormal(blueStar, [yellowShip]);
 
       // Create other ships to move
       const ship1 = createShip('green', 1, 'player1');
@@ -628,17 +641,21 @@ describe('RULES.md Examples', () => {
       const ship3 = createShip('blue', 1, 'player1');
 
       const yellowStar = createStar('yellow', 1); // Changed to yellow to make yellow available
-      const system2 = createSystem([yellowStar], [ship1, ship2, ship3]);
+      const system2 = StarSystem.createNormal(yellowStar, [
+        ship1,
+        ship2,
+        ship3,
+      ]);
 
       // Create destination systems with different star sizes (all different from size 1)
       const mediumGreenStar = createStar('green', 2);
-      const destSystem1 = createSystem([mediumGreenStar]);
+      const destSystem1 = StarSystem.createNormal(mediumGreenStar, []);
 
       const largeYellowStar = createStar('yellow', 3);
-      const destSystem2 = createSystem([largeYellowStar]);
+      const destSystem2 = StarSystem.createNormal(largeYellowStar, []);
 
       const largeBlueStar = createStar('blue', 3);
-      const destSystem3 = createSystem([largeBlueStar]);
+      const destSystem3 = StarSystem.createNormal(largeBlueStar, []);
 
       gameState.addSystem(system1);
       gameState.addSystem(system2);
@@ -682,13 +699,16 @@ describe('RULES.md Examples', () => {
       // Player A: Medium blue ship
       const redStar = createStar('red', 1);
       const blueShip = createShip('blue', 2, 'player1');
-      const system = createSystem([redStar], [blueShip]);
+      const system = StarSystem.createNormal(redStar, [blueShip]);
 
       // Create other ships for trade actions
       const greenShip = createShip('green', 2, 'player1');
       const yellowShip = createShip('yellow', 1, 'player1');
       const blueStar = createStar('blue', 3);
-      const otherSystem = createSystem([blueStar], [greenShip, yellowShip]);
+      const otherSystem = StarSystem.createNormal(blueStar, [
+        greenShip,
+        yellowShip,
+      ]);
 
       gameState.addSystem(system);
       gameState.addSystem(otherSystem);

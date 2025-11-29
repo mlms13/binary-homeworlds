@@ -2,9 +2,9 @@
  * GameState management class for Binary Homeworlds
  */
 
-import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
+import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
-import { GameAction, GamePhase, GameState, System } from './types';
+import { GameAction, GamePhase, GameState } from './types';
 import {
   addPiecesToEngineBank,
   addPieceToEngineBank,
@@ -12,7 +12,6 @@ import {
   checkGameEnd,
   cloneGameState,
   findSystem,
-  hasOverpopulation,
   removePieceFromBankById,
 } from './utils';
 
@@ -77,22 +76,22 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get all systems (copies)
-  getSystems(): Array<System> {
+  getSystems(): Array<StarSystem.StarSystem> {
     return this.state.systems.map(system => ({ ...system }));
   }
 
   // Get direct reference to systems (for internal use)
-  getSystemsRef(): Array<System> {
+  getSystemsRef(): Array<StarSystem.StarSystem> {
     return this.state.systems;
   }
 
   // Get a specific system by ID
-  getSystem(systemId: string): System | undefined {
+  getSystem(systemId: string): StarSystem.StarSystem | undefined {
     return findSystem(this.state, systemId);
   }
 
   // Get player's home system
-  getHomeSystem(player: Player.Player): System | undefined {
+  getHomeSystem(player: Player.Player): StarSystem.StarSystem | undefined {
     return findSystem(this.state, this.state.players[player].homeSystemId);
   }
 
@@ -127,8 +126,16 @@ export class BinaryHomeworldsGameState {
   }
 
   // Add a new system
-  addSystem(system: System): void {
+  addSystem(system: StarSystem.StarSystem): void {
     this.state.systems.push(system);
+  }
+
+  // Replace an existing system by ID with a new system
+  setSystem(systemId: string, system: StarSystem.StarSystem): void {
+    const index = this.state.systems.findIndex(s => s.id === systemId);
+    if (index !== -1) {
+      this.state.systems[index] = system;
+    }
   }
 
   // Remove a system
@@ -164,12 +171,10 @@ export class BinaryHomeworldsGameState {
 
   getOverpopulations(): Array<{ systemId: string; color: GamePiece.Color }> {
     return this.state.systems.flatMap(system => {
-      for (const color of ['yellow', 'green', 'blue', 'red'] as const) {
-        if (hasOverpopulation(system, color)) {
-          return [{ systemId: system.id, color }];
-        }
-      }
-      return [];
+      return StarSystem.getOverpopulations(system).map(color => ({
+        systemId: system.id,
+        color,
+      }));
     });
   }
 

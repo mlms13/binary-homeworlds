@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { StarSystem } from '@binary-homeworlds/engine';
+
 import { createCaptureAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem } from '../utils';
 import { createShip, createStar } from './utils';
 
 describe('Capture Edge Cases', () => {
@@ -13,7 +14,7 @@ describe('Capture Edge Cases', () => {
     const redStar = createStar('red', 1);
     const ship1 = createShip('yellow', 3, 'player1');
     const ship2 = createShip('blue', 2, 'player1');
-    const system = createSystem([redStar], [ship1, ship2]);
+    const system = StarSystem.createNormal(redStar, [ship1, ship2]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -37,7 +38,7 @@ describe('Capture Edge Cases', () => {
     const blueStar = createStar('blue', 1);
     const playerShip = createShip('yellow', 3, 'player1');
     const enemyShip = createShip('green', 2, 'player2');
-    const system = createSystem([blueStar], [playerShip, enemyShip]);
+    const system = StarSystem.createNormal(blueStar, [playerShip, enemyShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');

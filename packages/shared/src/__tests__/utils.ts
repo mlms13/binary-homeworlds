@@ -1,9 +1,40 @@
 // test helpers to make it easy to get the game into a particular state
 
-import { GamePiece, Player } from '@binary-homeworlds/engine';
+import { GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
 import { createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
+
+// Generate unique IDs
+function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
+}
+
+// Create a new system (for testing only)
+// NOTE: For single-star systems, use StarSystem.createNormal instead!
+// This helper is specifically for multi-star systems (home systems with 2+ stars)
+// which cannot be created with StarSystem.createNormal
+export function createSystem(
+  stars: Array<GamePiece.Star>,
+  ships: Array<GamePiece.Ship> = []
+): StarSystem.StarSystem {
+  if (stars.length === 0) {
+    throw new Error('System must have at least one star');
+  }
+  if (stars.length === 1 && stars[0]) {
+    // Single-star systems should use StarSystem.createNormal, but we'll handle it for backwards compatibility
+    return StarSystem.createNormal(stars[0], ships);
+  } else {
+    // For home systems with multiple stars, create manually
+    // Use first star's ID as base, or generate a temporary ID
+    const id = (stars[0]?.id || generateId()) as StarSystem.StarSystemId;
+    return {
+      id,
+      stars,
+      ships,
+    };
+  }
+}
 
 // Helper to generate a valid PieceId for testing
 // Format: ${Color}-${Size}-${0 | 1 | 2}

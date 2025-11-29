@@ -33,6 +33,5 @@ export {
   PlayerState,
   SacrificeAction,
   SetupAction,
-  System,
   TradeAction,
 } from './types';

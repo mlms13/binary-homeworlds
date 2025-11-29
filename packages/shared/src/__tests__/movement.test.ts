@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { StarSystem } from '@binary-homeworlds/engine';
+
 import {
   createMoveActionExisting,
   createMoveActionNew,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem } from '../utils';
 import { createShip, createStar } from './utils';
 
 describe('Movement Edge Cases', () => {
@@ -16,11 +17,11 @@ describe('Movement Edge Cases', () => {
     // Origin system with medium star
     const originStar = createStar('blue', 2);
     const ship = createShip('yellow', 1, 'player1');
-    const originSystem = createSystem([originStar], [ship]);
+    const originSystem = StarSystem.createNormal(originStar, [ship]);
 
     // Destination system with medium star (same size)
     const destStar = createStar('red', 2);
-    const destSystem = createSystem([destStar]);
+    const destSystem = StarSystem.createNormal(destStar, []);
 
     gameState.addSystem(originSystem);
     gameState.addSystem(destSystem);
@@ -45,7 +46,7 @@ describe('Movement Edge Cases', () => {
     // Origin system with medium star
     const originStar = createStar('blue', 2);
     const ship = createShip('yellow', 1, 'player1');
-    const originSystem = createSystem([originStar], [ship]);
+    const originSystem = StarSystem.createNormal(originStar, [ship]);
 
     gameState.addSystem(originSystem);
     gameState.setPhase('normal');
@@ -79,10 +80,10 @@ describe('Movement Edge Cases', () => {
     // System with no yellow star and no yellow ships for player
     const redStar = createStar('red', 1);
     const blueShip = createShip('blue', 2, 'player1');
-    const system = createSystem([redStar], [blueShip]);
+    const system = StarSystem.createNormal(redStar, [blueShip]);
 
     const destStar = createStar('green', 2);
-    const destSystem = createSystem([destStar]);
+    const destSystem = StarSystem.createNormal(destStar, []);
 
     gameState.addSystem(system);
     gameState.addSystem(destSystem);

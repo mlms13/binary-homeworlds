@@ -2,7 +2,7 @@
  * Main game engine for Binary Homeworlds
  */
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import { ActionValidator } from './action-validator';
 import { BinaryHomeworldsGameState } from './game-state';
@@ -15,10 +15,8 @@ import {
   OverpopulationAction,
   SacrificeAction,
   SetupAction,
-  System,
   TradeAction,
 } from './types';
-import { createSystem, getPiecesOfColor } from './utils';
 
 export class GameEngine {
   private gameState: BinaryHomeworldsGameState;
@@ -123,7 +121,7 @@ export class GameEngine {
 
     if (action.role === 'star1') {
       // Create new home system with first star
-      const system = createSystem([piece]);
+      const system = StarSystem.createNormal(piece, []);
       this.gameState.addSystem(system);
       this.gameState.setHomeSystem(currentPlayer, system.id);
     } else if (action.role === 'star2') {
@@ -132,6 +130,8 @@ export class GameEngine {
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
+      // For home systems with multiple stars, we need to mutate directly
+      // since createNormal only handles single-star systems
       homeSystem.stars.push(piece);
     } else if (action.role === 'ship') {
       // Add starting ship to home system
@@ -139,14 +139,16 @@ export class GameEngine {
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
-      homeSystem.ships.push({ ...piece, owner: currentPlayer });
+      const ship = { ...piece, owner: currentPlayer };
+      const updatedSystem = StarSystem.addShip(ship, homeSystem);
+      this.gameState.setSystem(homeSystem.id, updatedSystem);
     }
   }
 
   private applyMoveAction(action: MoveAction): void {
     // Find the ship in the actual game state (not a copy)
-    let ship: GamePiece.Ship | null = null;
-    let fromSystem: System | null = null;
+    let ship: GamePiece.Ship | undefined = undefined;
+    let fromSystem: StarSystem.StarSystem | undefined = undefined;
 
     for (const system of this.gameState.getSystemsRef()) {
       const foundShip = system.ships.find(s => s.id === action.shipId);
@@ -162,12 +164,19 @@ export class GameEngine {
     }
 
     // Remove ship from origin system
-    fromSystem.ships = fromSystem.ships.filter(s => s.id !== action.shipId);
+    const [removed, updatedFrom] = StarSystem.removeShip(ship, fromSystem);
+    if (!removed) {
+      throw new Error('Failed to remove ship from origin system');
+    }
+
+    // Update the origin system
+    this.gameState.setSystem(fromSystem.id, updatedFrom);
 
     // Check if origin system should be cleaned up
-    if (fromSystem.ships.length === 0) {
-      // Return all stars to bank
-      this.gameState.addPiecesToBank(fromSystem.stars);
+    const validation = StarSystem.validate(updatedFrom);
+    if (!validation.valid) {
+      // Return all pieces to bank
+      this.gameState.addPiecesToBank(validation.piecesToCleanUp);
       this.gameState.removeSystem(fromSystem.id);
     }
 
@@ -177,7 +186,8 @@ export class GameEngine {
       if (!toSystem) {
         throw new Error('Destination system not found');
       }
-      toSystem.ships.push(ship);
+      const updatedTo = StarSystem.addShip(ship, toSystem);
+      this.gameState.setSystem(action.toSystemId, updatedTo);
     } else {
       // Create new system
       if (!action.newStarPieceId) {
@@ -191,7 +201,7 @@ export class GameEngine {
         throw new Error('New star piece not found in bank');
       }
 
-      const newSystem = createSystem([newStarPiece], [ship]);
+      const newSystem = StarSystem.createNormal(newStarPiece, [ship]);
       this.gameState.addSystem(newSystem);
     }
   }
@@ -225,7 +235,8 @@ export class GameEngine {
     }
 
     const newShip = { ...newShipPiece, owner: action.player };
-    system.ships.push(newShip);
+    const updatedSystem = StarSystem.addShip(newShip, system);
+    this.gameState.setSystem(action.systemId, updatedSystem);
   }
 
   private applyTradeAction(action: TradeAction): void {
@@ -272,7 +283,16 @@ export class GameEngine {
       throw new Error('Sacrificed ship not found');
     }
 
-    system.ships = system.ships.filter(s => s.id !== action.sacrificedShipId);
+    const [removedPiece, updatedSystem] = StarSystem.removeShip(
+      sacrificedShip,
+      system
+    );
+    if (!removedPiece) {
+      throw new Error('Failed to remove sacrificed ship');
+    }
+
+    // Update the system
+    this.gameState.setSystem(action.systemId, updatedSystem);
 
     // Return sacrificed ship to bank
     this.gameState.addPieceToBank({
@@ -282,8 +302,9 @@ export class GameEngine {
     });
 
     // Check if system should be cleaned up
-    if (system.ships.length === 0) {
-      this.gameState.addPiecesToBank(system.stars);
+    const validation = StarSystem.validate(updatedSystem);
+    if (!validation.valid) {
+      this.gameState.addPiecesToBank(validation.piecesToCleanUp);
       this.gameState.removeSystem(system.id);
     }
 
@@ -333,31 +354,22 @@ export class GameEngine {
       throw new Error('System not found');
     }
 
-    // Get all pieces of the overpopulating color
-    const overpopulatingPieces = getPiecesOfColor(system, action.color);
-
-    // Remove all pieces of that color from the system
-    system.stars = system.stars.filter(star => star.color !== action.color);
-    system.ships = system.ships.filter(ship => ship.color !== action.color);
-
-    // Return pieces to bank
-    this.gameState.addPiecesToBank(
-      overpopulatingPieces.map(piece => ({
-        color: piece.color,
-        size: piece.size,
-        id: piece.id,
-      }))
+    // Remove all pieces of the overpopulating color from the system
+    const [removedPieces, updatedSystem] = StarSystem.removePiecesOfColor(
+      system,
+      action.color
     );
 
-    // If no stars remain, return all remaining ships to bank and remove system
-    if (system.stars.length === 0) {
-      this.gameState.addPiecesToBank(
-        system.ships.map(ship => ({
-          color: ship.color,
-          size: ship.size,
-          id: ship.id,
-        }))
-      );
+    // Update the system
+    this.gameState.setSystem(action.systemId, updatedSystem);
+
+    // Return pieces to bank
+    this.gameState.addPiecesToBank(removedPieces);
+
+    // Check if system should be cleaned up
+    const validation = StarSystem.validate(updatedSystem);
+    if (!validation.valid) {
+      this.gameState.addPiecesToBank(validation.piecesToCleanUp);
       this.gameState.removeSystem(system.id);
     }
 
@@ -392,12 +404,10 @@ export class GameEngine {
 
     // Overpopulation can always be declared if condition exists
     for (const system of state.systems) {
-      for (const color of ['yellow', 'green', 'blue', 'red'] as const) {
-        const pieces = getPiecesOfColor(system, color);
-        if (pieces.length >= 4) {
-          actions.push('overpopulation');
-          break;
-        }
+      const overpopulations = StarSystem.getOverpopulations(system);
+      if (overpopulations.length > 0) {
+        actions.push('overpopulation');
+        break;
       }
     }
 

@@ -2,14 +2,7 @@
  * Core types for Binary Homeworlds game
  */
 
-import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
-
-// System represents a star system with stars and ships
-export interface System {
-  id: string;
-  stars: Array<GamePiece.Star>;
-  ships: Array<GamePiece.Ship>;
-}
+import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
 // Player state
 export interface PlayerState {
@@ -24,7 +17,7 @@ export interface GameState {
   phase: GamePhase;
   currentPlayer: Player.Player;
   turnNumber: number;
-  systems: Array<System>;
+  systems: Array<StarSystem.StarSystem>;
   bank: Bank.Bank;
   players: {
     player1: PlayerState;

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import { createMoveAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem } from '../utils';
 import { createShip, createStar } from './utils';
 
 describe('Action Validation', () => {
@@ -15,7 +14,7 @@ describe('Action Validation', () => {
     // Set up a basic game state
     const ship = createShip('yellow', 1, 'player1');
     const star = createStar('blue', 2);
-    const system = createSystem([star], [ship]);
+    const system = StarSystem.createNormal(star, [ship]);
     gameState.addSystem(system);
     gameState.setPhase('normal');
     // Current player is player1
@@ -38,7 +37,7 @@ describe('Action Validation', () => {
 
     const ship = createShip('yellow', 1, 'player2');
     const star = createStar('blue', 2);
-    const system = createSystem([star], [ship]);
+    const system = StarSystem.createNormal(star, [ship]);
     gameState.addSystem(system);
 
     const moveAction = createMoveAction('player2', ship.id, system.id);
@@ -75,7 +74,7 @@ describe('Action Validation', () => {
     // Game starts in setup phase
     const ship = createShip('yellow', 1, 'player1');
     const star = createStar('blue', 2);
-    const system = createSystem([star], [ship]);
+    const system = StarSystem.createNormal(star, [ship]);
     gameState.addSystem(system);
 
     const moveAction = createMoveAction('player1', ship.id, system.id);

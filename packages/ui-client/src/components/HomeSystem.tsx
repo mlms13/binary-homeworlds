@@ -1,13 +1,9 @@
 import React from 'react';
 
-import { GamePiece } from '@binary-homeworlds/engine';
-import {
-  ActionValidationResult,
-  GameAction,
-  System,
-} from '@binary-homeworlds/shared';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import { ActionValidationResult, GameAction } from '@binary-homeworlds/shared';
 
-import StarSystem from './StarSystem.js';
+import StarSystemComponent from './StarSystem';
 
 interface ActionOption {
   id: string;
@@ -18,7 +14,7 @@ interface ActionOption {
 }
 
 interface HomeSystemProps {
-  system: System;
+  system: StarSystem.StarSystem;
   isCurrentPlayer: boolean;
   isOpponent: boolean;
   onAction: (action: GameAction) => ActionValidationResult;
@@ -94,7 +90,7 @@ const HomeSystem: React.FC<HomeSystemProps> = ({
   };
 
   return (
-    <StarSystem
+    <StarSystemComponent
       system={system}
       onAction={onAction}
       getAvailableActions={getAvailableActions}

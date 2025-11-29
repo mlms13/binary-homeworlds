@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import {
   createCaptureAction,
@@ -17,8 +17,7 @@ import {
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { createSystem } from '../utils';
-import { createShip, createStar } from './utils';
+import { createShip, createStar, createSystem } from './utils';
 
 describe('Edge Cases and Error Conditions', () => {
   describe('Game Setup', () => {
@@ -229,7 +228,7 @@ describe('Edge Cases and Error Conditions', () => {
       // Set up a basic game state
       const ship = createShip('yellow', 1, 'player1');
       const star = createStar('blue', 2);
-      const system = createSystem([star], [ship]);
+      const system = StarSystem.createNormal(star, [ship]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
       // Current player is player1
@@ -252,7 +251,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const ship = createShip('yellow', 1, 'player2');
       const star = createStar('blue', 2);
-      const system = createSystem([star], [ship]);
+      const system = StarSystem.createNormal(star, [ship]);
       gameState.addSystem(system);
 
       const moveAction = createMoveAction('player2', ship.id, system.id);
@@ -289,7 +288,7 @@ describe('Edge Cases and Error Conditions', () => {
       // Game starts in setup phase
       const ship = createShip('yellow', 1, 'player1');
       const star = createStar('blue', 2);
-      const system = createSystem([star], [ship]);
+      const system = StarSystem.createNormal(star, [ship]);
       gameState.addSystem(system);
 
       const moveAction = createMoveAction('player1', ship.id, system.id);
@@ -451,11 +450,11 @@ describe('Edge Cases and Error Conditions', () => {
       // Origin system with medium star
       const originStar = createStar('blue', 2);
       const ship = createShip('yellow', 1, 'player1');
-      const originSystem = createSystem([originStar], [ship]);
+      const originSystem = StarSystem.createNormal(originStar, [ship]);
 
       // Destination system with medium star (same size)
       const destStar = createStar('red', 2);
-      const destSystem = createSystem([destStar]);
+      const destSystem = StarSystem.createNormal(destStar, []);
 
       gameState.addSystem(originSystem);
       gameState.addSystem(destSystem);
@@ -480,7 +479,7 @@ describe('Edge Cases and Error Conditions', () => {
       // Origin system with medium star
       const originStar = createStar('blue', 2);
       const ship = createShip('yellow', 1, 'player1');
-      const originSystem = createSystem([originStar], [ship]);
+      const originSystem = StarSystem.createNormal(originStar, [ship]);
 
       gameState.addSystem(originSystem);
       gameState.setPhase('normal');
@@ -516,10 +515,10 @@ describe('Edge Cases and Error Conditions', () => {
       // System with no yellow star and no yellow ships for player
       const redStar = createStar('red', 1);
       const blueShip = createShip('blue', 2, 'player1');
-      const system = createSystem([redStar], [blueShip]);
+      const system = StarSystem.createNormal(redStar, [blueShip]);
 
       const destStar = createStar('green', 2);
-      const destSystem = createSystem([destStar]);
+      const destSystem = StarSystem.createNormal(destStar, []);
 
       gameState.addSystem(system);
       gameState.addSystem(destSystem);
@@ -546,7 +545,7 @@ describe('Edge Cases and Error Conditions', () => {
       const redStar = createStar('red', 1);
       const ship1 = createShip('yellow', 3, 'player1');
       const ship2 = createShip('blue', 2, 'player1');
-      const system = createSystem([redStar], [ship1, ship2]);
+      const system = StarSystem.createNormal(redStar, [ship1, ship2]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -570,7 +569,7 @@ describe('Edge Cases and Error Conditions', () => {
       const blueStar = createStar('blue', 1);
       const playerShip = createShip('yellow', 3, 'player1');
       const enemyShip = createShip('green', 2, 'player2');
-      const system = createSystem([blueStar], [playerShip, enemyShip]);
+      const system = StarSystem.createNormal(blueStar, [playerShip, enemyShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -595,7 +594,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const redStar = createStar('red', 1);
       const blueShip = createShip('blue', 2, 'player1');
-      const system = createSystem([redStar], [blueShip]);
+      const system = StarSystem.createNormal(redStar, [blueShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -623,7 +622,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const greenStar = createStar('green', 1);
       const redShip = createShip('red', 2, 'player1');
-      const system = createSystem([greenStar], [redShip]);
+      const system = StarSystem.createNormal(greenStar, [redShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -653,7 +652,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const redStar = createStar('red', 1);
       const yellowShip = createShip('yellow', 2, 'player1');
-      const system = createSystem([redStar], [yellowShip]);
+      const system = StarSystem.createNormal(redStar, [yellowShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -681,7 +680,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const blueStar = createStar('blue', 1);
       const yellowShip = createShip('yellow', 2, 'player1');
-      const system = createSystem([blueStar], [yellowShip]);
+      const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -709,7 +708,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       const blueStar = createStar('blue', 1);
       const yellowShip = createShip('yellow', 2, 'player1');
-      const system = createSystem([blueStar], [yellowShip]);
+      const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
       gameState.addSystem(system);
       gameState.setPhase('normal');
@@ -740,7 +739,7 @@ describe('Edge Cases and Error Conditions', () => {
       // Make some changes to the state
       const ship = createShip('yellow', 1, 'player1');
       const star = createStar('blue', 2);
-      const system = createSystem([star], [ship]);
+      const system = StarSystem.createNormal(star, [ship]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
 
@@ -764,7 +763,7 @@ describe('Edge Cases and Error Conditions', () => {
       // Set up a simple scenario
       const ship = createShip('yellow', 1, 'player1');
       const star = createStar('blue', 2);
-      const system = createSystem([star], [ship]);
+      const system = StarSystem.createNormal(star, [ship]);
       gameState.addSystem(system);
       gameState.setPhase('normal');
 

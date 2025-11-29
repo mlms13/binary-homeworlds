@@ -2,30 +2,13 @@
  * Utility functions for Binary Homeworlds game
  */
 
-import { Bank, GamePiece, Player } from '@binary-homeworlds/engine';
+import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
-import { GameState, System } from './types';
-
-// Generate unique IDs
-export function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
-}
-
-// Create a new system
-export function createSystem(
-  stars: Array<GamePiece.Star>,
-  ships: Array<GamePiece.Ship> = []
-): System {
-  return {
-    id: generateId(),
-    stars,
-    ships,
-  };
-}
+import { GameState } from './types';
 
 // Check if a color is available at a system for a player
 export function isColorAvailable(
-  system: System,
+  system: StarSystem.StarSystem,
   color: GamePiece.Color,
   player: Player.Player
 ): boolean {
@@ -39,39 +22,6 @@ export function isColorAvailable(
   );
 
   return hasStarOfColor || hasShipOfColor;
-}
-
-// Get all pieces of a specific color in a system (stars + ships)
-export function getPiecesOfColor(
-  system: System,
-  color: GamePiece.Color
-): Array<GamePiece.Star | GamePiece.Ship> {
-  const stars = system.stars.filter(star => star.color === color);
-  const ships = system.ships.filter(ship => ship.color === color);
-  return [...stars, ...ships];
-}
-
-// Check if a system has overpopulation of a color
-export function hasOverpopulation(
-  system: System,
-  color: GamePiece.Color
-): boolean {
-  const pieces = getPiecesOfColor(system, color);
-  return pieces.length >= 4;
-}
-
-// Check if any system has overpopulation
-export function findOverpopulation(
-  gameState: GameState
-): { systemId: string; color: GamePiece.Color } | null {
-  for (const system of gameState.systems) {
-    for (const color of ['yellow', 'green', 'blue', 'red'] as const) {
-      if (hasOverpopulation(system, color)) {
-        return { systemId: system.id, color };
-      }
-    }
-  }
-  return null;
 }
 
 // ============================================================================
@@ -215,7 +165,7 @@ export function removePieceFromBank(
 export function findSystem(
   gameState: GameState,
   systemId: string
-): System | undefined {
+): StarSystem.StarSystem | undefined {
   return gameState.systems.find(system => system.id === systemId);
 }
 
@@ -223,9 +173,9 @@ export function findSystem(
 export function findShip(
   gameState: GameState,
   shipId: GamePiece.PieceId
-): { ship: GamePiece.Ship; system: System } | undefined {
+): { ship: GamePiece.Ship; system: StarSystem.StarSystem } | undefined {
   return gameState.systems.reduce<
-    { ship: GamePiece.Ship; system: System } | undefined
+    { ship: GamePiece.Ship; system: StarSystem.StarSystem } | undefined
   >((acc, system) => {
     const ship = system.ships.find(ship => ship.id === shipId);
     if (!acc && ship) return { ship, system };

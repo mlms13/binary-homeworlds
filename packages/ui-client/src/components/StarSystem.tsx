@@ -1,11 +1,7 @@
 import React, { useCallback, useState } from 'react';
 
-import { GamePiece } from '@binary-homeworlds/engine';
-import {
-  ActionValidationResult,
-  GameAction,
-  System,
-} from '@binary-homeworlds/shared';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import { ActionValidationResult, GameAction } from '@binary-homeworlds/shared';
 import { createGrowAction } from '@binary-homeworlds/shared';
 
 import './HomeSystem.css'; // Reuse the same styles for now
@@ -22,7 +18,7 @@ interface ActionOption {
 }
 
 interface StarSystemProps {
-  system: System;
+  system: StarSystem.StarSystem;
   onAction: (action: GameAction) => ActionValidationResult;
   getAvailableActions: (
     shipId: GamePiece.PieceId,
@@ -68,7 +64,7 @@ interface StarSystemProps {
   title?: string; // Optional custom title
 }
 
-const StarSystem: React.FC<StarSystemProps> = ({
+const StarSystemComponent: React.FC<StarSystemProps> = ({
   system,
   onAction: _onAction,
   getAvailableActions,
@@ -291,4 +287,4 @@ const StarSystem: React.FC<StarSystemProps> = ({
   );
 };
 
-export default StarSystem;
+export default StarSystemComponent;

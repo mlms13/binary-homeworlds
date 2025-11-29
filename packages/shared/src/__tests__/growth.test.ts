@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { StarSystem } from '@binary-homeworlds/engine';
+
 import { createGrowAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem } from '../utils';
 import { createShip, createStar } from './utils';
 
 describe('Growth Edge Cases', () => {
@@ -12,7 +13,7 @@ describe('Growth Edge Cases', () => {
 
     const redStar = createStar('red', 1);
     const blueShip = createShip('blue', 2, 'player1');
-    const system = createSystem([redStar], [blueShip]);
+    const system = StarSystem.createNormal(redStar, [blueShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -38,7 +39,7 @@ describe('Growth Edge Cases', () => {
 
     const greenStar = createStar('green', 1);
     const redShip = createShip('red', 2, 'player1');
-    const system = createSystem([greenStar], [redShip]);
+    const system = StarSystem.createNormal(greenStar, [redShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');

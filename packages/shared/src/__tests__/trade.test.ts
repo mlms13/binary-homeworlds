@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { StarSystem } from '@binary-homeworlds/engine';
+
 import { createTradeAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createSystem } from '../utils';
 import { createShip, createStar } from './utils';
 
 describe('Trade Edge Cases', () => {
@@ -12,7 +13,7 @@ describe('Trade Edge Cases', () => {
 
     const redStar = createStar('red', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = createSystem([redStar], [yellowShip]);
+    const system = StarSystem.createNormal(redStar, [yellowShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -40,7 +41,7 @@ describe('Trade Edge Cases', () => {
 
     const blueStar = createStar('blue', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = createSystem([blueStar], [yellowShip]);
+    const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -68,7 +69,7 @@ describe('Trade Edge Cases', () => {
 
     const blueStar = createStar('blue', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = createSystem([blueStar], [yellowShip]);
+    const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
     gameState.addSystem(system);
     gameState.setPhase('normal');

@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { GamePiece } from '@binary-homeworlds/engine';
-import type { System } from '@binary-homeworlds/shared';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import DiamondStar from './DiamondStar.js';
 import DirectionalShip from './DirectionalShip.js';
 
 interface SystemContentProps {
-  system: System;
+  system: StarSystem.StarSystem;
   currentPlayer: 'player1' | 'player2';
   selectedShipId?: GamePiece.PieceId | null;
   onShipClick?: (shipId: GamePiece.PieceId, event: React.MouseEvent) => void;

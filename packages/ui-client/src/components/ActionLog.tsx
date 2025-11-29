@@ -1,9 +1,8 @@
-import { GamePiece, Player } from '@binary-homeworlds/engine';
+import { GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
   GameAction,
   GameEngine,
-  System,
 } from '@binary-homeworlds/shared';
 
 import './ActionLog.css';
@@ -71,7 +70,7 @@ export default function ActionLog({
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
         const toSystem = action.toSystemId
           ? (stateAfter.systems.find(
-              (s: System) => s.id === action.toSystemId
+              (s: StarSystem.StarSystem) => s.id === action.toSystemId
             ) ?? null)
           : null;
 
@@ -163,8 +162,7 @@ export default function ActionLog({
 
       case 'overpopulation': {
         const system =
-          stateBefore.systems.find((s: System) => s.id === action.systemId) ??
-          null;
+          stateBefore.systems.find(s => s.id === action.systemId) ?? null;
         const systemName = getSystemName(system, stateBefore);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
@@ -177,7 +175,7 @@ export default function ActionLog({
 
   const findShipInState = (
     state: {
-      systems: Array<System>;
+      systems: Array<StarSystem.StarSystem>;
     },
     shipId: GamePiece.PieceId
   ) => {
@@ -189,18 +187,18 @@ export default function ActionLog({
   };
 
   const findSystemWithShip = (
-    state: { systems: Array<System> },
+    state: { systems: Array<StarSystem.StarSystem> },
     shipId: GamePiece.PieceId
   ) => {
     return (
-      state.systems.find((system: System) =>
-        system.ships.some((ship: GamePiece.Ship) => ship.id === shipId)
+      state.systems.find(system =>
+        system.ships.some(ship => ship.id === shipId)
       ) ?? null
     );
   };
 
   const getSystemName = (
-    system: System | null,
+    system: StarSystem.StarSystem | null,
     state: {
       players: {
         player1: { homeSystemId: string };
