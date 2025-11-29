@@ -19,3 +19,11 @@ export interface Ship extends Piece {
 
 // Star is just a piece (no owner)
 export type Star = Piece;
+
+export function shipToPiece(ship: Ship): Piece {
+  return {
+    color: ship.color,
+    size: ship.size,
+    id: ship.id,
+  };
+}
