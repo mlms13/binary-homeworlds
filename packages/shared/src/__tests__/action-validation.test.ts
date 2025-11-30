@@ -4,7 +4,7 @@ import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import { createMoveAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar } from './utils';
+import { createShip } from './utils';
 
 describe('Action Validation', () => {
   it('should reject actions from wrong player', () => {
@@ -13,8 +13,10 @@ describe('Action Validation', () => {
 
     // Set up a basic game state
     const ship = createShip('yellow', 1, 'player1');
-    const star = createStar('blue', 2);
-    const system = StarSystem.createNormal(star, [ship]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 2, id: 'blue-2-0' },
+      [ship]
+    );
     gameState.addSystem(system);
     gameState.setPhase('normal');
     // Current player is player1
@@ -36,8 +38,10 @@ describe('Action Validation', () => {
     gameState.setWinner('player1');
 
     const ship = createShip('yellow', 1, 'player2');
-    const star = createStar('blue', 2);
-    const system = StarSystem.createNormal(star, [ship]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 2, id: 'blue-2-0' },
+      [ship]
+    );
     gameState.addSystem(system);
 
     const moveAction = createMoveAction('player2', ship.id, system.id);
@@ -73,8 +77,10 @@ describe('Action Validation', () => {
 
     // Game starts in setup phase
     const ship = createShip('yellow', 1, 'player1');
-    const star = createStar('blue', 2);
-    const system = StarSystem.createNormal(star, [ship]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 2, id: 'blue-2-0' },
+      [ship]
+    );
     gameState.addSystem(system);
 
     const moveAction = createMoveAction('player1', ship.id, system.id);

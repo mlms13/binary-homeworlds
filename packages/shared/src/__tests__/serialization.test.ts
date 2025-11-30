@@ -5,7 +5,7 @@ import { StarSystem } from '@binary-homeworlds/engine';
 import { createMoveAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
 import { BinaryHomeworldsGameState } from '../game-state';
-import { createShip, createStar } from './utils';
+import { createShip } from './utils';
 
 describe('Serialization and History', () => {
   it('should serialize and deserialize game state correctly', () => {
@@ -14,8 +14,10 @@ describe('Serialization and History', () => {
 
     // Make some changes to the state
     const ship = createShip('yellow', 1, 'player1');
-    const star = createStar('blue', 2);
-    const system = StarSystem.createNormal(star, [ship]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 2, id: 'blue-2-0' },
+      [ship]
+    );
     gameState.addSystem(system);
     gameState.setPhase('normal');
 
@@ -38,8 +40,10 @@ describe('Serialization and History', () => {
 
     // Set up a simple scenario
     const ship = createShip('yellow', 1, 'player1');
-    const star = createStar('blue', 2);
-    const system = StarSystem.createNormal(star, [ship]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 2, id: 'blue-2-0' },
+      [ship]
+    );
     gameState.addSystem(system);
     gameState.setPhase('normal');
 

@@ -4,17 +4,19 @@ import { StarSystem } from '@binary-homeworlds/engine';
 
 import { createCaptureAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar } from './utils';
+import { createShip } from './utils';
 
 describe('Capture Edge Cases', () => {
   it('should reject capturing own ship', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const redStar = createStar('red', 1);
     const ship1 = createShip('yellow', 3, 'player1');
     const ship2 = createShip('blue', 2, 'player1');
-    const system = StarSystem.createNormal(redStar, [ship1, ship2]);
+    const system = StarSystem.createNormal(
+      { color: 'red', size: 1, id: 'red-1-0' },
+      [ship1, ship2]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -35,10 +37,12 @@ describe('Capture Edge Cases', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const blueStar = createStar('blue', 1);
     const playerShip = createShip('yellow', 3, 'player1');
     const enemyShip = createShip('green', 2, 'player2');
-    const system = StarSystem.createNormal(blueStar, [playerShip, enemyShip]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 1, id: 'blue-1-0' },
+      [playerShip, enemyShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');

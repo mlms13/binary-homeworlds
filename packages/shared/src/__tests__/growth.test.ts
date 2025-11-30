@@ -4,16 +4,18 @@ import { StarSystem } from '@binary-homeworlds/engine';
 
 import { createGrowAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar } from './utils';
+import { createShip } from './utils';
 
 describe('Growth Edge Cases', () => {
   it('should reject growth when green not available', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const redStar = createStar('red', 1);
     const blueShip = createShip('blue', 2, 'player1');
-    const system = StarSystem.createNormal(redStar, [blueShip]);
+    const system = StarSystem.createNormal(
+      { color: 'red', size: 1, id: 'red-1-0' },
+      [blueShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -37,9 +39,11 @@ describe('Growth Edge Cases', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const greenStar = createStar('green', 1);
     const redShip = createShip('red', 2, 'player1');
-    const system = StarSystem.createNormal(greenStar, [redShip]);
+    const system = StarSystem.createNormal(
+      { color: 'green', size: 1, id: 'green-1-0' },
+      [redShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');

@@ -4,16 +4,18 @@ import { StarSystem } from '@binary-homeworlds/engine';
 
 import { createTradeAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { createShip, createStar } from './utils';
+import { createShip } from './utils';
 
 describe('Trade Edge Cases', () => {
   it('should reject trade when blue not available', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const redStar = createStar('red', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = StarSystem.createNormal(redStar, [yellowShip]);
+    const system = StarSystem.createNormal(
+      { color: 'red', size: 1, id: 'red-1-0' },
+      [yellowShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -39,9 +41,11 @@ describe('Trade Edge Cases', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const blueStar = createStar('blue', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = StarSystem.createNormal(blueStar, [yellowShip]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 1, id: 'blue-1-0' },
+      [yellowShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
@@ -67,9 +71,11 @@ describe('Trade Edge Cases', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
 
-    const blueStar = createStar('blue', 1);
     const yellowShip = createShip('yellow', 2, 'player1');
-    const system = StarSystem.createNormal(blueStar, [yellowShip]);
+    const system = StarSystem.createNormal(
+      { color: 'blue', size: 1, id: 'blue-1-0' },
+      [yellowShip]
+    );
 
     gameState.addSystem(system);
     gameState.setPhase('normal');
