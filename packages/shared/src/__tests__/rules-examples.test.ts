@@ -15,37 +15,9 @@ import {
   createTradeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { isColorAvailable } from '../utils';
 import { createShip } from './utils';
 
 describe('RULES.md Examples', () => {
-  describe('Example 1: Basic availability', () => {
-    it('should correctly determine available actions at a system', () => {
-      // System: Small yellow star
-      // Player A: Large green ship
-      // Player B: Medium red ship
-
-      const playerAShip = createShip('green', 3, 'player1');
-      const playerBShip = createShip('red', 2, 'player2');
-      const system = StarSystem.createNormal(
-        { color: 'yellow', size: 1, id: 'yellow-1-0' },
-        [playerAShip, playerBShip]
-      );
-
-      // Player A can move (yellow star) or grow (green ship)
-      expect(isColorAvailable(system, 'yellow', 'player1')).toBe(true); // move
-      expect(isColorAvailable(system, 'green', 'player1')).toBe(true); // grow
-      expect(isColorAvailable(system, 'red', 'player1')).toBe(false); // capture - not available
-      expect(isColorAvailable(system, 'blue', 'player1')).toBe(false); // trade - not available
-
-      // Player B can move (yellow star) or capture (red ship)
-      expect(isColorAvailable(system, 'yellow', 'player2')).toBe(true); // move
-      expect(isColorAvailable(system, 'red', 'player2')).toBe(true); // capture
-      expect(isColorAvailable(system, 'green', 'player2')).toBe(false); // grow - not available
-      expect(isColorAvailable(system, 'blue', 'player2')).toBe(false); // trade - not available
-    });
-  });
-
   describe('Example 2: Sacrifice for unavailable actions', () => {
     it('should allow sacrifice to gain unavailable actions', () => {
       const engine = new GameEngine();
@@ -85,7 +57,9 @@ describe('RULES.md Examples', () => {
       }
 
       // Player A cannot normally capture at home (no red available)
-      expect(isColorAvailable(homeSystem, 'red', 'player1')).toBe(false);
+      expect(StarSystem.isColorAvailable('player1', 'red', homeSystem)).toBe(
+        false
+      );
 
       // But can sacrifice their small red ship elsewhere to gain 1 red action
       const sacrificeAction = createSacrificeAction(

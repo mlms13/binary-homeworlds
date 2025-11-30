@@ -6,24 +6,6 @@ import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
 import { GameState } from './types';
 
-// Check if a color is available at a system for a player
-export function isColorAvailable(
-  system: StarSystem.StarSystem,
-  color: GamePiece.Color,
-  player: Player.Player
-): boolean {
-  // Color is available if:
-  // 1. The system contains a star of that color, OR
-  // 2. The player controls a ship of that color at that system
-
-  const hasStarOfColor = system.stars.some(star => star.color === color);
-  const hasShipOfColor = system.ships.some(
-    ship => ship.color === color && ship.owner === player
-  );
-
-  return hasStarOfColor || hasShipOfColor;
-}
-
 // ============================================================================
 // Bank adapter functions - bridge between Engine Bank and Shared Piece[]
 // ============================================================================

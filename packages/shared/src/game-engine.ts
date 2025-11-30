@@ -217,7 +217,9 @@ export class GameEngine {
       throw new Error('Target ship not found');
     }
 
-    targetShip.owner = action.player;
+    // Use StarSystem.changeShipOwner to immutably update the system
+    const updatedSystem = StarSystem.changeShipOwner(targetShip, system);
+    this.gameState.setSystem(action.systemId, updatedSystem);
   }
 
   private applyGrowAction(action: GrowAction): void {

@@ -21,7 +21,6 @@ import {
   findShip,
   findSystem,
   getSmallestAvailableSize,
-  isColorAvailable,
 } from './utils';
 
 export class ActionValidator {
@@ -106,7 +105,7 @@ export class ActionValidator {
     }
 
     // Check if yellow (move) is available at the origin system
-    if (!isColorAvailable(fromSystem, 'yellow', action.player)) {
+    if (!StarSystem.isColorAvailable(action.player, 'yellow', fromSystem)) {
       return {
         valid: false,
         error: 'Yellow (move) action not available at this system',
@@ -213,7 +212,7 @@ export class ActionValidator {
     }
 
     // Check if red (capture) is available
-    if (!isColorAvailable(system, 'red', action.player)) {
+    if (!StarSystem.isColorAvailable(action.player, 'red', system)) {
       return {
         valid: false,
         error: 'Red (capture) action not available at this system',
@@ -250,7 +249,7 @@ export class ActionValidator {
     }
 
     // Check if green (grow) is available
-    if (!isColorAvailable(system, 'green', action.player)) {
+    if (!StarSystem.isColorAvailable(action.player, 'green', system)) {
       return {
         valid: false,
         error: 'Green (grow) action not available at this system',
@@ -313,7 +312,7 @@ export class ActionValidator {
     }
 
     // Check if blue (trade) is available
-    if (!isColorAvailable(system, 'blue', action.player)) {
+    if (!StarSystem.isColorAvailable(action.player, 'blue', system)) {
       return {
         valid: false,
         error: 'Blue (trade) action not available at this system',

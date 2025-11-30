@@ -224,3 +224,39 @@ export const changeShipOwner = (ship: Ship, system: StarSystem): StarSystem => {
     ships: system.ships.map(s => (s.id === ship.id ? switchShipOwner(s) : s)),
   };
 };
+
+/**
+ * Get all ships owned by a player in a system.
+ */
+export const getPlayerShips = (
+  player: Player,
+  system: StarSystem
+): Array<Ship> => {
+  return system.ships.filter(s => s.owner === player);
+};
+
+/**
+ * Get all colors that are available to a player at a system. This determines
+ * which actions are available to the player at that system. The set of colors
+ * is the union of the player's ship colors and the star colors.
+ */
+export const getAvailableColors = (
+  player: Player,
+  system: StarSystem
+): Set<Color> => {
+  const playerShipColors = getPlayerShips(player, system).map(s => s.color);
+  const starColors = system.stars.map(s => s.color);
+
+  return new Set([...playerShipColors, ...starColors]);
+};
+
+/**
+ * Determine whether a color is available to a player at a system.
+ */
+export const isColorAvailable = (
+  player: Player,
+  color: Color,
+  system: StarSystem
+): boolean => {
+  return getAvailableColors(player, system).has(color);
+};

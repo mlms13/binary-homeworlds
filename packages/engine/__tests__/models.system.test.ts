@@ -11,6 +11,7 @@ import {
   getShip,
   hasOverpopulation,
   hasShip,
+  isColorAvailable,
   removePiecesOfColor,
   removeShip,
   SystemValidationResult,
@@ -257,5 +258,42 @@ describe('Star System', () => {
     // the two other ships should have their original owner
     expect(getShip(ship2.id, newSystem)?.owner).toBe('player2');
     expect(getShip(ship3.id, newSystem)?.owner).toBe('player1');
+  });
+
+  it('should determine that the star color is available to a player at a system', () => {
+    const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const ship: Ship = {
+      color: 'yellow',
+      size: 1,
+      id: 'yellow-1-0',
+      owner: 'player1',
+    };
+    const system = createNormal(star, [ship]);
+
+    expect(isColorAvailable('player1', 'blue', system)).toBe(true);
+  });
+
+  it('should determine that the ship color is available to a player at a system', () => {
+    const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const ship: Ship = {
+      color: 'yellow',
+      size: 1,
+      id: 'yellow-1-0',
+      owner: 'player1',
+    };
+    const system = createNormal(star, [ship]);
+    expect(isColorAvailable('player1', 'yellow', system)).toBe(true);
+  });
+
+  it("should determine that an opponent's ship does not make a color available to a player at a system", () => {
+    const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const ship: Ship = {
+      color: 'yellow',
+      size: 1,
+      id: 'yellow-1-0',
+      owner: 'player1',
+    };
+    const system = createNormal(star, [ship]);
+    expect(isColorAvailable('player2', 'yellow', system)).toBe(false);
   });
 });

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
 import { GameEngine } from '@binary-homeworlds/shared';
-import { isColorAvailable } from '@binary-homeworlds/shared';
 import { GameAction } from '@binary-homeworlds/shared';
 
 export const useGameActions = (gameEngine: GameEngine) => {
@@ -36,12 +35,16 @@ export const useGameActions = (gameEngine: GameEngine) => {
       }
 
       const currentPlayer = gameState.getCurrentPlayer();
+      const availableColors = StarSystem.getAvailableColors(
+        currentPlayer,
+        system
+      );
 
       // Check if each action is available based on star colors in the system
-      const yellowAvailable = isColorAvailable(system, 'yellow', currentPlayer);
-      const captureEnabled = isColorAvailable(system, 'red', currentPlayer);
-      const growEnabled = isColorAvailable(system, 'green', currentPlayer);
-      const tradeEnabled = isColorAvailable(system, 'blue', currentPlayer);
+      const yellowAvailable = availableColors.has('yellow');
+      const captureEnabled = availableColors.has('red');
+      const growEnabled = availableColors.has('green');
+      const tradeEnabled = availableColors.has('blue');
 
       // For move actions, also check if there are valid destinations
       const hasValidMoveDestinations =
