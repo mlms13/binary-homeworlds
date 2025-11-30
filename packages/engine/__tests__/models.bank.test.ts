@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Bank, GamePiece } from '../src/index';
+import { describe, expect, it } from 'vitest';
+
+import { Bank, GamePiece } from '../src';
 
 // Use namespace for functions and values
 const {

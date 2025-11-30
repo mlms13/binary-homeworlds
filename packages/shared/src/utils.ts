@@ -150,17 +150,6 @@ export function getSmallestAvailableSize(
   return availableSizes.length > 0 ? (availableSizes[0] ?? null) : null;
 }
 
-/**
- * Remove a piece from bank by ID (legacy function signature)
- * Note: This returns a new bank (immutable), unlike the old mutable version
- */
-export function removePieceFromBank(
-  bank: Bank.Bank,
-  pieceId: GamePiece.PieceId
-): [GamePiece.Piece | null, Bank.Bank] {
-  return removePieceFromBankById(bank, pieceId);
-}
-
 // Find a system by ID
 export function findSystem(
   gameState: GameState,
@@ -222,11 +211,6 @@ export function checkGameEnd(gameState: GameState): Player.Player | null {
   }
 
   return null;
-}
-
-// Get the other player
-export function getOtherPlayer(player: Player.Player): Player.Player {
-  return player === 'player1' ? 'player2' : 'player1';
 }
 
 // Deep clone a game state (for immutability)

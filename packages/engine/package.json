@@ -25,8 +25,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint src __tests__",
+    "lint:fix": "eslint src __tests__ --fix",
     "format": "prettier --check \"src/**/*.ts\" \"__tests__/**/*.ts\"",
     "format:fix": "prettier --write \"src/**/*.ts\" \"__tests__/**/*.ts\"",
     "typecheck": "tsc --noEmit"
