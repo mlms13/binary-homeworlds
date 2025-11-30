@@ -1,4 +1,12 @@
-import { Color, Piece, PieceId, Ship, shipToPiece, Star } from './GamePiece';
+import {
+  Color,
+  Piece,
+  PieceId,
+  Ship,
+  shipToPiece,
+  Star,
+  switchShipOwner,
+} from './GamePiece';
 import { Player } from './Player';
 
 // star system IDs either match the star piece of the system or they are one
@@ -76,10 +84,20 @@ export const validate = (system: StarSystem): SystemValidationResult => {
 };
 
 /**
+ * Get a ship from a system by its ID.
+ */
+export const getShip = (
+  shipId: PieceId,
+  system: StarSystem
+): Ship | undefined => {
+  return system.ships.find(s => s.id === shipId);
+};
+
+/**
  * Determine whether a star system contains a particular ship.
  */
 export const hasShip = (ship: Ship, system: StarSystem): boolean => {
-  return system.ships.some(s => s.id === ship.id);
+  return !!getShip(ship.id, system);
 };
 
 /**
@@ -195,4 +213,14 @@ export const hasOverpopulation = (
   color: Color
 ): boolean => {
   return getOverpopulations(system).includes(color);
+};
+
+/**
+ * Immutably change the owner of a ship in a system.
+ */
+export const changeShipOwner = (ship: Ship, system: StarSystem): StarSystem => {
+  return {
+    ...system,
+    ships: system.ships.map(s => (s.id === ship.id ? switchShipOwner(s) : s)),
+  };
 };

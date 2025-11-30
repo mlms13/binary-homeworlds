@@ -4,9 +4,11 @@ import { Ship, Star } from '../src/models/GamePiece';
 import {
   addShip,
   addStar,
+  changeShipOwner,
   createBinary,
   createNormal,
   getOverpopulations,
+  getShip,
   hasOverpopulation,
   hasShip,
   removePiecesOfColor,
@@ -222,5 +224,38 @@ describe('Star System', () => {
       expect(validationResult.piecesToCleanUp[0]?.color).toBe('yellow');
       expect(validationResult.piecesToCleanUp[0]?.size).toBe(1);
     });
+  });
+
+  it('should allow changing the owner of a ship in a system', () => {
+    const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
+    const ship1: Ship = {
+      color: 'yellow',
+      size: 1,
+      id: 'yellow-1-0',
+      owner: 'player1',
+    };
+    const ship2: Ship = {
+      color: 'green',
+      size: 1,
+      id: 'green-1-0',
+      owner: 'player2',
+    };
+    const ship3: Ship = {
+      color: 'red',
+      size: 3,
+      id: 'red-3-0',
+      owner: 'player1',
+    };
+
+    const system = createNormal(star, [ship1, ship2, ship3]);
+    const newSystem = changeShipOwner(ship1, system);
+    expect(hasShip(ship1, newSystem)).toBe(true);
+
+    // the target ship should have a new owner
+    expect(getShip(ship1.id, newSystem)?.owner).toBe('player2');
+
+    // the two other ships should have their original owner
+    expect(getShip(ship2.id, newSystem)?.owner).toBe('player2');
+    expect(getShip(ship3.id, newSystem)?.owner).toBe('player1');
   });
 });
