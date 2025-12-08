@@ -14,8 +14,8 @@ describe('Game', () => {
     const game: GameSetupState = initial;
     expect(size(game.bank)).toBe(36);
     expect(game.activePlayer).toBe('player1');
-    expect(game.player1HomeSystem.stars.length).toBe(0);
-    expect(game.player2HomeSystem.stars.length).toBe(0);
+    expect(game.homeSystems.player1.stars.length).toBe(0);
+    expect(game.homeSystems.player2.stars.length).toBe(0);
   });
 
   it('should switch the active player', () => {
@@ -58,7 +58,7 @@ describe('Game', () => {
     expect(piece1).toBeDefined();
     expect(size(game2.bank)).toBe(35);
 
-    const game3 = addPieceToBank(game2, piece1!);
+    const game3 = addPieceToBank(piece1!, game2);
     expect(size(game3.bank)).toBe(36);
   });
 });

@@ -3,34 +3,56 @@ import { Color, Piece, Size } from './GamePiece';
 import { Player } from './Player';
 import * as StarSystem from './StarSystem';
 
-export type GameSetupState = {
-  tag: 'setup';
+type GameCommonState = {
   bank: Bank.Bank;
   activePlayer: Player;
-  player1HomeSystem: StarSystem.StarSystem;
-  player2HomeSystem: StarSystem.StarSystem;
+  homeSystems: Record<Player, StarSystem.StarSystem>;
 };
 
-export type GameNormalState = {
+export type GameSetupState = GameCommonState & {
+  tag: 'setup';
+};
+
+export type GameNormalState = GameCommonState & {
   tag: 'normal';
-  bank: Bank.Bank;
-  activePlayer: Player;
-  player1HomeSystem: StarSystem.StarSystem;
-  player2HomeSystem: StarSystem.StarSystem;
   systems: Array<StarSystem.StarSystem>;
   winner: Player | undefined;
 };
 
 export type GameState = GameSetupState | GameNormalState;
 
+/**
+ * The initial game state is a setup state with the bank full and the active
+ * player set to player1. Both players have empty home systems.
+ */
 export const initial: GameSetupState = {
   tag: 'setup',
   bank: Bank.full,
   activePlayer: 'player1',
-  player1HomeSystem: StarSystem.createEmptyHomeSystem('player1'),
-  player2HomeSystem: StarSystem.createEmptyHomeSystem('player2'),
+  homeSystems: {
+    player1: StarSystem.createEmptyHomeSystem('player1'),
+    player2: StarSystem.createEmptyHomeSystem('player2'),
+  },
 };
 
+/**
+ * Get the home system for a player.
+ */
+export const getHomeSystem = (
+  player: Player,
+  state: GameState
+): StarSystem.StarSystem => {
+  switch (player) {
+    case 'player1':
+      return state.homeSystems.player1;
+    case 'player2':
+      return state.homeSystems.player2;
+  }
+};
+
+/**
+ * Switch the active player to the next player.
+ */
 export const switchActivePlayer = (state: GameState): GameState => {
   return {
     ...state,
@@ -38,13 +60,20 @@ export const switchActivePlayer = (state: GameState): GameState => {
   };
 };
 
-export const addPieceToBank = (state: GameState, piece: Piece): GameState => {
+/**
+ * Add a piece to the bank.
+ */
+export const addPieceToBank = (piece: Piece, state: GameState): GameState => {
   return {
     ...state,
     bank: Bank.addPiece(piece, state.bank),
   };
 };
 
+/**
+ * Take a piece from the bank, returning the piece and the updated game state
+ * with the piece removed from the bank.
+ */
 export const takePieceFromBank = (
   size: Size,
   color: Color,
