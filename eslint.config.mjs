@@ -135,13 +135,32 @@ export default [
     },
   },
 
-  // Shared, Server, and Engine packages (TypeScript only, no globals)
+  // Engine package (TypeScript only, no globals, prefer undefined over null)
   {
-    files: [
-      'packages/shared/src/**/*.ts',
-      'packages/server/src/**/*.ts',
-      'packages/engine/src/**/*.ts',
-    ],
+    files: ['packages/engine/src/**/*.ts'],
+    languageOptions: {
+      ...baseTypeScriptParser,
+    },
+    plugins: {
+      ...commonTypeScriptPlugins,
+    },
+    rules: {
+      ...commonTypeScriptRules,
+      ...importSortRules,
+      // Prefer undefined over null
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=null]',
+          message: 'Prefer undefined over null. Use undefined instead of null.',
+        },
+      ],
+    },
+  },
+
+  // Shared and Server packages (TypeScript only, no globals)
+  {
+    files: ['packages/shared/src/**/*.ts', 'packages/server/src/**/*.ts'],
     languageOptions: {
       ...baseTypeScriptParser,
     },

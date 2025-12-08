@@ -27,6 +27,14 @@ export type SystemValidationResult =
   | { valid: true }
   | { valid: false; piecesToCleanUp: Array<Piece> };
 
+export const createEmptyHomeSystem = (player: Player): StarSystem => {
+  return {
+    id: `${player}-home`,
+    stars: [],
+    ships: [],
+  };
+};
+
 /**
  * Create a "normal" star system (one with a single star and any number of
  * initial ships).

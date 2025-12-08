@@ -6,6 +6,7 @@ import {
   addStar,
   changeShipOwner,
   createBinary,
+  createEmptyHomeSystem,
   createNormal,
   getOverpopulations,
   getShip,
@@ -19,6 +20,14 @@ import {
 } from '../src/models/StarSystem';
 
 describe('Star System', () => {
+  it('should create an empty star system', () => {
+    const system = createEmptyHomeSystem('player1');
+
+    expect(system.ships.length).toBe(0);
+    expect(system.stars.length).toBe(0);
+    expect(validate(system).valid).toBe(false);
+  });
+
   it('should create a normal star system', () => {
     const star: Star = { color: 'blue', size: 2, id: 'blue-2-0' };
     const ships: Array<Ship> = [

@@ -116,14 +116,12 @@ export const takePieceBySizeAndColor = (
 export const findSmallestSizeForColor = (
   color: Color,
   bank: Bank
-): Size | undefined =>
-  bank[color]['1'].length > 0
-    ? 1
-    : bank[color]['2'].length > 0
-      ? 2
-      : bank[color]['3'].length > 0
-        ? 3
-        : undefined;
+): Size | undefined => {
+  if (bank[color][1].length > 0) return 1;
+  if (bank[color][2].length > 0) return 2;
+  if (bank[color][3].length > 0) return 3;
+  return undefined;
+};
 
 /**
  * Given a color, find the smallest piece matching that color and return it
