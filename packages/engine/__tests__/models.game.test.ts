@@ -11,7 +11,7 @@ import {
 
 describe('Game', () => {
   it('should create an initial game state', () => {
-    const game: GameSetupState = initial;
+    const game: GameSetupState = initial();
     expect(size(game.bank)).toBe(36);
     expect(game.activePlayer).toBe('player1');
     expect(game.homeSystems.player1.stars.length).toBe(0);
@@ -19,7 +19,7 @@ describe('Game', () => {
   });
 
   it('should switch the active player', () => {
-    const game: GameSetupState = initial;
+    const game: GameSetupState = initial();
     expect(game.activePlayer).toBe('player1');
     expect(switchActivePlayer(game).activePlayer).toBe('player2');
     expect(switchActivePlayer(switchActivePlayer(game)).activePlayer).toBe(
@@ -28,7 +28,7 @@ describe('Game', () => {
   });
 
   it('should take a piece from the bank', () => {
-    const game: GameSetupState = initial;
+    const game: GameSetupState = initial();
     const [piece, newGame] = takePieceFromBank(1, 'yellow', game);
     expect(piece).toBeDefined();
     expect(piece?.color).toBe('yellow');
@@ -38,7 +38,7 @@ describe('Game', () => {
   });
 
   it('should not take a piece from the bank if it is not available', () => {
-    const game1: GameSetupState = initial;
+    const game1: GameSetupState = initial();
     const [piece1, game2] = takePieceFromBank(1, 'yellow', game1);
     const [piece2, game3] = takePieceFromBank(1, 'yellow', game2);
     const [piece3, game4] = takePieceFromBank(1, 'yellow', game3);
@@ -52,7 +52,7 @@ describe('Game', () => {
   });
 
   it('should add a piece to the bank', () => {
-    const game1: GameSetupState = initial;
+    const game1: GameSetupState = initial();
     const [piece1, game2] = takePieceFromBank(1, 'yellow', game1);
 
     expect(piece1).toBeDefined();
