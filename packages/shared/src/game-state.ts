@@ -2,52 +2,31 @@
  * GameState management class for Binary Homeworlds
  */
 
-import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
+import { Game, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
-import { GameAction, GamePhase, GameState } from './types';
+import { GameAction, GamePhase } from './types';
 import {
   addPiecesToEngineBank,
   addPieceToEngineBank,
+  applyAction,
   bankToPieces,
-  checkGameEnd,
-  cloneGameState,
+  findGameWinner,
   findSystem,
-  getAllSystems,
   removePieceFromBankById,
 } from './utils';
 
 export class BinaryHomeworldsGameState {
-  private state: GameState;
+  private state: Game.GameState;
+  private actionHistory: Array<GameAction>;
 
-  constructor(initialState?: GameState) {
-    if (initialState) {
-      this.state = cloneGameState(initialState);
-    } else {
-      this.state = this.createInitialState();
-    }
-  }
-
-  // Create the initial game state
-  private createInitialState(): GameState {
-    // Use Engine's full bank which contains all 36 pieces
-    const bank = Bank.full;
-
-    return {
-      tag: 'setup',
-      activePlayer: 'player1',
-      systems: [],
-      bank,
-      homeSystems: {
-        player1: StarSystem.createEmptyHomeSystem('player1'),
-        player2: StarSystem.createEmptyHomeSystem('player2'),
-      },
-      gameHistory: [],
-    };
+  constructor(initialState?: Game.GameState) {
+    this.state = initialState ?? Game.initial();
+    this.actionHistory = [];
   }
 
   // Get current state (immutable copy)
-  getState(): GameState {
-    return cloneGameState(this.state);
+  getState(): Game.GameState {
+    return { ...this.state };
   }
 
   // Get current player
@@ -62,9 +41,10 @@ export class BinaryHomeworldsGameState {
 
   // Get winner (if game has ended)
   getWinner(): Player.Player | undefined {
-    return this.state.winner;
+    return this.state.tag === 'normal' ? this.state.winner : undefined;
   }
 
+  // TODO: remove this
   // Check if game has ended
   isGameEnded(): boolean {
     return this.getWinner() !== undefined;
@@ -77,12 +57,7 @@ export class BinaryHomeworldsGameState {
 
   // Get all systems (copies)
   getSystems(): Array<StarSystem.StarSystem> {
-    return getAllSystems(this.state);
-  }
-
-  // Get direct reference to systems (for internal use)
-  getSystemsRef(): Array<StarSystem.StarSystem> {
-    return this.state.systems;
+    return Game.getAllSystems(this.state);
   }
 
   // Get a specific system by ID
@@ -97,23 +72,32 @@ export class BinaryHomeworldsGameState {
 
   // Get game history
   getHistory(): Array<GameAction> {
-    return [...this.state.gameHistory];
+    return [...this.actionHistory];
   }
 
-  // Add action to history
-  addActionToHistory(action: GameAction): void {
-    this.state.gameHistory.push(action);
+  // Add an action and apply it to the state
+  applyAction(action: GameAction): void {
+    this.actionHistory.push(action);
+    this.state = applyAction(this.state, action);
   }
 
   // Switch to next player
+  // FIXME: why would anyone ever need this?
   switchPlayer(): void {
     this.state.activePlayer =
       this.state.activePlayer === 'player1' ? 'player2' : 'player1';
   }
 
   // Set game phase
+  // FIXME: this is super unsafe
   setPhase(phase: GamePhase): void {
-    this.state.tag = phase;
+    if (phase !== 'normal') throw new Error('Cannot switch to setup phase');
+    this.state = {
+      ...this.state,
+      tag: 'normal',
+      systems: [],
+      winner: undefined,
+    };
   }
 
   // Set winner and end game
@@ -126,6 +110,7 @@ export class BinaryHomeworldsGameState {
 
   // Add a new system
   addSystem(system: StarSystem.StarSystem): void {
+    if (this.state.tag !== 'normal') throw new Error('Invalid game state');
     this.state.systems.push(system);
   }
 
@@ -136,19 +121,13 @@ export class BinaryHomeworldsGameState {
     } else if (systemId === 'player2-home') {
       this.setHomeSystem('player2', system);
     } else {
+      if (this.state.tag !== 'normal') throw new Error('Invalid game state');
       const index = this.state.systems.findIndex(s => s.id === systemId);
       if (index === -1) {
         throw new Error('System not found');
       }
       this.state.systems[index] = system;
     }
-  }
-
-  // Remove a system
-  removeSystem(systemId: string): void {
-    this.state.systems = this.state.systems.filter(
-      system => system.id !== systemId
-    );
   }
 
   // Set player's home system
@@ -176,7 +155,7 @@ export class BinaryHomeworldsGameState {
   }
 
   getOverpopulations(): Array<{ systemId: string; color: GamePiece.Color }> {
-    return getAllSystems(this.state).flatMap(system => {
+    return this.getSystems().flatMap(system => {
       return StarSystem.getOverpopulations(system).map(color => ({
         systemId: system.id,
         color,
@@ -186,7 +165,7 @@ export class BinaryHomeworldsGameState {
 
   // Check and update game end condition
   checkAndUpdateGameEnd(): boolean {
-    const winner = checkGameEnd(this.state);
+    const winner = findGameWinner(this.state);
     if (winner) {
       this.setWinner(winner);
       return true;
@@ -208,9 +187,11 @@ export class BinaryHomeworldsGameState {
   validateState(): { valid: boolean; errors: Array<string> } {
     const errors: Array<string> = [];
 
+    const allSystems = this.getSystems();
+
     // Check that all systems have at least one star (except during setup)
-    if (this.state.tag !== 'setup') {
-      for (const system of this.state.systems) {
+    if (this.getPhase() !== 'setup') {
+      for (const system of allSystems) {
         if (system.stars.length === 0) {
           errors.push(`System ${system.id} has no stars`);
         }
@@ -220,7 +201,7 @@ export class BinaryHomeworldsGameState {
     // Check that bank + all pieces in systems = 36 pieces
     const bankPieces = bankToPieces(this.state.bank);
     let totalPieces = bankPieces.length;
-    for (const system of this.state.systems) {
+    for (const system of allSystems) {
       totalPieces += system.stars.length + system.ships.length;
     }
     if (totalPieces !== 36) {

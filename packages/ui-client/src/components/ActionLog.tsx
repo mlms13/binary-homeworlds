@@ -1,4 +1,4 @@
-import { GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
+import { Game, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
   findShip,
@@ -42,33 +42,27 @@ export default function ActionLog({
     const bankPiecesBefore = bankToPieces(stateBefore.bank);
 
     switch (action.type) {
-      case 'setup': {
-        const sizeName =
-          action.size === 1 ? 'small' : action.size === 2 ? 'medium' : 'large';
-        const roleText = action.role === 'ship' ? 'ship' : 'star';
-        return `${playerName} selected a ${sizeName} ${action.color} ${roleText}`;
+      case 'setup:take_star':
+      case 'setup:take_ship': {
+        return `${playerName} selected a ${action.color} ${action.size} ${action.type === 'setup:take_star' ? 'star' : 'ship'}`;
       }
 
       case 'move': {
-        // TypeScript should narrow 'action' to MoveAction here
-        // If it doesn't, there's likely a type resolution issue
         const ship = findShip(stateBefore, action.shipId)?.ship;
         if (!ship) return `${playerName} moved a ship`;
 
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
         const toSystem = action.toSystemId
-          ? (stateAfter.systems.find(
-              (s: StarSystem.StarSystem) => s.id === action.toSystemId
-            ) ?? null)
-          : null;
+          ? Game.getAllSystems(stateAfter).find(
+              system => system.id === action.toSystemId
+            )
+          : undefined;
 
         const shipDesc = `${ship.size === 1 ? 'small' : ship.size === 2 ? 'medium' : 'large'} ${ship.color} ship`;
 
         if (action.toSystemId) {
           const fromName = getSystemName(fromSystem);
-          const toName = getSystemName(
-            toSystem && 'id' in toSystem ? toSystem : null
-          );
+          const toName = getSystemName(toSystem);
           return `${playerName} moved ${shipDesc} from ${fromName} to ${toName}`;
         } else {
           const newStar = bankPiecesBefore.find(
@@ -143,30 +137,26 @@ export default function ActionLog({
       }
 
       case 'overpopulation': {
-        const system =
-          stateBefore.systems.find(s => s.id === action.systemId) ?? null;
+        const system = Game.getAllSystems(stateBefore).find(
+          s => s.id === action.systemId
+        );
         const systemName = getSystemName(system);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
       }
-
-      default:
-        return `${playerName} made an unknown action`;
     }
   };
 
   const findSystemWithShip = (
-    state: { systems: Array<StarSystem.StarSystem> },
+    state: Game.GameState,
     shipId: GamePiece.PieceId
   ) => {
-    return (
-      state.systems.find(system =>
-        system.ships.some(ship => ship.id === shipId)
-      ) ?? null
+    return Game.getAllSystems(state).find(system =>
+      system.ships.some(ship => ship.id === shipId)
     );
   };
 
-  const getSystemName = (system: StarSystem.StarSystem | null) => {
+  const getSystemName = (system?: StarSystem.StarSystem | undefined) => {
     if (!system) return 'unknown system';
 
     if (system.id === 'player1-home') {
@@ -188,7 +178,8 @@ export default function ActionLog({
 
   const getActionIcon = (action: GameAction): string => {
     switch (action.type) {
-      case 'setup':
+      case 'setup:take_star':
+      case 'setup:take_ship':
         return '🏗️';
       case 'move':
         return '🚀';
@@ -209,7 +200,8 @@ export default function ActionLog({
 
   const getActionColor = (action: GameAction): string => {
     switch (action.type) {
-      case 'setup':
+      case 'setup:take_star':
+      case 'setup:take_ship':
         return '#4CAF50';
       case 'move':
         return '#2196F3';

@@ -68,6 +68,13 @@ export const createBinary = (
 };
 
 /**
+ * Get all pieces (stars and ships) from the system.
+ */
+export const getPieces = (system: StarSystem): Array<Piece> => {
+  return [...system.stars, ...system.ships.map(shipToPiece)];
+};
+
+/**
  * Validate a star system. A system is invalid if it has no stars.
  * If invalid, returns all remaining pieces (stars + ships) that should be
  * returned to the bank.
@@ -79,14 +86,10 @@ export const createBinary = (
  *   must be returned to the bank
  */
 export const validate = (system: StarSystem): SystemValidationResult => {
-  if (system.stars.length === 0) {
-    // No stars? Return all ships to the bank.
-    const piecesToCleanUp = system.ships.map(shipToPiece);
-    return { valid: false, piecesToCleanUp };
-  }
-  if (system.ships.length === 0) {
-    // No ships? Return all stars to the bank.
-    return { valid: false, piecesToCleanUp: system.stars };
+  // A system is invalid if it has no stars or no ships
+  // In either case, return all remaining pieces to the bank
+  if (system.stars.length === 0 || system.ships.length === 0) {
+    return { valid: false, piecesToCleanUp: getPieces(system) };
   }
   return { valid: true };
 };
@@ -128,13 +131,6 @@ export const addStar = (star: Star, system: StarSystem): StarSystem => {
     ...system,
     stars: [...system.stars, star],
   };
-};
-
-/**
- * Get all pieces (stars and ships) from the system.
- */
-export const getPieces = (system: StarSystem): Array<Piece> => {
-  return [...system.stars, ...system.ships.map(shipToPiece)];
 };
 
 /**
