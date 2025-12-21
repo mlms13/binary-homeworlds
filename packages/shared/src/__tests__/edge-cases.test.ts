@@ -27,9 +27,9 @@ describe('Edge Cases and Error Conditions', () => {
 
       expect(state.tag).toBe('setup');
       expect(state.activePlayer).toBe('player1');
-      expect(state.systems.length).toBe(0);
+      expect(gameState.getSystems().length).toBe(2);
       expect(gameState.getBankPieces().length).toBe(36); // 4 colors × 3 sizes × 3 pieces
-      expect(state.winner).toBeUndefined();
+      expect(gameState.getWinner()).toBeUndefined();
     });
 
     it('should validate piece counts in bank', () => {
@@ -219,22 +219,21 @@ describe('Edge Cases and Error Conditions', () => {
       const result = engine.applyAction(setupAction);
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain(
-        'Setup actions only allowed during setup phase'
-      );
+      expect(result.error).toContain('wrong_phase');
     });
 
     it('should reject normal actions during setup', () => {
       const engine = new GameEngine();
-      const gameState = engine.getGameState();
 
       // Game starts in setup phase
-      const ship = createShip('yellow', 1, 'player1');
-      const star = { color: 'blue', size: 2, id: 'blue-2-0' } as const;
-      const system = StarSystem.createNormal(star, [ship]);
-      gameState.addSystem(system);
-
-      const moveAction = createMoveAction('player1', ship.id, system.id);
+      const moveAction = createMoveAction(
+        'player1',
+        'yellow-1-0',
+        'player1-home',
+        undefined,
+        2,
+        'blue'
+      );
       const result = engine.applyAction(moveAction);
 
       expect(result.valid).toBe(false);
@@ -446,7 +445,8 @@ describe('Edge Cases and Error Conditions', () => {
         ship.id,
         originSystem.id,
         undefined,
-        newStarPiece!.id
+        newStarPiece!.size,
+        newStarPiece!.color
       );
 
       const result = engine.applyAction(moveAction);
@@ -709,7 +709,8 @@ describe('Edge Cases and Error Conditions', () => {
         ship.id,
         system.id,
         undefined,
-        newStarPiece!.id
+        newStarPiece!.size,
+        newStarPiece!.color
       );
 
       engine.applyAction(moveAction);

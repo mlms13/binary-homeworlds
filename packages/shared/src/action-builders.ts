@@ -2,7 +2,7 @@
  * Action builder utilities for Binary Homeworlds
  */
 
-import { GamePiece, Player } from '@binary-homeworlds/engine';
+import { GameAction, GamePiece, Player } from '@binary-homeworlds/engine';
 
 import {
   CaptureAction,
@@ -10,7 +10,6 @@ import {
   MoveAction,
   OverpopulationAction,
   SacrificeAction,
-  SetupAction,
   TradeAction,
 } from './types';
 
@@ -21,14 +20,12 @@ export function createSetupAction(
   color: GamePiece.Color,
   size: GamePiece.Size,
   role: 'star1' | 'star2' | 'ship'
-): SetupAction {
+): GameAction.Action {
   return {
-    type: 'setup',
+    type: role === 'ship' ? 'setup:take_ship' : 'setup:take_star',
     player,
-    timestamp: Date.now(),
     color,
     size,
-    role,
   };
 }
 
@@ -37,7 +34,8 @@ export function createMoveAction(
   shipId: GamePiece.PieceId,
   fromSystemId: string,
   toSystemId?: string,
-  newStarPieceId?: GamePiece.PieceId
+  size?: GamePiece.Size,
+  color?: GamePiece.Color
 ): MoveAction {
   return {
     type: 'move',
@@ -46,7 +44,8 @@ export function createMoveAction(
     shipId,
     fromSystemId,
     toSystemId,
-    newStarPieceId,
+    size,
+    color,
   };
 }
 
@@ -70,7 +69,8 @@ export function createMoveActionNew(
   player: Player.Player,
   shipId: GamePiece.PieceId,
   fromSystemId: string,
-  newStarPieceId: GamePiece.PieceId
+  size?: GamePiece.Size,
+  color?: GamePiece.Color
 ): MoveAction {
   return {
     type: 'move',
@@ -78,7 +78,8 @@ export function createMoveActionNew(
     timestamp: Date.now(),
     shipId,
     fromSystemId,
-    newStarPieceId,
+    size,
+    color,
   };
 }
 

@@ -2,31 +2,20 @@
  * Core types for Binary Homeworlds game
  */
 
-import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
+import {
+  GameAction as EngineGameAction,
+  GamePiece,
+  Player,
+} from '@binary-homeworlds/engine';
 
 // Game phase
 export type GamePhase = 'setup' | 'normal';
 
-// Game state
-export interface GameState {
-  tag: GamePhase;
-  activePlayer: Player.Player;
-  systems: Array<StarSystem.StarSystem>;
-  bank: Bank.Bank;
-  homeSystems: Record<Player.Player, StarSystem.StarSystem>;
-  winner?: Player.Player;
-  gameHistory: Array<GameAction>;
-}
-
 // Action types
-export type ActionType =
-  | 'setup'
-  | 'move'
-  | 'capture'
-  | 'grow'
-  | 'trade'
-  | 'sacrifice'
-  | 'overpopulation';
+type SetupActionType = 'setup:take_star' | 'setup:take_ship';
+type NormalActionType = 'move' | 'capture' | 'grow' | 'trade' | 'sacrifice';
+type SpecialActionType = 'overpopulation';
+export type ActionType = SetupActionType | NormalActionType | SpecialActionType;
 
 // Base action interface
 export interface BaseAction {
@@ -35,21 +24,14 @@ export interface BaseAction {
   timestamp: number;
 }
 
-// Setup actions (initial phase)
-export interface SetupAction extends BaseAction {
-  type: 'setup';
-  color: GamePiece.Color;
-  size: GamePiece.Size;
-  role: 'star1' | 'star2' | 'ship';
-}
-
 // Basic actions
 export interface MoveAction extends BaseAction {
   type: 'move';
   shipId: GamePiece.PieceId;
   fromSystemId: string;
   toSystemId?: string; // undefined if creating new system
-  newStarPieceId?: GamePiece.PieceId; // required if creating new system
+  size?: GamePiece.Size;
+  color?: GamePiece.Color;
 }
 
 export interface CaptureAction extends BaseAction {
@@ -74,12 +56,12 @@ export interface TradeAction extends BaseAction {
 }
 
 // Sacrifice action
-export interface SacrificeAction extends BaseAction {
+export type SacrificeAction = BaseAction & {
   type: 'sacrifice';
   sacrificedShipId: GamePiece.PieceId;
   systemId: string;
   followupActions: Array<MoveAction | CaptureAction | GrowAction | TradeAction>;
-}
+};
 
 // Overpopulation action
 export interface OverpopulationAction extends BaseAction {
@@ -89,14 +71,16 @@ export interface OverpopulationAction extends BaseAction {
 }
 
 // Union type for all actions
-export type GameAction =
-  | SetupAction
+export type GameSetupAction = EngineGameAction.Action;
+export type GameNormalAction =
   | MoveAction
   | CaptureAction
   | GrowAction
   | TradeAction
-  | SacrificeAction
-  | OverpopulationAction;
+  | SacrificeAction;
+export type GameSpecialAction = OverpopulationAction;
+
+export type GameAction = GameSetupAction | GameNormalAction | GameSpecialAction;
 
 // Action validation result
 export interface ActionValidationResult {

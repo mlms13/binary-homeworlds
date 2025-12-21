@@ -32,7 +32,8 @@ describe('Overpopulation', () => {
       'yellow-1-2',
       'player1-home',
       undefined,
-      'yellow-3-0'
+      3,
+      'yellow'
     ),
 
     // and player 2 follows, leading to 3 yellow pieces at that system
