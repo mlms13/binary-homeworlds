@@ -8,7 +8,7 @@ describe('Setup Actions', () => {
   describe('Apply Actions', () => {
     it.skip('should apply taking a star', () => {
       const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const nextState = SetupAction.apply(Game.initial, action);
+      const nextState = SetupAction.apply(Game.initial(), action);
 
       expect(nextState.tag).toBe('setup');
       expect(nextState.activePlayer).toBe('player2');
@@ -23,7 +23,7 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('green', 3, 'player2'),
         SetupAction.takeStarAction('blue', 2, 'player1'),
         SetupAction.takeStarAction('red', 2, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       const takeShipAction = SetupAction.takeShipAction('green', 3, 'player1');
       const nextState = SetupAction.apply(state, takeShipAction);
@@ -45,21 +45,21 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('red', 2, 'player2'),
         SetupAction.takeShipAction('green', 3, 'player1'),
         SetupAction.takeShipAction('yellow', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       expect(state.tag).toBe('normal');
       expect(state.activePlayer).toBe('player1');
     });
 
     it('should no-op if the star is not found in the bank', () => {
-      const state = { ...Game.initial, bank: empty };
+      const state = { ...Game.initial(), bank: empty };
       const action = SetupAction.takeStarAction('yellow', 1, 'player1');
       const nextState = SetupAction.apply(state, action);
       expect(nextState).toBe(state);
     });
 
     it('should no-op if the ship is not found in the bank', () => {
-      const state = { ...Game.initial, bank: empty };
+      const state = { ...Game.initial(), bank: empty };
       const action = SetupAction.takeShipAction('green', 3, 'player1');
       const nextState = SetupAction.apply(state, action);
       expect(nextState).toBe(state);
@@ -68,14 +68,14 @@ describe('Setup Actions', () => {
 
   describe('Validation', () => {
     it('should allow a player taking a star', () => {
-      const state = Game.initial;
+      const state = Game.initial();
       const action = SetupAction.takeStarAction('yellow', 1, 'player1');
       const result = SetupAction.validateSetupAction(state, action);
       expect(result.valid).toBe(true);
     });
 
     it('should prevent the inactive player from making a move', () => {
-      const state = Game.initial;
+      const state = Game.initial();
       const action = SetupAction.takeStarAction('yellow', 1, 'player2');
       const result = SetupAction.validateSetupAction(state, action);
 
@@ -95,7 +95,7 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('yellow', 1, 'player1'),
         SetupAction.takeStarAction('yellow', 1, 'player2'),
         SetupAction.takeStarAction('yellow', 1, 'player1'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       // player 2 tries to take a second small yellow star piece
       // but none remain in the bank
@@ -116,7 +116,7 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('yellow', 1, 'player2'),
         SetupAction.takeStarAction('yellow', 1, 'player1'),
         SetupAction.takeStarAction('green', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       const action = SetupAction.takeShipAction('yellow', 1, 'player1');
       const result = SetupAction.validateSetupAction(state, action);
@@ -137,7 +137,7 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('green', 3, 'player2'),
         SetupAction.takeShipAction('green', 3, 'player1'),
         SetupAction.takeShipAction('blue', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       // make sure we're in the normal phase
       expect(state.tag).toBe('normal');
@@ -159,7 +159,7 @@ describe('Setup Actions', () => {
         SetupAction.takeStarAction('yellow', 2, 'player2'),
         SetupAction.takeStarAction('red', 1, 'player1'),
         SetupAction.takeStarAction('green', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       const action = SetupAction.takeStarAction('yellow', 1, 'player1');
       const result = SetupAction.validateSetupAction(state, action);
@@ -175,7 +175,7 @@ describe('Setup Actions', () => {
       const state = [
         SetupAction.takeStarAction('blue', 3, 'player1'),
         SetupAction.takeStarAction('yellow', 2, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial);
+      ].reduce(SetupAction.apply, Game.initial());
 
       const action = SetupAction.takeShipAction('green', 3, 'player1');
       const result = SetupAction.validateSetupAction(state, action);

@@ -22,10 +22,18 @@ export type GameNormalState = GameCommonState & {
 export type GameState = GameSetupState | GameNormalState;
 
 /**
- * The initial game state is a setup state with the bank full and the active
- * player set to player1. Both players have empty home systems.
+ * Returns a fresh initial game state. This is a function rather than a constant
+ * to prevent mutations from affecting the shared initial state across test runs
+ * or multiple game instances.
+ *
+ * The returned state is a setup state with the bank full and the active player
+ * set to player1. Both players have empty home systems.
+ *
+ * Note: In the future, we could enforce immutability at the type level using
+ * TypeScript's `readonly` modifiers or libraries like `immer` to prevent
+ * accidental mutations of game state.
  */
-export const initial: GameSetupState = {
+export const initial = (): GameSetupState => ({
   tag: 'setup',
   bank: Bank.full,
   activePlayer: 'player1',
@@ -33,7 +41,7 @@ export const initial: GameSetupState = {
     player1: StarSystem.createEmptyHomeSystem('player1'),
     player2: StarSystem.createEmptyHomeSystem('player2'),
   },
-};
+});
 
 /**
  * Get the home system for a player.
