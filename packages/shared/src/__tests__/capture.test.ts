@@ -18,8 +18,8 @@ describe('Capture Edge Cases', () => {
       [ship1, ship2]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const captureAction = createCaptureAction(
       'player1',
@@ -44,8 +44,8 @@ describe('Capture Edge Cases', () => {
       [playerShip, enemyShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const captureAction = createCaptureAction(
       'player1',

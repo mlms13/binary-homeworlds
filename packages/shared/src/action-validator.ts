@@ -2,18 +2,22 @@
  * Action validation for Binary Homeworlds game
  */
 
-import { Bank, GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import {
+  Game,
+  GameAction as EngineGameAction,
+  GamePiece,
+  StarSystem,
+} from '@binary-homeworlds/engine';
 
 import {
   ActionValidationResult,
   CaptureAction,
   GameAction,
-  GameState,
+  GameSetupAction,
   GrowAction,
   MoveAction,
   OverpopulationAction,
   SacrificeAction,
-  SetupAction,
   TradeAction,
 } from './types';
 import {
@@ -24,9 +28,12 @@ import {
 } from './utils';
 
 export class ActionValidator {
+  // FIXME: Most actions validate that a color is "available" to a player. This
+  // seems to only check the color at the system, which doesn't work for
+  // sacrifice followup actions
   static validate(
     action: GameAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     // Check if game has ended first
     if (gameState.tag === 'normal' && gameState.winner) {
@@ -34,12 +41,14 @@ export class ActionValidator {
     }
 
     // Check if it's the correct player's turn
+    // FIXME: this prevents the inactive player from declaring overpopulation
     if (action.player !== gameState.activePlayer) {
       return { valid: false, error: 'Not your turn' };
     }
 
     switch (action.type) {
-      case 'setup':
+      case 'setup:take_star':
+      case 'setup:take_ship':
         return this.validateSetupAction(action, gameState);
       case 'move':
         return this.validateMoveAction(action, gameState);
@@ -59,34 +68,19 @@ export class ActionValidator {
   }
 
   private static validateSetupAction(
-    action: SetupAction,
-    gameState: GameState
+    action: GameSetupAction,
+    gameState: Game.GameState
   ): ActionValidationResult {
-    if (gameState.tag !== 'setup') {
-      return {
-        valid: false,
-        error: 'Setup actions only allowed during setup phase',
-      };
+    const validation = EngineGameAction.validate(gameState, action);
+    if (!validation.valid) {
+      return { valid: false, error: validation.error.type };
     }
-
-    // Check if piece exists in bank
-    const piece = Bank.hasPieceBySizeAndColor(
-      action.size,
-      action.color,
-      gameState.bank
-    );
-    if (!piece) {
-      return { valid: false, error: 'Piece not found in bank' };
-    }
-
-    // Additional setup validation would depend on the specific setup step
-    // For now, we'll assume it's valid if the piece exists
     return { valid: true };
   }
 
   private static validateMoveAction(
     action: MoveAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     if (gameState.tag !== 'normal') {
       return {
@@ -171,7 +165,7 @@ export class ActionValidator {
 
   private static validateCaptureAction(
     action: CaptureAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     if (gameState.tag !== 'normal') {
       return {
@@ -228,7 +222,7 @@ export class ActionValidator {
 
   private static validateGrowAction(
     action: GrowAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     if (gameState.tag !== 'normal') {
       return {
@@ -291,7 +285,7 @@ export class ActionValidator {
 
   private static validateTradeAction(
     action: TradeAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     if (gameState.tag !== 'normal') {
       return {
@@ -350,7 +344,7 @@ export class ActionValidator {
 
   private static validateSacrificeAction(
     action: SacrificeAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     if (gameState.tag !== 'normal') {
       return {
@@ -448,7 +442,7 @@ export class ActionValidator {
 
   private static validateOverpopulationAction(
     action: OverpopulationAction,
-    gameState: GameState
+    gameState: Game.GameState
   ): ActionValidationResult {
     const system = findSystem(gameState, action.systemId);
     if (!system) {

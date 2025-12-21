@@ -17,8 +17,8 @@ describe('Trade Edge Cases', () => {
       [yellowShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const bankPieces = gameState.getBankPieces();
     const greenPiece = bankPieces.find(
@@ -47,8 +47,8 @@ describe('Trade Edge Cases', () => {
       [yellowShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const bankPieces = gameState.getBankPieces();
     const greenPiece = bankPieces.find(
@@ -77,8 +77,8 @@ describe('Trade Edge Cases', () => {
       [yellowShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const bankPieces = gameState.getBankPieces();
     const yellowPiece = bankPieces.find(

@@ -17,8 +17,8 @@ describe('Growth Edge Cases', () => {
       [blueShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const bankPieces = gameState.getBankPieces();
     const bluePiece = bankPieces.find(p => p.color === 'blue' && p.size === 1);
@@ -45,8 +45,8 @@ describe('Growth Edge Cases', () => {
       [redShip]
     );
 
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
 
     const bankPieces = gameState.getBankPieces();
     const bluePiece = bankPieces.find(p => p.color === 'blue' && p.size === 1);
