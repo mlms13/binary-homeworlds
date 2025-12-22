@@ -1,12 +1,12 @@
 import * as Bank from './Bank';
 import { Color, Piece, Size } from './GamePiece';
 import { Player } from './Player';
-import * as StarSystem from './StarSystem';
+import { createEmptyHomeSystem, StarSystem } from './StarSystem';
 
 type GameCommonState = {
   bank: Bank.Bank;
   activePlayer: Player;
-  homeSystems: Record<Player, StarSystem.StarSystem>;
+  homeSystems: Record<Player, StarSystem>;
 };
 
 export type GameSetupState = GameCommonState & {
@@ -15,7 +15,7 @@ export type GameSetupState = GameCommonState & {
 
 export type GameNormalState = GameCommonState & {
   tag: 'normal';
-  systems: Array<StarSystem.StarSystem>;
+  systems: Array<StarSystem>;
   winner: Player | undefined;
 };
 
@@ -38,18 +38,15 @@ export const initial = (): GameSetupState => ({
   bank: Bank.full,
   activePlayer: 'player1',
   homeSystems: {
-    player1: StarSystem.createEmptyHomeSystem('player1'),
-    player2: StarSystem.createEmptyHomeSystem('player2'),
+    player1: createEmptyHomeSystem('player1'),
+    player2: createEmptyHomeSystem('player2'),
   },
 });
 
 /**
  * Get the home system for a player.
  */
-export const getHomeSystem = (
-  player: Player,
-  state: GameState
-): StarSystem.StarSystem => {
+export const getHomeSystem = (player: Player, state: GameState): StarSystem => {
   switch (player) {
     case 'player1':
       return state.homeSystems.player1;
