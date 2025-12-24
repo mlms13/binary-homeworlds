@@ -27,7 +27,7 @@ describe('Edge Cases and Error Conditions', () => {
       const state = gameState.getState();
 
       expect(state.tag).toBe('setup');
-      expect(state.currentPlayer).toBe('player1');
+      expect(state.activePlayer).toBe('player1');
       expect(state.turnNumber).toBe(1);
       expect(state.systems.length).toBe(0);
       expect(gameState.getBankPieces().length).toBe(36); // 4 colors × 3 sizes × 3 pieces

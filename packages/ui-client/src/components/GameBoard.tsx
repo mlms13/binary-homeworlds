@@ -113,7 +113,7 @@ export default function GameBoard({
 
   const gameState = gameEngine.getGameState();
   const state = gameState.getState();
-  const currentPlayer = state.currentPlayer;
+  const currentPlayer = state.activePlayer;
 
   // Initialize game controller
   useEffect(() => {
@@ -156,7 +156,7 @@ export default function GameBoard({
   const getCurrentSetupState = useCallback(() => {
     if (state.tag !== 'setup') return null;
 
-    const currentPlayer = state.currentPlayer;
+    const currentPlayer = state.activePlayer;
     const homeSystem = gameState.getHomeSystem(currentPlayer);
 
     if (!homeSystem) return 'star1';
@@ -164,7 +164,7 @@ export default function GameBoard({
     if (homeSystem.stars.length === 2 && homeSystem.ships.length === 0)
       return 'ship';
     return null;
-  }, [state.tag, state.currentPlayer, gameState]);
+  }, [state.tag, state.activePlayer, gameState]);
 
   // Update setup state when game state changes
   useEffect(() => {
@@ -367,7 +367,7 @@ export default function GameBoard({
       // Create and execute the move action to existing system
       const moveAction: MoveAction = {
         type: 'move',
-        player: state.currentPlayer,
+        player: state.activePlayer,
         shipId: pendingMove.shipId,
         fromSystemId: pendingMove.fromSystemId,
         toSystemId: systemId,
@@ -377,7 +377,7 @@ export default function GameBoard({
       applyActionWithHistory(moveAction);
       setPendingMove(null); // Clear pending move
     },
-    [pendingMove, state.currentPlayer, applyActionWithHistory]
+    [pendingMove, state.activePlayer, applyActionWithHistory]
   );
 
   // Handle capture initiation from StarSystem
@@ -412,7 +412,7 @@ export default function GameBoard({
       // Create and execute the capture action
       const captureAction: CaptureAction = {
         type: 'capture',
-        player: state.currentPlayer,
+        player: state.activePlayer,
         attackingShipId: pendingCapture.attackingShipId,
         targetShipId: targetShipId,
         systemId: pendingCapture.systemId,
@@ -422,7 +422,7 @@ export default function GameBoard({
       applyActionWithHistory(captureAction);
       setPendingCapture(null); // Clear pending capture
     },
-    [pendingCapture, state.currentPlayer, applyActionWithHistory]
+    [pendingCapture, state.activePlayer, applyActionWithHistory]
   );
 
   // Helper function to determine action type based on color
@@ -485,7 +485,7 @@ export default function GameBoard({
       if (!pendingSacrifice) return;
 
       const actionType = pendingSacrifice.actionType;
-      const currentPlayer = state.currentPlayer;
+      const currentPlayer = state.activePlayer;
 
       // Create the appropriate action based on sacrifice type
       let action: GameAction;
@@ -561,7 +561,7 @@ export default function GameBoard({
       pendingSacrifice,
       state.systems,
       state.bank,
-      state.currentPlayer,
+      state.activePlayer,
       handleMoveInitiate,
       handleCaptureInitiate,
       handleTradeInitiate,
@@ -579,7 +579,7 @@ export default function GameBoard({
         // Create and execute the trade action
         const tradeAction: TradeAction = {
           type: 'trade',
-          player: state.currentPlayer,
+          player: state.activePlayer,
           shipId: pendingTrade.shipId,
           systemId: pendingTrade.systemId,
           newPieceId: piece.id,
@@ -599,7 +599,7 @@ export default function GameBoard({
         // Create and execute the move action to create new system
         const moveAction: MoveAction = {
           type: 'move',
-          player: state.currentPlayer,
+          player: state.activePlayer,
           shipId: pendingMove.shipId,
           fromSystemId: pendingMove.fromSystemId,
           newStarPieceId: piece.id,
@@ -616,7 +616,7 @@ export default function GameBoard({
 
       const setupAction: SetupAction = {
         type: 'setup',
-        player: state.currentPlayer,
+        player: state.activePlayer,
         pieceId: piece.id,
         role: setupState,
         timestamp: Date.now(),
@@ -627,7 +627,7 @@ export default function GameBoard({
     [
       state.tag,
       setupState,
-      state.currentPlayer,
+      state.activePlayer,
       applyActionWithHistory,
       pendingTrade,
       pendingMove,

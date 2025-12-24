@@ -15,7 +15,7 @@ export type GamePhase = 'setup' | 'normal';
 // Game state
 export interface GameState {
   tag: GamePhase;
-  currentPlayer: Player.Player;
+  activePlayer: Player.Player;
   turnNumber: number;
   systems: Array<StarSystem.StarSystem>;
   bank: Bank.Bank;

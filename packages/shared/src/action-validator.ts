@@ -34,7 +34,7 @@ export class ActionValidator {
     }
 
     // Check if it's the correct player's turn
-    if (action.player !== gameState.currentPlayer) {
+    if (action.player !== gameState.activePlayer) {
       return { valid: false, error: 'Not your turn' };
     }
 
