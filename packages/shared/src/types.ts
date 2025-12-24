@@ -16,7 +16,6 @@ export type GamePhase = 'setup' | 'normal';
 export interface GameState {
   tag: GamePhase;
   activePlayer: Player.Player;
-  turnNumber: number;
   systems: Array<StarSystem.StarSystem>;
   bank: Bank.Bank;
   players: {

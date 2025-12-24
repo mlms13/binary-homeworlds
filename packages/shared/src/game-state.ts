@@ -34,7 +34,6 @@ export class BinaryHomeworldsGameState {
     return {
       tag: 'setup',
       activePlayer: 'player1',
-      turnNumber: 1,
       systems: [],
       bank,
       players: {
@@ -109,9 +108,6 @@ export class BinaryHomeworldsGameState {
   switchPlayer(): void {
     this.state.activePlayer =
       this.state.activePlayer === 'player1' ? 'player2' : 'player1';
-    if (this.state.activePlayer === 'player1') {
-      this.state.turnNumber++;
-    }
   }
 
   // Set game phase
