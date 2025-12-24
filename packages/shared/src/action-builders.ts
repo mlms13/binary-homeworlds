@@ -18,14 +18,16 @@ import {
 
 export function createSetupAction(
   player: Player.Player,
-  pieceId: GamePiece.PieceId,
+  color: GamePiece.Color,
+  size: GamePiece.Size,
   role: 'star1' | 'star2' | 'ship'
 ): SetupAction {
   return {
     type: 'setup',
     player,
     timestamp: Date.now(),
-    pieceId,
+    color,
+    size,
     role,
   };
 }

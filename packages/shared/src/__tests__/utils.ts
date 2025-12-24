@@ -35,36 +35,16 @@ export function getPieceIdFromBank(
 // - player 1: large blue star, small yellow star, large green ship
 // - player 2: medium yellow star, small green star, large red ship
 export function createNormalGameSetup() {
-  const engine = new GameEngine();
-  // Player 1 chooses first star (large blue)
-  const p1Star1 = getPieceIdFromBank(engine, 'blue', 3);
-  if (!p1Star1) throw new Error('No blue size 3 piece available');
-  engine.applyAction(createSetupAction('player1', p1Star1, 'star1'));
+  const initialActions = [
+    createSetupAction('player1', 'blue', 3, 'star1'),
+    createSetupAction('player2', 'yellow', 2, 'star1'),
+    createSetupAction('player1', 'yellow', 1, 'star2'),
+    createSetupAction('player2', 'green', 1, 'star2'),
+    createSetupAction('player1', 'green', 3, 'ship'),
+    createSetupAction('player2', 'red', 3, 'ship'),
+  ];
 
-  // Player 2 chooses first star (medium yellow)
-  const p2Star1 = getPieceIdFromBank(engine, 'yellow', 2);
-  if (!p2Star1) throw new Error('No yellow size 2 piece available');
-  engine.applyAction(createSetupAction('player2', p2Star1, 'star1'));
-
-  // Player 1 chooses second star (small yellow)
-  const p1Star2 = getPieceIdFromBank(engine, 'yellow', 1);
-  if (!p1Star2) throw new Error('No yellow size 1 piece available');
-  engine.applyAction(createSetupAction('player1', p1Star2, 'star2'));
-
-  // Player 2 chooses second star (small green)
-  const p2Star2 = getPieceIdFromBank(engine, 'green', 1);
-  if (!p2Star2) throw new Error('No green size 1 piece available');
-  engine.applyAction(createSetupAction('player2', p2Star2, 'star2'));
-
-  // Player 1 chooses ship (large green)
-  const p1Ship = getPieceIdFromBank(engine, 'green', 3);
-  if (!p1Ship) throw new Error('No green size 3 piece available');
-  engine.applyAction(createSetupAction('player1', p1Ship, 'ship'));
-
-  // Player 2 chooses ship (large red)
-  const p2Ship = getPieceIdFromBank(engine, 'red', 3);
-  if (!p2Ship) throw new Error('No red size 3 piece available');
-  engine.applyAction(createSetupAction('player2', p2Ship, 'ship'));
+  return GameEngine.fromHistory(initialActions);
 }
 
 // Create a new ship (for testing only)

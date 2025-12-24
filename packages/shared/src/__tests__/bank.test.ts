@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GamePiece } from '@binary-homeworlds/engine';
+import { GamePiece, Player } from '@binary-homeworlds/engine';
 
 import { createGrowAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
@@ -23,24 +23,18 @@ describe('Bank depletion edge cases', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
     // Setup: Both players set up homeworlds with green and yellow stars, and a yellow ship
-    const p1Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player1', p1Star1!, 'star1'));
-    const p2Star1 = pickSmallestAvailable(gameState, 'green');
-    engine.applyAction(createSetupAction('player2', p2Star1!, 'star1'));
-    const p1Star2 = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player1', p1Star2!, 'star2'));
-    const p2Star2 = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player2', p2Star2!, 'star2'));
-    const p1Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player1', p1Ship!, 'ship'));
-    const p2Ship = pickSmallestAvailable(gameState, 'yellow');
-    engine.applyAction(createSetupAction('player2', p2Ship!, 'ship'));
+    engine.applyAction(createSetupAction('player1', 'green', 1, 'star1'));
+    engine.applyAction(createSetupAction('player2', 'green', 1, 'star1'));
+    engine.applyAction(createSetupAction('player1', 'yellow', 1, 'star2'));
+    engine.applyAction(createSetupAction('player2', 'yellow', 1, 'star2'));
+    engine.applyAction(createSetupAction('player1', 'yellow', 1, 'ship'));
+    engine.applyAction(createSetupAction('player2', 'yellow', 2, 'ship'));
+
     // Now both home systems are established, and 6 yellow pieces have been used (2 stars + 1 ship per player)
-    type Player = 'player1' | 'player2';
-    let currentPlayer: Player = 'player1';
-    let lastShip: Record<Player, GamePiece.PieceId> = {
-      player1: p1Ship!,
-      player2: p2Ship!,
+    let currentPlayer: Player.Player = 'player1';
+    let lastShip: Record<Player.Player, GamePiece.PieceId> = {
+      player1: 'yellow-1-2',
+      player2: 'yellow-2-0',
     };
     // Alternate grow actions until all yellow pieces are gone
     while (true) {
@@ -53,6 +47,7 @@ describe('Bank depletion edge cases', () => {
         growId
       );
       const result = engine.applyAction(growAction);
+      expect(result.error).toBeUndefined();
       expect(result.valid).toBe(true);
       lastShip[currentPlayer] = growId;
       // Alternate player

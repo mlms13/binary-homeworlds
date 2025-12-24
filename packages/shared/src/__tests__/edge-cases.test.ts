@@ -62,65 +62,40 @@ describe('Edge Cases and Error Conditions', () => {
       // but the new alternating setup is the preferred method
       const engine = new GameEngine();
       const gameState = engine.getGameState();
-      const bankPieces = gameState.getBankPieces();
 
       // Player 1 setup (all at once)
       let result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
-          'star1'
-        )
+        createSetupAction('player1', 'yellow', 1, 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2'); // Now switches after each action
 
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[1]?.id ?? ('yellow-1-1' as GamePiece.PieceId),
-          'star1'
-        )
+        createSetupAction('player2', 'yellow', 1, 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[2]?.id ?? ('yellow-1-2' as GamePiece.PieceId),
-          'star2'
-        )
+        createSetupAction('player1', 'yellow', 1, 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[3]?.id ?? ('yellow-2-0' as GamePiece.PieceId),
-          'star2'
-        )
+        createSetupAction('player2', 'yellow', 2, 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[4]?.id ?? ('yellow-2-1' as GamePiece.PieceId),
-          'ship'
-        )
+        createSetupAction('player1', 'yellow', 2, 'ship')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[5]?.id ?? ('yellow-2-2' as GamePiece.PieceId),
-          'ship'
-        )
+        createSetupAction('player2', 'yellow', 2, 'ship')
       );
       expect(result.valid).toBe(true);
 
@@ -133,72 +108,47 @@ describe('Edge Cases and Error Conditions', () => {
     it('should handle alternating setup sequence', () => {
       const engine = new GameEngine();
       const gameState = engine.getGameState();
-      const bankPieces = gameState.getBankPieces();
 
       // Alternating setup: P1 star1, P2 star1, P1 star2, P2 star2, P1 ship, P2 ship
 
       // Player 1 chooses first star
       let result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
-          'star1'
-        )
+        createSetupAction('player1', 'yellow', 1, 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses first star
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[1]?.id ?? ('yellow-1-1' as GamePiece.PieceId),
-          'star1'
-        )
+        createSetupAction('player2', 'yellow', 1, 'star1')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses second star
       result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[2]?.id ?? ('yellow-1-2' as GamePiece.PieceId),
-          'star2'
-        )
+        createSetupAction('player1', 'yellow', 1, 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses second star
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[3]?.id ?? ('yellow-2-0' as GamePiece.PieceId),
-          'star2'
-        )
+        createSetupAction('player2', 'yellow', 2, 'star2')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player1');
 
       // Player 1 chooses ship
       result = engine.applyAction(
-        createSetupAction(
-          'player1',
-          bankPieces[4]?.id ?? ('yellow-2-1' as GamePiece.PieceId),
-          'ship'
-        )
+        createSetupAction('player1', 'yellow', 2, 'ship')
       );
       expect(result.valid).toBe(true);
       expect(gameState.getCurrentPlayer()).toBe('player2');
 
       // Player 2 chooses ship
       result = engine.applyAction(
-        createSetupAction(
-          'player2',
-          bankPieces[5]?.id ?? ('yellow-2-2' as GamePiece.PieceId),
-          'ship'
-        )
+        createSetupAction('player2', 'yellow', 2, 'ship')
       );
       expect(result.valid).toBe(true);
 
@@ -266,7 +216,7 @@ describe('Edge Cases and Error Conditions', () => {
 
       gameState.setPhase('normal');
 
-      const setupAction = createSetupAction('player1', 'yellow-1-0', 'star1');
+      const setupAction = createSetupAction('player1', 'yellow', 1, 'star1');
       const result = engine.applyAction(setupAction);
 
       expect(result.valid).toBe(false);

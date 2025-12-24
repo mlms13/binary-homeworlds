@@ -2,7 +2,7 @@
  * Main game engine for Binary Homeworlds
  */
 
-import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import { Bank, GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import { ActionValidator } from './action-validator';
 import { BinaryHomeworldsGameState } from './game-state';
@@ -112,16 +112,22 @@ export class GameEngine {
   }
 
   private applySetupAction(action: SetupAction): void {
-    const piece = this.gameState.removePieceFromBank(action.pieceId);
-    if (!piece) {
-      throw new Error('Piece not found in bank');
-    }
+    const [p, _bank] = Bank.takePieceBySizeAndColor(
+      action.size,
+      action.color,
+      this.gameState.getState().bank
+    );
+    if (!p) throw new Error('Piece not found in bank');
+
+    const piece = this.gameState.removePieceFromBank(p.id);
+    if (!piece) throw new Error('Piece not found in bank');
 
     const currentPlayer = this.gameState.getCurrentPlayer();
 
     if (action.role === 'star1') {
       // Create new home system with first star
       const system = StarSystem.createNormal(piece, []);
+      system.id = `${action.player}-home`;
       this.gameState.addSystem(system);
       this.gameState.setHomeSystem(currentPlayer, system.id);
     } else if (action.role === 'star2') {

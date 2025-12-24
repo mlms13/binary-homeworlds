@@ -46,7 +46,8 @@ export interface BaseAction {
 // Setup actions (initial phase)
 export interface SetupAction extends BaseAction {
   type: 'setup';
-  pieceId: GamePiece.PieceId;
+  color: GamePiece.Color;
+  size: GamePiece.Size;
   role: 'star1' | 'star2' | 'ship';
 }
 

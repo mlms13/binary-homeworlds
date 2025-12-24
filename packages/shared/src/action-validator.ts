@@ -2,7 +2,7 @@
  * Action validation for Binary Homeworlds game
  */
 
-import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import { Bank, GamePiece, StarSystem } from '@binary-homeworlds/engine';
 
 import {
   ActionValidationResult,
@@ -70,7 +70,11 @@ export class ActionValidator {
     }
 
     // Check if piece exists in bank
-    const piece = findPieceInBank(gameState.bank, action.pieceId);
+    const piece = Bank.hasPieceBySizeAndColor(
+      action.size,
+      action.color,
+      gameState.bank
+    );
     if (!piece) {
       return { valid: false, error: 'Piece not found in bank' };
     }

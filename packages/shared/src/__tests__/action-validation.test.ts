@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GamePiece, StarSystem } from '@binary-homeworlds/engine';
+import { StarSystem } from '@binary-homeworlds/engine';
 
 import { createMoveAction, createSetupAction } from '../action-builders';
 import { GameEngine } from '../game-engine';
@@ -56,13 +56,8 @@ describe('Action Validation', () => {
     const gameState = engine.getGameState();
 
     gameState.setPhase('normal');
-    const bankPieces = gameState.getBankPieces();
 
-    const setupAction = createSetupAction(
-      'player1',
-      bankPieces[0]?.id ?? ('yellow-1-0' as GamePiece.PieceId),
-      'star1'
-    );
+    const setupAction = createSetupAction('player1', 'yellow', 1, 'star1');
     const result = engine.applyAction(setupAction);
 
     expect(result.valid).toBe(false);

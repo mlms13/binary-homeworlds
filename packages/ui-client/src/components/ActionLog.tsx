@@ -42,23 +42,10 @@ export default function ActionLog({
 
     switch (action.type) {
       case 'setup': {
-        const piece = bankPiecesBefore.find(
-          (p: { id: string; color: string; size: number }) =>
-            p.id === action.pieceId
-        );
-        if (!piece) return `${playerName} made a setup move`;
-
-        const colorName = piece.color;
         const sizeName =
-          piece.size === 1 ? 'small' : piece.size === 2 ? 'medium' : 'large';
-        const roleText =
-          action.role === 'star1'
-            ? 'first star'
-            : action.role === 'star2'
-              ? 'second star'
-              : 'ship';
-
-        return `${playerName} selected a ${sizeName} ${colorName} ${roleText}`;
+          action.size === 1 ? 'small' : action.size === 2 ? 'medium' : 'large';
+        const roleText = action.role === 'ship' ? 'ship' : 'star';
+        return `${playerName} selected a ${sizeName} ${action.color} ${roleText}`;
       }
 
       case 'move': {

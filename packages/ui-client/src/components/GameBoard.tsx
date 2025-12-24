@@ -617,7 +617,8 @@ export default function GameBoard({
       const setupAction: SetupAction = {
         type: 'setup',
         player: state.activePlayer,
-        pieceId: piece.id,
+        color: piece.color,
+        size: piece.size,
         role: setupState,
         timestamp: Date.now(),
       };
