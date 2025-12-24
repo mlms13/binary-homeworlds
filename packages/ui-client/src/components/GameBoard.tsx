@@ -154,7 +154,7 @@ export default function GameBoard({
 
   // Determine current setup state
   const getCurrentSetupState = useCallback(() => {
-    if (state.phase !== 'setup') return null;
+    if (state.tag !== 'setup') return null;
 
     const currentPlayer = state.currentPlayer;
     const homeSystem = gameState.getHomeSystem(currentPlayer);
@@ -164,7 +164,7 @@ export default function GameBoard({
     if (homeSystem.stars.length === 2 && homeSystem.ships.length === 0)
       return 'ship';
     return null;
-  }, [state.phase, state.currentPlayer, gameState]);
+  }, [state.tag, state.currentPlayer, gameState]);
 
   // Update setup state when game state changes
   useEffect(() => {
@@ -203,14 +203,14 @@ export default function GameBoard({
       validPieceIds: Array<GamePiece.PieceId>
     ) => {
       // Check if game has ended
-      if (state.phase === 'ended') return;
+      if (gameState.isGameEnded()) return;
 
       // Clear any existing pending actions before starting new one
       clearAllPendingActions();
 
       setPendingTrade({ shipId, systemId, validPieceIds });
     },
-    [state.phase, clearAllPendingActions]
+    [gameState, clearAllPendingActions]
   );
 
   // Handle trade cancellation
@@ -222,7 +222,7 @@ export default function GameBoard({
   const handleMoveInitiate = useCallback(
     (shipId: GamePiece.PieceId, fromSystemId: string) => {
       // Check if game has ended
-      if (state.phase === 'ended') return;
+      if (gameState.isGameEnded()) return;
 
       // Clear any existing pending actions before starting new one
       clearAllPendingActions();
@@ -261,7 +261,7 @@ export default function GameBoard({
         validBankPieceIds,
       });
     },
-    [state.phase, state.systems, state.bank, clearAllPendingActions]
+    [gameState, state.systems, state.bank, clearAllPendingActions]
   );
 
   // Handle move cancellation
@@ -388,14 +388,14 @@ export default function GameBoard({
       validTargetShipIds: Array<GamePiece.PieceId>
     ) => {
       // Check if game has ended
-      if (state.phase === 'ended') return;
+      if (gameState.isGameEnded()) return;
 
       // Clear any existing pending actions before starting new one
       clearAllPendingActions();
 
       setPendingCapture({ attackingShipId, systemId, validTargetShipIds });
     },
-    [state.phase, clearAllPendingActions]
+    [gameState, clearAllPendingActions]
   );
 
   // Handle ship clicks during capture target selection
@@ -572,7 +572,7 @@ export default function GameBoard({
   const handlePieceClick = useCallback(
     (piece: GamePiece.Piece) => {
       // Handle trade actions during normal play
-      if (state.phase === 'normal' && pendingTrade) {
+      if (state.tag === 'normal' && pendingTrade) {
         // Check if this piece is valid for the trade
         if (!pendingTrade.validPieceIds.includes(piece.id)) return;
 
@@ -592,7 +592,7 @@ export default function GameBoard({
       }
 
       // Handle move actions during normal play (creating new system)
-      if (state.phase === 'normal' && pendingMove) {
+      if (state.tag === 'normal' && pendingMove) {
         // Check if this piece is valid for creating a new system
         if (!pendingMove.validBankPieceIds.includes(piece.id)) return;
 
@@ -612,7 +612,7 @@ export default function GameBoard({
       }
 
       // Handle setup phase
-      if (state.phase !== 'setup' || !setupState) return;
+      if (state.tag !== 'setup' || !setupState) return;
 
       const setupAction: SetupAction = {
         type: 'setup',
@@ -625,7 +625,7 @@ export default function GameBoard({
       applyActionWithHistory(setupAction);
     },
     [
-      state.phase,
+      state.tag,
       setupState,
       state.currentPlayer,
       applyActionWithHistory,
@@ -721,7 +721,7 @@ export default function GameBoard({
 
       <div className="current-turn">
         <div className="turn-indicator">
-          {state.phase === 'setup'
+          {state.tag === 'setup'
             ? `${getPlayerDisplayName(currentPlayer)}'s turn to set up${
                 setupState
                   ? ` - Select ${setupState === 'star1' ? 'first star' : setupState === 'star2' ? 'second star' : 'starting ship'}`
@@ -731,7 +731,7 @@ export default function GameBoard({
         </div>
 
         {/* Game hints */}
-        {state.phase === 'setup' && setupState && (
+        {state.tag === 'setup' && setupState && (
           <GameHint>
             Click on a piece in the bank to select your{' '}
             {setupState === 'star1'
@@ -742,7 +742,7 @@ export default function GameBoard({
           </GameHint>
         )}
 
-        {state.phase === 'normal' && (
+        {state.tag === 'normal' && (
           <>
             {pendingTrade ? (
               <GameHint>
@@ -816,7 +816,7 @@ export default function GameBoard({
             pieces={bankToPieces(state.bank)}
             selectedPieces={[]}
             onPieceClick={handlePieceClick}
-            isSetupPhase={state.phase === 'setup'}
+            isSetupPhase={state.tag === 'setup'}
             validTradeIds={pendingTrade?.validPieceIds || []}
             isTradeMode={!!pendingTrade}
             validMoveIds={pendingMove?.validBankPieceIds || []}
@@ -855,7 +855,7 @@ export default function GameBoard({
           </div>
 
           <div className="center-area">
-            {state.phase === 'setup' ? (
+            {state.tag === 'setup' ? (
               <SetupInstructions
                 currentPlayer={currentPlayer}
                 currentStep={setupState}
@@ -974,7 +974,7 @@ export default function GameBoard({
       )}
 
       {/* Game end modal */}
-      {state.phase === 'ended' && state.winner && (
+      {state.tag === 'normal' && state.winner && (
         <GameEndModal winner={state.winner} onNewGame={handleNewGame} />
       )}
     </div>

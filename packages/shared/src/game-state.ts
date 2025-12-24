@@ -32,7 +32,7 @@ export class BinaryHomeworldsGameState {
     const bank = Bank.full;
 
     return {
-      phase: 'setup',
+      tag: 'setup',
       currentPlayer: 'player1',
       turnNumber: 1,
       systems: [],
@@ -57,17 +57,17 @@ export class BinaryHomeworldsGameState {
 
   // Get game phase
   getPhase(): GamePhase {
-    return this.state.phase;
+    return this.state.tag;
   }
 
   // Get winner (if game has ended)
-  getWinner(): Player.Player | null {
-    return this.state.winner || null;
+  getWinner(): Player.Player | undefined {
+    return this.state.winner;
   }
 
   // Check if game has ended
   isGameEnded(): boolean {
-    return this.state.phase === 'ended';
+    return this.getWinner() !== undefined;
   }
 
   // Get available pieces in bank
@@ -116,13 +116,15 @@ export class BinaryHomeworldsGameState {
 
   // Set game phase
   setPhase(phase: GamePhase): void {
-    this.state.phase = phase;
+    this.state.tag = phase;
   }
 
   // Set winner and end game
   setWinner(winner: Player.Player): void {
-    this.state.winner = winner;
-    this.state.phase = 'ended';
+    if (this.state.tag !== 'normal')
+      throw new Error('Cannot set winner during setup');
+
+    this.state = { ...this.state, winner };
   }
 
   // Add a new system
@@ -214,7 +216,7 @@ export class BinaryHomeworldsGameState {
     const errors: Array<string> = [];
 
     // Check that all systems have at least one star (except during setup)
-    if (this.state.phase !== 'setup') {
+    if (this.state.tag !== 'setup') {
       for (const system of this.state.systems) {
         if (system.stars.length === 0) {
           errors.push(`System ${system.id} has no stars`);
@@ -223,7 +225,7 @@ export class BinaryHomeworldsGameState {
     }
 
     // Check that home systems are set after setup
-    if (this.state.phase !== 'setup') {
+    if (this.state.tag !== 'setup') {
       if (!this.state.players.player1.homeSystemId) {
         errors.push('Player 1 home system not set');
       }

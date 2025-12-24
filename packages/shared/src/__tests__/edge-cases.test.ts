@@ -26,7 +26,7 @@ describe('Edge Cases and Error Conditions', () => {
       const gameState = engine.getGameState();
       const state = gameState.getState();
 
-      expect(state.phase).toBe('setup');
+      expect(state.tag).toBe('setup');
       expect(state.currentPlayer).toBe('player1');
       expect(state.turnNumber).toBe(1);
       expect(state.systems.length).toBe(0);
@@ -246,7 +246,7 @@ describe('Edge Cases and Error Conditions', () => {
       const gameState = engine.getGameState();
 
       // Set up and end the game
-      gameState.setPhase('ended');
+      gameState.setPhase('normal');
       gameState.setWinner('player1');
 
       const ship = createShip('yellow', 1, 'player2');

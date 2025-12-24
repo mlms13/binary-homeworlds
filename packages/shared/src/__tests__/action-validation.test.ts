@@ -34,7 +34,7 @@ describe('Action Validation', () => {
     const gameState = engine.getGameState();
 
     // Set up and end the game
-    gameState.setPhase('ended');
+    gameState.setPhase('normal');
     gameState.setWinner('player1');
 
     const ship = createShip('yellow', 1, 'player2');

@@ -29,7 +29,7 @@ export class ActionValidator {
     gameState: GameState
   ): ActionValidationResult {
     // Check if game has ended first
-    if (gameState.phase === 'ended') {
+    if (gameState.tag === 'normal' && gameState.winner) {
       return { valid: false, error: 'Game has ended' };
     }
 
@@ -62,7 +62,7 @@ export class ActionValidator {
     action: SetupAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'setup') {
+    if (gameState.tag !== 'setup') {
       return {
         valid: false,
         error: 'Setup actions only allowed during setup phase',
@@ -84,7 +84,7 @@ export class ActionValidator {
     action: MoveAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'normal') {
+    if (gameState.tag !== 'normal') {
       return {
         valid: false,
         error: 'Move actions only allowed during normal play',
@@ -169,7 +169,7 @@ export class ActionValidator {
     action: CaptureAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'normal') {
+    if (gameState.tag !== 'normal') {
       return {
         valid: false,
         error: 'Capture actions only allowed during normal play',
@@ -226,7 +226,7 @@ export class ActionValidator {
     action: GrowAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'normal') {
+    if (gameState.tag !== 'normal') {
       return {
         valid: false,
         error: 'Grow actions only allowed during normal play',
@@ -289,7 +289,7 @@ export class ActionValidator {
     action: TradeAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'normal') {
+    if (gameState.tag !== 'normal') {
       return {
         valid: false,
         error: 'Trade actions only allowed during normal play',
@@ -348,7 +348,7 @@ export class ActionValidator {
     action: SacrificeAction,
     gameState: GameState
   ): ActionValidationResult {
-    if (gameState.phase !== 'normal') {
+    if (gameState.tag !== 'normal') {
       return {
         valid: false,
         error: 'Sacrifice actions only allowed during normal play',

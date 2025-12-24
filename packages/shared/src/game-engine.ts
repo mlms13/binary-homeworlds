@@ -397,9 +397,9 @@ export class GameEngine {
     const state = this.gameState.getState();
     const actions: Array<string> = [];
 
-    if (state.phase === 'setup') {
+    if (state.tag === 'setup') {
       actions.push('setup');
-    } else if (state.phase === 'normal') {
+    } else if (state.tag === 'normal') {
       actions.push('move', 'capture', 'grow', 'trade', 'sacrifice');
     }
 

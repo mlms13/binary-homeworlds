@@ -10,11 +10,11 @@ export interface PlayerState {
 }
 
 // Game phase
-export type GamePhase = 'setup' | 'normal' | 'ended';
+export type GamePhase = 'setup' | 'normal';
 
 // Game state
 export interface GameState {
-  phase: GamePhase;
+  tag: GamePhase;
   currentPlayer: Player.Player;
   turnNumber: number;
   systems: Array<StarSystem.StarSystem>;
