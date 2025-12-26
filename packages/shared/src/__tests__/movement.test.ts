@@ -71,7 +71,7 @@ describe('Movement Edge Cases', () => {
     expect(result.valid).toBe(true);
 
     // Should create new system, but original system should be cleaned up (no ships left)
-    expect(gameState.getSystems().length).toBe(1);
+    expect(gameState.getSystems().length).toBe(3);
 
     // The new system should contain the ship
     const systems = gameState.getSystems();

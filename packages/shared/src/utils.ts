@@ -132,12 +132,22 @@ export function getSmallestAvailableSize(
   return availableSizes.length > 0 ? (availableSizes[0] ?? null) : null;
 }
 
+export function getAllSystems(
+  gameState: GameState
+): Array<StarSystem.StarSystem> {
+  return [
+    ...gameState.systems,
+    gameState.homeSystems.player1,
+    gameState.homeSystems.player2,
+  ];
+}
+
 // Find a system by ID
 export function findSystem(
   gameState: GameState,
   systemId: string
 ): StarSystem.StarSystem | undefined {
-  return gameState.systems.find(system => system.id === systemId);
+  return getAllSystems(gameState).find(system => system.id === systemId);
 }
 
 // Find a ship by ID across all systems
@@ -145,7 +155,7 @@ export function findShip(
   gameState: GameState,
   shipId: GamePiece.PieceId
 ): { ship: GamePiece.Ship; system: StarSystem.StarSystem } | undefined {
-  return gameState.systems.reduce<
+  return getAllSystems(gameState).reduce<
     { ship: GamePiece.Ship; system: StarSystem.StarSystem } | undefined
   >((acc, system) => {
     const ship = system.ships.find(ship => ship.id === shipId);
@@ -159,11 +169,7 @@ export function hasShipsAtHome(
   gameState: GameState,
   player: Player.Player
 ): boolean {
-  const homeSystemId = gameState.players[player].homeSystemId;
-  const homeSystem = findSystem(gameState, homeSystemId);
-
-  if (!homeSystem) return false;
-
+  const homeSystem = gameState.homeSystems[player];
   return homeSystem.ships.some(ship => ship.owner === player);
 }
 
@@ -172,11 +178,7 @@ export function hasStarsAtHome(
   gameState: GameState,
   player: Player.Player
 ): boolean {
-  const homeSystemId = gameState.players[player].homeSystemId;
-  const homeSystem = findSystem(gameState, homeSystemId);
-
-  if (!homeSystem) return false;
-
+  const homeSystem = gameState.homeSystems[player];
   return homeSystem.stars.length > 0;
 }
 

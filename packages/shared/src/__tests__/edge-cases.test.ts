@@ -266,10 +266,8 @@ describe('Edge Cases and Error Conditions', () => {
         [player2Ship]
       );
 
-      gameState.addSystem(player1Home);
-      gameState.addSystem(player2Home);
-      gameState.setHomeSystem('player1', player1Home.id);
-      gameState.setHomeSystem('player2', player2Home.id);
+      gameState.setHomeSystem('player1', player1Home);
+      gameState.setHomeSystem('player2', player2Home);
       gameState.setPhase('normal');
 
       // Player 2 captures player 1's ship at home
@@ -316,10 +314,8 @@ describe('Edge Cases and Error Conditions', () => {
         [createShip('yellow', 1, 'player2')]
       );
 
-      gameState.addSystem(player1Home);
-      gameState.addSystem(player2Home);
-      gameState.setHomeSystem('player1', player1Home.id);
-      gameState.setHomeSystem('player2', player2Home.id);
+      gameState.setHomeSystem('player1', player1Home);
+      gameState.setHomeSystem('player2', player2Home);
       gameState.setPhase('normal');
 
       // Make sure it's player2's turn
@@ -361,10 +357,8 @@ describe('Edge Cases and Error Conditions', () => {
         [createShip('red', 1, 'player2')]
       );
 
-      gameState.addSystem(player1Home);
-      gameState.addSystem(player2Home);
-      gameState.setHomeSystem('player1', player1Home.id);
-      gameState.setHomeSystem('player2', player2Home.id);
+      gameState.setHomeSystem('player1', player1Home);
+      gameState.setHomeSystem('player2', player2Home);
       gameState.setPhase('normal');
 
       // Make sure it's player1's turn
@@ -459,7 +453,7 @@ describe('Edge Cases and Error Conditions', () => {
       expect(result.valid).toBe(true);
 
       // Should create new system, but original system should be cleaned up (no ships left)
-      expect(gameState.getSystems().length).toBe(1);
+      expect(gameState.getSystems().length).toBe(3);
 
       // The new system should contain the ship
       const systems = gameState.getSystems();

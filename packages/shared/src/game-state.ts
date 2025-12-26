@@ -12,6 +12,7 @@ import {
   checkGameEnd,
   cloneGameState,
   findSystem,
+  getAllSystems,
   removePieceFromBankById,
 } from './utils';
 
@@ -36,9 +37,9 @@ export class BinaryHomeworldsGameState {
       activePlayer: 'player1',
       systems: [],
       bank,
-      players: {
-        player1: { homeSystemId: '' },
-        player2: { homeSystemId: '' },
+      homeSystems: {
+        player1: StarSystem.createEmptyHomeSystem('player1'),
+        player2: StarSystem.createEmptyHomeSystem('player2'),
       },
       gameHistory: [],
     };
@@ -76,7 +77,7 @@ export class BinaryHomeworldsGameState {
 
   // Get all systems (copies)
   getSystems(): Array<StarSystem.StarSystem> {
-    return this.state.systems.map(system => ({ ...system }));
+    return getAllSystems(this.state);
   }
 
   // Get direct reference to systems (for internal use)
@@ -90,8 +91,8 @@ export class BinaryHomeworldsGameState {
   }
 
   // Get player's home system
-  getHomeSystem(player: Player.Player): StarSystem.StarSystem | undefined {
-    return findSystem(this.state, this.state.players[player].homeSystemId);
+  getHomeSystem(player: Player.Player): StarSystem.StarSystem {
+    return this.state.homeSystems[player];
   }
 
   // Get game history
@@ -130,8 +131,15 @@ export class BinaryHomeworldsGameState {
 
   // Replace an existing system by ID with a new system
   setSystem(systemId: string, system: StarSystem.StarSystem): void {
-    const index = this.state.systems.findIndex(s => s.id === systemId);
-    if (index !== -1) {
+    if (systemId === 'player1-home') {
+      this.setHomeSystem('player1', system);
+    } else if (systemId === 'player2-home') {
+      this.setHomeSystem('player2', system);
+    } else {
+      const index = this.state.systems.findIndex(s => s.id === systemId);
+      if (index === -1) {
+        throw new Error('System not found');
+      }
       this.state.systems[index] = system;
     }
   }
@@ -144,8 +152,8 @@ export class BinaryHomeworldsGameState {
   }
 
   // Set player's home system
-  setHomeSystem(player: Player.Player, systemId: string): void {
-    this.state.players[player].homeSystemId = systemId;
+  setHomeSystem(player: Player.Player, system: StarSystem.StarSystem): void {
+    this.state.homeSystems[player] = system;
   }
 
   // Remove piece from bank
@@ -168,7 +176,7 @@ export class BinaryHomeworldsGameState {
   }
 
   getOverpopulations(): Array<{ systemId: string; color: GamePiece.Color }> {
-    return this.state.systems.flatMap(system => {
+    return getAllSystems(this.state).flatMap(system => {
       return StarSystem.getOverpopulations(system).map(color => ({
         systemId: system.id,
         color,
@@ -206,16 +214,6 @@ export class BinaryHomeworldsGameState {
         if (system.stars.length === 0) {
           errors.push(`System ${system.id} has no stars`);
         }
-      }
-    }
-
-    // Check that home systems are set after setup
-    if (this.state.tag !== 'setup') {
-      if (!this.state.players.player1.homeSystemId) {
-        errors.push('Player 1 home system not set');
-      }
-      if (!this.state.players.player2.homeSystemId) {
-        errors.push('Player 2 home system not set');
       }
     }
 

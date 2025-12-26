@@ -378,7 +378,7 @@ export class ActionValidator {
 
     // Check if sacrificing this ship would end the game (no ships at home)
     const isHomeSystem =
-      gameState.players[action.player].homeSystemId === action.systemId;
+      gameState.homeSystems[action.player].id === action.systemId;
     const playerShipsAtHome = isHomeSystem
       ? system.ships.filter(s => s.owner === action.player)
       : [];

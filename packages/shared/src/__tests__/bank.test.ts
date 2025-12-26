@@ -36,6 +36,7 @@ describe('Bank depletion edge cases', () => {
       player1: 'yellow-1-2',
       player2: 'yellow-2-0',
     };
+
     // Alternate grow actions until all yellow pieces are gone
     while (true) {
       const growId = pickSmallestAvailable(gameState, 'yellow');
@@ -43,7 +44,7 @@ describe('Bank depletion edge cases', () => {
       const growAction = createGrowAction(
         currentPlayer,
         lastShip[currentPlayer],
-        gameState.getHomeSystem(currentPlayer)!.id,
+        `${currentPlayer}-home`,
         growId
       );
       const result = engine.applyAction(growAction);

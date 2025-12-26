@@ -4,11 +4,6 @@
 
 import { Bank, GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 
-// Player state
-export interface PlayerState {
-  homeSystemId: string;
-}
-
 // Game phase
 export type GamePhase = 'setup' | 'normal';
 
@@ -18,10 +13,7 @@ export interface GameState {
   activePlayer: Player.Player;
   systems: Array<StarSystem.StarSystem>;
   bank: Bank.Bank;
-  players: {
-    player1: PlayerState;
-    player2: PlayerState;
-  };
+  homeSystems: Record<Player.Player, StarSystem.StarSystem>;
   winner?: Player.Player;
   gameHistory: Array<GameAction>;
 }

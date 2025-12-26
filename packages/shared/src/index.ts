@@ -30,7 +30,6 @@ export {
   GrowAction,
   MoveAction,
   OverpopulationAction,
-  PlayerState,
   SacrificeAction,
   SetupAction,
   TradeAction,

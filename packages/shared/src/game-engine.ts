@@ -17,6 +17,7 @@ import {
   SetupAction,
   TradeAction,
 } from './types';
+import { getAllSystems } from './utils';
 
 export class GameEngine {
   private gameState: BinaryHomeworldsGameState;
@@ -72,29 +73,7 @@ export class GameEngine {
 
       // Switch players (except for overpopulation which can be called by either player)
       if (action.type !== 'overpopulation') {
-        if (action.type === 'setup') {
-          // For setup, switch players after each action (alternating setup)
-          this.gameState.switchPlayer();
-
-          // Check if setup is complete after player switch
-          const player1Home = this.gameState.getHomeSystem('player1');
-          const player2Home = this.gameState.getHomeSystem('player2');
-
-          if (
-            player1Home &&
-            player2Home &&
-            player1Home.ships.length > 0 &&
-            player2Home.ships.length > 0
-          ) {
-            this.gameState.setPhase('normal');
-            // Setup is complete, ensure player1 starts normal play
-            if (this.gameState.getCurrentPlayer() !== 'player1') {
-              this.gameState.switchPlayer();
-            }
-          }
-        } else {
-          this.gameState.switchPlayer();
-        }
+        this.gameState.switchPlayer();
       }
 
       // Check for game end after player switch (except during setup)
@@ -122,31 +101,40 @@ export class GameEngine {
     const piece = this.gameState.removePieceFromBank(p.id);
     if (!piece) throw new Error('Piece not found in bank');
 
-    const currentPlayer = this.gameState.getCurrentPlayer();
-
     if (action.role === 'star1') {
       // Create new home system with first star
       const system = StarSystem.createNormal(piece, []);
       system.id = `${action.player}-home`;
-      this.gameState.addSystem(system);
-      this.gameState.setHomeSystem(currentPlayer, system.id);
+      this.gameState.setHomeSystem(action.player, system);
     } else if (action.role === 'star2') {
       // Add second star to home system
-      const homeSystem = this.gameState.getHomeSystem(currentPlayer);
+      const homeSystem = this.gameState.getHomeSystem(action.player);
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
       const updatedSystem = StarSystem.addStar(piece, homeSystem);
-      this.gameState.setSystem(homeSystem.id, updatedSystem);
+      this.gameState.setHomeSystem(action.player, updatedSystem);
     } else if (action.role === 'ship') {
       // Add starting ship to home system
-      const homeSystem = this.gameState.getHomeSystem(currentPlayer);
+      const homeSystem = this.gameState.getHomeSystem(action.player);
       if (!homeSystem) {
         throw new Error('Home system not found');
       }
-      const ship = { ...piece, owner: currentPlayer };
+      const ship = { ...piece, owner: action.player };
       const updatedSystem = StarSystem.addShip(ship, homeSystem);
-      this.gameState.setSystem(homeSystem.id, updatedSystem);
+      this.gameState.setHomeSystem(action.player, updatedSystem);
+
+      // Check if setup is complete
+      const p1Home = StarSystem.validate(
+        this.gameState.getHomeSystem('player1')
+      );
+      const p2Home = StarSystem.validate(
+        this.gameState.getHomeSystem('player2')
+      );
+
+      if (p1Home.valid && p2Home.valid) {
+        this.gameState.setPhase('normal');
+      }
     }
   }
 
@@ -155,7 +143,7 @@ export class GameEngine {
     let ship: GamePiece.Ship | undefined = undefined;
     let fromSystem: StarSystem.StarSystem | undefined = undefined;
 
-    for (const system of this.gameState.getSystemsRef()) {
+    for (const system of getAllSystems(this.gameState.getState())) {
       const foundShip = system.ships.find(s => s.id === action.shipId);
       if (foundShip) {
         ship = foundShip;
@@ -319,7 +307,7 @@ export class GameEngine {
     // This is crucial: if sacrificing leaves the player with no ships at home, they lose
     // Only check if this was at the player's home system
     const isHomeSystem =
-      this.gameState.getState().players[action.player].homeSystemId ===
+      this.gameState.getState().homeSystems[action.player].id ===
       action.systemId;
     if (isHomeSystem) {
       const gameEnded = this.gameState.checkAndUpdateGameEnd();

@@ -1,6 +1,7 @@
 import { GamePiece, Player, StarSystem } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
+  findShip,
   GameAction,
   GameEngine,
 } from '@binary-homeworlds/shared';
@@ -51,7 +52,7 @@ export default function ActionLog({
       case 'move': {
         // TypeScript should narrow 'action' to MoveAction here
         // If it doesn't, there's likely a type resolution issue
-        const ship = findShipInState(stateBefore, action.shipId);
+        const ship = findShip(stateBefore, action.shipId)?.ship;
         if (!ship) return `${playerName} moved a ship`;
 
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
@@ -64,15 +65,9 @@ export default function ActionLog({
         const shipDesc = `${ship.size === 1 ? 'small' : ship.size === 2 ? 'medium' : 'large'} ${ship.color} ship`;
 
         if (action.toSystemId) {
-          const fromName = getSystemName(fromSystem, stateBefore);
+          const fromName = getSystemName(fromSystem);
           const toName = getSystemName(
-            toSystem && 'id' in toSystem ? toSystem : null,
-            stateAfter as {
-              players: {
-                player1: { homeSystemId: string };
-                player2: { homeSystemId: string };
-              };
-            }
+            toSystem && 'id' in toSystem ? toSystem : null
           );
           return `${playerName} moved ${shipDesc} from ${fromName} to ${toName}`;
         } else {
@@ -88,11 +83,11 @@ export default function ActionLog({
       }
 
       case 'capture': {
-        const attackingShip = findShipInState(
+        const attackingShip = findShip(
           stateBefore,
           action.attackingShipId
-        );
-        const targetShip = findShipInState(stateBefore, action.targetShipId);
+        )?.ship;
+        const targetShip = findShip(stateBefore, action.targetShipId)?.ship;
 
         if (!attackingShip || !targetShip)
           return `${playerName} captured a ship`;
@@ -104,7 +99,7 @@ export default function ActionLog({
       }
 
       case 'grow': {
-        const actingShip = findShipInState(stateBefore, action.actingShipId);
+        const actingShip = findShip(stateBefore, action.actingShipId)?.ship;
         const newPiece = bankPiecesBefore.find(
           (p: { id: string; color: string; size: number }) =>
             p.id === action.newShipPieceId
@@ -119,7 +114,7 @@ export default function ActionLog({
       }
 
       case 'trade': {
-        const oldShip = findShipInState(stateBefore, action.shipId);
+        const oldShip = findShip(stateBefore, action.shipId)?.ship;
         const newPiece = bankPiecesBefore.find(
           (p: { id: string; color: string; size: number }) =>
             p.id === action.newPieceId
@@ -134,10 +129,10 @@ export default function ActionLog({
       }
 
       case 'sacrifice': {
-        const sacrificedShip = findShipInState(
+        const sacrificedShip = findShip(
           stateBefore,
           action.sacrificedShipId
-        );
+        )?.ship;
         if (!sacrificedShip) return `${playerName} sacrificed a ship`;
 
         const shipDesc = `${sacrificedShip.size === 1 ? 'small' : sacrificedShip.size === 2 ? 'medium' : 'large'} ${sacrificedShip.color}`;
@@ -150,7 +145,7 @@ export default function ActionLog({
       case 'overpopulation': {
         const system =
           stateBefore.systems.find(s => s.id === action.systemId) ?? null;
-        const systemName = getSystemName(system, stateBefore);
+        const systemName = getSystemName(system);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
       }
@@ -158,19 +153,6 @@ export default function ActionLog({
       default:
         return `${playerName} made an unknown action`;
     }
-  };
-
-  const findShipInState = (
-    state: {
-      systems: Array<StarSystem.StarSystem>;
-    },
-    shipId: GamePiece.PieceId
-  ) => {
-    for (const system of state.systems) {
-      const ship = system.ships.find((s: GamePiece.Ship) => s.id === shipId);
-      if (ship) return ship;
-    }
-    return null;
   };
 
   const findSystemWithShip = (
@@ -184,23 +166,12 @@ export default function ActionLog({
     );
   };
 
-  const getSystemName = (
-    system: StarSystem.StarSystem | null,
-    state: {
-      players: {
-        player1: { homeSystemId: string };
-        player2: { homeSystemId: string };
-      };
-    }
-  ) => {
+  const getSystemName = (system: StarSystem.StarSystem | null) => {
     if (!system) return 'unknown system';
 
-    const player1HomeId = state.players.player1.homeSystemId;
-    const player2HomeId = state.players.player2.homeSystemId;
-
-    if (system.id === player1HomeId) {
+    if (system.id === 'player1-home') {
       return `${getPlayerDisplayName('player1')}'s home`;
-    } else if (system.id === player2HomeId) {
+    } else if (system.id === 'player2-home') {
       return `${getPlayerDisplayName('player2')}'s home`;
     } else {
       // Describe by stars

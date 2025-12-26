@@ -11,10 +11,8 @@ describe('Game Setup', () => {
     const gameState = engine.getGameState();
     expect(gameState.getPhase()).toBe('setup');
     expect(gameState.getCurrentPlayer()).toBe('player1');
-    expect(gameState.getSystems().length).toBe(0);
+    expect(gameState.getSystems().length).toBe(2); // 2 initial homeworlds
     expect(gameState.getBankPieces().length).toBe(36);
-    expect(gameState.getHomeSystem('player1')).toBeUndefined();
-    expect(gameState.getHomeSystem('player2')).toBeUndefined();
   });
 
   it('after player1 selects first star, home system is assigned', () => {
