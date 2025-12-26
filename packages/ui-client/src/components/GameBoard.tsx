@@ -863,35 +863,29 @@ export default function GameBoard({
               />
             ) : (
               <div className="systems-grid">
-                {state.systems
-                  .filter(
-                    system =>
-                      system.id !== state.players.player1.homeSystemId &&
-                      system.id !== state.players.player2.homeSystemId
-                  )
-                  .map(system => (
-                    <StarSystem
-                      key={system.id}
-                      system={system}
-                      onAction={applyActionWithHistory}
-                      getAvailableActions={getAvailableActions}
-                      bankPieces={bankToPieces(state.bank)}
-                      currentPlayer={currentPlayer}
-                      onTradeInitiate={handleTradeInitiate}
-                      onMoveInitiate={handleMoveInitiate}
-                      onCaptureInitiate={handleCaptureInitiate}
-                      onShipClickForCapture={handleShipClickForCapture}
-                      pendingCapture={pendingCapture}
-                      onSacrificeInitiate={handleSacrificeInitiate}
-                      pendingSacrifice={pendingSacrifice}
-                      onShipClickForSacrifice={handleSacrificeAction}
-                      onSystemClick={handleSystemClick}
-                      isMoveDestination={
-                        !!pendingMove &&
-                        pendingMove.validDestinationIds.includes(system.id)
-                      }
-                    />
-                  ))}
+                {state.systems.map(system => (
+                  <StarSystem
+                    key={system.id}
+                    system={system}
+                    onAction={applyActionWithHistory}
+                    getAvailableActions={getAvailableActions}
+                    bankPieces={bankToPieces(state.bank)}
+                    currentPlayer={currentPlayer}
+                    onTradeInitiate={handleTradeInitiate}
+                    onMoveInitiate={handleMoveInitiate}
+                    onCaptureInitiate={handleCaptureInitiate}
+                    onShipClickForCapture={handleShipClickForCapture}
+                    pendingCapture={pendingCapture}
+                    onSacrificeInitiate={handleSacrificeInitiate}
+                    pendingSacrifice={pendingSacrifice}
+                    onShipClickForSacrifice={handleSacrificeAction}
+                    onSystemClick={handleSystemClick}
+                    isMoveDestination={
+                      !!pendingMove &&
+                      pendingMove.validDestinationIds.includes(system.id)
+                    }
+                  />
+                ))}
               </div>
             )}
           </div>

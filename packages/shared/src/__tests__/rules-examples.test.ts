@@ -33,8 +33,7 @@ describe('RULES.md Examples', () => {
         [greenShip]
       );
 
-      gameState.addSystem(homeSystem);
-      gameState.setHomeSystem('player1', homeSystem.id);
+      gameState.setHomeSystem('player1', homeSystem);
 
       // Player B: Medium yellow ship at Player A's home
       const playerBShip = createShip('yellow', 2, 'player2');

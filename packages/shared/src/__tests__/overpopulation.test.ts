@@ -41,30 +41,32 @@ describe('Overpopulation', () => {
 
   it('detects blue overpopulation after growing at a blue star', () => {
     // Setup: home system with green star, red star, and blue ship
-    const engine = new GameEngine();
+    const engine = GameEngine.fromHistory([
+      createSetupAction('player1', 'green', 3, 'star1'),
+      createSetupAction('player2', 'green', 2, 'star1'),
+      createSetupAction('player1', 'blue', 1, 'star2'),
+      createSetupAction('player2', 'blue', 1, 'star2'),
+      createSetupAction('player1', 'blue', 3, 'ship'),
+      createSetupAction('player2', 'blue', 3, 'ship'),
+    ]);
     const gameState = engine.getGameState();
-    // Player 1 setup
-    engine.applyAction(createSetupAction('player1', 'green', 3, 'star1'));
-    engine.applyAction(createSetupAction('player2', 'green', 2, 'star1'));
-    engine.applyAction(createSetupAction('player1', 'blue', 1, 'star2'));
-    engine.applyAction(createSetupAction('player2', 'blue', 1, 'star2'));
-    engine.applyAction(createSetupAction('player1', 'blue', 3, 'ship'));
-    engine.applyAction(createSetupAction('player2', 'blue', 3, 'ship'));
+    const player1Home = gameState.getHomeSystem('player1');
 
     // Now there should be 2 blue ships and 2 blue stars (4 blue pieces)
-    const player1Home = gameState.getHomeSystem('player1')!;
     const blueCount =
       player1Home.ships.filter(s => s.color === 'blue').length +
       player1Home.stars.filter(s => s.color === 'blue').length;
-    expect(blueCount).toBeLessThan(4);
-    // Overpopulation should NOT be detected
+
+    // 2 total blue pieces at player 1's home, no overpopulation
+    expect(blueCount).toBe(2);
     expect(gameState.getOverpopulations()).toHaveLength(0);
 
     // Player 1 grows a blue ship (still no overpopulation)
     engine.applyAction(
       createGrowAction('player1', 'blue-3-0', 'player1-home', 'blue-1-2')
     );
-    expect(gameState.getHomeSystem('player1')?.ships.length).toBe(2);
+
+    expect(gameState.getHomeSystem('player1').ships).toHaveLength(2);
     expect(gameState.getOverpopulations()).toHaveLength(0);
 
     // Player 2 grows a blue ship (no overpopulation)
@@ -78,7 +80,7 @@ describe('Overpopulation', () => {
       createGrowAction('player1', 'blue-3-0', 'player1-home', 'blue-2-1')
     );
 
-    expect(gameState.getHomeSystem('player1')?.ships.length).toBe(3);
+    expect(gameState.getHomeSystem('player1').ships.length).toBe(3);
     expect(gameState.getOverpopulations()).toHaveLength(1);
   });
 
