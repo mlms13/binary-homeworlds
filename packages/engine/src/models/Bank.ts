@@ -62,6 +62,9 @@ export const toArray = ({ green, yellow, blue, red }: Bank): Array<PieceId> => [
 
 export const size = (bank: Bank) => toArray(bank).length;
 
+/**
+ * Add a single piece to the bank, returning the updated bank.
+ */
 export const addPiece = ({ size, color, id }: Piece, bank: Bank): Bank => ({
   ...bank,
   [color]: {
@@ -69,6 +72,13 @@ export const addPiece = ({ size, color, id }: Piece, bank: Bank): Bank => ({
     [size]: [...bank[color][size], id],
   },
 });
+
+/**
+ * Add multiple pieces to the bank, returning the updated bank.
+ */
+export const addPieces = (pieces: Array<Piece>, bank: Bank): Bank => {
+  return pieces.reduce((acc, piece) => addPiece(piece, acc), bank);
+};
 
 /**
  * Determines whether the bank contains a given piece.

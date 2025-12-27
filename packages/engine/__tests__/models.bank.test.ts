@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { Bank, GamePiece } from '../src';
+import { addPieces } from '../src/models/Bank';
 
 // Use namespace for functions and values
 const {
@@ -30,6 +31,17 @@ describe('Bank', () => {
   it('should add a piece to the bank', () => {
     const bank = addPiece({ color: 'green', size: 1, id: 'green-1-0' }, empty);
     expect(size(bank)).toBe(1);
+  });
+
+  it('should add multiple pieces to the bank', () => {
+    const bank = addPieces(
+      [
+        { color: 'green', size: 1, id: 'green-1-0' },
+        { color: 'green', size: 2, id: 'green-2-0' },
+      ],
+      empty
+    );
+    expect(size(bank)).toBe(2);
   });
 
   it('should determine whether the bank contains a piece', () => {
