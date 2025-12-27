@@ -70,6 +70,10 @@ export const addPiece = ({ size, color, id }: Piece, bank: Bank): Bank => ({
   },
 });
 
+export const addPieces = (pieces: Array<Piece>, bank: Bank): Bank => {
+  return pieces.reduce((acc, piece) => addPiece(piece, acc), bank);
+};
+
 /**
  * Determines whether the bank contains a given piece.
  */

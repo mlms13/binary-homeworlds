@@ -24,13 +24,12 @@ describe('Game Setup', () => {
 
     const homeSystem = gameState.getHomeSystem('player1');
     // Home system should now be assigned with one star, no ships
-    expect(homeSystem).not.toBeUndefined();
-    expect(homeSystem!.stars.length).toBe(1);
-    expect(homeSystem!.ships.length).toBe(0);
+    expect(homeSystem.stars.length).toBe(1);
+    expect(homeSystem.ships.length).toBe(0);
 
     // It should be present in systems
     const systems = gameState.getSystems();
-    expect(systems.some(s => s.id === homeSystem!.id)).toBe(true);
+    expect(systems.some(s => s.id === homeSystem.id)).toBe(true);
   });
 
   it('should validate piece counts in bank', () => {
