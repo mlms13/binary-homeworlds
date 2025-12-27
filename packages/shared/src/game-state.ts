@@ -186,17 +186,6 @@ export class BinaryHomeworldsGameState {
     return false;
   }
 
-  // Serialize state to JSON
-  serialize(): string {
-    return JSON.stringify(this.state);
-  }
-
-  // Deserialize state from JSON
-  static deserialize(json: string): BinaryHomeworldsGameState {
-    const state = JSON.parse(json) as GameState;
-    return new BinaryHomeworldsGameState(state);
-  }
-
   // Create a new game state from action history (replay)
   static fromHistory(_actions: Array<GameAction>): BinaryHomeworldsGameState {
     const gameState = new BinaryHomeworldsGameState();
