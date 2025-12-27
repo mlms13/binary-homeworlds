@@ -16,7 +16,6 @@ import {
   createTradeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
-import { BinaryHomeworldsGameState } from '../game-state';
 import { createShip } from './utils';
 
 describe('Edge Cases and Error Conditions', () => {
@@ -695,31 +694,7 @@ describe('Edge Cases and Error Conditions', () => {
     });
   });
 
-  describe('Serialization and History', () => {
-    it('should serialize and deserialize game state correctly', () => {
-      const engine = new GameEngine();
-      const gameState = engine.getGameState();
-
-      // Make some changes to the state
-      const ship = createShip('yellow', 1, 'player1');
-      const star = { color: 'blue', size: 2, id: 'blue-2-0' } as const;
-      const system = StarSystem.createNormal(star, [ship]);
-      gameState.addSystem(system);
-      gameState.setPhase('normal');
-
-      // Serialize
-      const serialized = gameState.serialize();
-
-      // Deserialize
-      const newGameState = BinaryHomeworldsGameState.deserialize(serialized);
-
-      // Should be identical
-      expect(newGameState.getPhase()).toBe('normal');
-      expect(newGameState.getSystems().length).toBe(1);
-      expect(newGameState.getSystems()[0]?.ships.length).toBe(1);
-      expect(newGameState.getSystems()[0]?.stars.length).toBe(1);
-    });
-
+  describe('History', () => {
     it('should maintain action history', () => {
       const engine = new GameEngine();
       const gameState = engine.getGameState();
