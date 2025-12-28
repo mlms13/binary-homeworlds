@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { size } from '../src/models/Bank';
 import {
   addPieceToBank,
+  GameState,
+  getAllSystems,
   initial,
   switchActivePlayer,
   takePieceFromBank,
 } from '../src/models/Game';
+import { createNormal } from '../src/models/StarSystem';
 
 describe('Game', () => {
   it('should create an initial game state', () => {
@@ -60,6 +63,25 @@ describe('Game', () => {
 
       const game3 = addPieceToBank(piece1!, game2);
       expect(size(game3.bank)).toBe(36);
+    });
+  });
+
+  describe('Systems', () => {
+    it('should get all systems during setup', () => {
+      const game: GameState = initial();
+      const systems = getAllSystems(game);
+      expect(systems.length).toBe(2);
+    });
+
+    it('should get all systems during normal phase', () => {
+      const game: GameState = {
+        ...initial(),
+        tag: 'normal',
+        systems: [createNormal({ color: 'blue', size: 2, id: 'blue-2-0' })],
+        winner: undefined,
+      };
+      const systems = getAllSystems(game);
+      expect(systems.length).toBe(3);
     });
   });
 });

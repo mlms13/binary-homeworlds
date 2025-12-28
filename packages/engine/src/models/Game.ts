@@ -44,18 +44,6 @@ export const initial = (): GameSetupState => ({
 });
 
 /**
- * Get the home system for a player.
- */
-export const getHomeSystem = (player: Player, state: GameState): StarSystem => {
-  switch (player) {
-    case 'player1':
-      return state.homeSystems.player1;
-    case 'player2':
-      return state.homeSystems.player2;
-  }
-};
-
-/**
  * Switch the active player to the next player.
  */
 export const switchActivePlayer = (state: GameState): GameState => {
@@ -89,4 +77,13 @@ export const takePieceFromBank = (
     return [undefined, state];
   }
   return [piece, { ...state, bank }];
+};
+
+/**
+ * Get all systems, including the home systems.
+ */
+export const getAllSystems = (state: GameState): Array<StarSystem> => {
+  const normalSystems = state.tag === 'normal' ? state.systems : [];
+  const homeSystems = [state.homeSystems.player1, state.homeSystems.player2];
+  return [...normalSystems, ...homeSystems];
 };
