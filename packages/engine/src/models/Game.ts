@@ -2,6 +2,8 @@ import * as Bank from './Bank';
 import { Color, Piece, Ship, Size, Star } from './GamePiece';
 import { Player } from './Player';
 import {
+  addShip,
+  addStar,
   createHomeSystem,
   createNormal as createNormalStarSystem,
   StarSystem,
@@ -248,4 +250,29 @@ export const updateSystem = <State extends AnyState>(
     ...updated,
     bank: Bank.addPieces(validation.piecesToCleanUp, updated.bank),
   });
+};
+
+export const addStarToHomeSystem = <State extends AnyState>(
+  player: Player,
+  size: Size,
+  color: Color,
+  state: State
+): State => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+  if (!piece) return state;
+
+  return setSystem(addStar(piece, state.homeSystems[player]), updated);
+};
+
+export const addShipToHomeSystem = <State extends AnyState>(
+  player: Player,
+  size: Size,
+  color: Color,
+  state: State
+): State => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+  if (!piece) return state;
+
+  const ship = { ...piece, owner: player };
+  return setSystem(addShip(ship, state.homeSystems[player]), updated);
 };
