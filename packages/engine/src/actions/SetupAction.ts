@@ -48,18 +48,10 @@ export const takeShipAction = (
  * Returns `{ valid: true }` if the action is legal, or
  * `{ valid: false, error: ValidationError }` with a typed error if invalid.
  */
-export const validateSetupAction = (
-  state: Game.GameState,
+export const validate = (
+  state: Game.GameSetupState,
   action: SetupAction
 ): ValidationResult.ValidationResult => {
-  // Check that we're in the appropriate phase
-  if (state.tag !== 'setup') {
-    return ValidationResult.wrongPhase({
-      expected: 'setup',
-      actual: state.tag,
-    });
-  }
-
   // Only the active player can make a move
   if (state.activePlayer !== action.player) {
     return ValidationResult.wrongPlayer({
@@ -74,7 +66,7 @@ export const validateSetupAction = (
   }
 
   // When taking a star, check that the player has not already taken two stars
-  const playerHomeSystem = Game.getHomeSystem(action.player, state);
+  const playerHomeSystem = state.homeSystems[action.player];
   if (action.type === 'setup:take_star' && playerHomeSystem.stars.length >= 2) {
     return ValidationResult.homeSystemAlreadyHasTwoStars(action.player);
   }
@@ -93,10 +85,10 @@ export const validateSetupAction = (
 };
 
 const applyTakeStarAction = (
-  state: Game.GameState,
+  state: Game.GameSetupState,
   { color, size, player }: TakeStarAction
-): Game.GameState => {
-  const playerHomeSystem = Game.getHomeSystem(player, state);
+): Game.GameSetupState => {
+  const playerHomeSystem = state.homeSystems[player];
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
 
   // We don't validate actions here. If the piece isn't in the bank, we expect
@@ -109,17 +101,18 @@ const applyTakeStarAction = (
   const newHomeSystem = StarSystem.addStar(piece, playerHomeSystem);
 
   return {
-    ...Game.switchActivePlayer(state),
+    ...state,
+    activePlayer: state.activePlayer === 'player1' ? 'player2' : 'player1',
     bank,
     homeSystems: { ...state.homeSystems, [player]: newHomeSystem },
   };
 };
 
 const applyTakeShipAction = (
-  state: Game.GameState,
+  state: Game.GameSetupState,
   { color, size, player }: TakeShipAction
 ): Game.GameState => {
-  const playerHomeSystem = Game.getHomeSystem(player, state);
+  const playerHomeSystem = state.homeSystems[player];
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
 
   // We don't validate actions here. If the piece isn't in the bank, we expect
@@ -157,7 +150,7 @@ const applyTakeShipAction = (
 };
 
 export const apply = (
-  state: Game.GameState,
+  state: Game.GameSetupState,
   action: SetupAction
 ): Game.GameState => {
   switch (action.type) {

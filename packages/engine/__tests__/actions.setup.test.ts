@@ -1,32 +1,32 @@
 import { describe, expect, it } from 'vitest';
 
-import * as SetupAction from '../src/actions/SetupAction';
+import * as Action from '../src/actions/GameAction';
 import { empty, size } from '../src/models/Bank';
 import * as Game from '../src/models/Game';
 
 describe('Setup Actions', () => {
   describe('Apply Actions', () => {
-    it.skip('should apply taking a star', () => {
-      const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const nextState = SetupAction.apply(Game.initial(), action);
+    it('should apply taking a star', () => {
+      const action = Action.takeStar('yellow', 1, 'player1');
+      const nextState = Action.apply(Game.initial(), action);
 
       expect(nextState.tag).toBe('setup');
       expect(nextState.activePlayer).toBe('player2');
-      expect(nextState.homeSystems.player1.stars.length).toBe(1);
-      expect(nextState.homeSystems.player2.stars.length).toBe(0);
+      expect(nextState.homeSystems['player1'].stars.length).toBe(1);
+      expect(nextState.homeSystems['player2'].stars.length).toBe(0);
       expect(size(nextState.bank)).toBe(35);
     });
 
     it('should apply taking a ship', () => {
       const state = [
-        SetupAction.takeStarAction('yellow', 3, 'player1'),
-        SetupAction.takeStarAction('green', 3, 'player2'),
-        SetupAction.takeStarAction('blue', 2, 'player1'),
-        SetupAction.takeStarAction('red', 2, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('yellow', 3, 'player1'),
+        Action.takeStar('green', 3, 'player2'),
+        Action.takeStar('blue', 2, 'player1'),
+        Action.takeStar('red', 2, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
-      const takeShipAction = SetupAction.takeShipAction('green', 3, 'player1');
-      const nextState = SetupAction.apply(state, takeShipAction);
+      const takeShipAction = Action.takeShip('green', 3, 'player1');
+      const nextState = Action.apply(state, takeShipAction);
 
       expect(nextState.tag).toBe('setup');
       expect(nextState.activePlayer).toBe('player2');
@@ -39,13 +39,13 @@ describe('Setup Actions', () => {
 
     it('should switch to the normal phase when both home systems are complete', () => {
       const state = [
-        SetupAction.takeStarAction('yellow', 3, 'player1'),
-        SetupAction.takeStarAction('green', 3, 'player2'),
-        SetupAction.takeStarAction('blue', 2, 'player1'),
-        SetupAction.takeStarAction('red', 2, 'player2'),
-        SetupAction.takeShipAction('green', 3, 'player1'),
-        SetupAction.takeShipAction('yellow', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('yellow', 3, 'player1'),
+        Action.takeStar('green', 3, 'player2'),
+        Action.takeStar('blue', 2, 'player1'),
+        Action.takeStar('red', 2, 'player2'),
+        Action.takeShip('green', 3, 'player1'),
+        Action.takeShip('yellow', 3, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
       expect(state.tag).toBe('normal');
       expect(state.activePlayer).toBe('player1');
@@ -53,15 +53,15 @@ describe('Setup Actions', () => {
 
     it('should no-op if the star is not found in the bank', () => {
       const state = { ...Game.initial(), bank: empty };
-      const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const nextState = SetupAction.apply(state, action);
+      const action = Action.takeStar('yellow', 1, 'player1');
+      const nextState = Action.apply(state, action);
       expect(nextState).toBe(state);
     });
 
     it('should no-op if the ship is not found in the bank', () => {
       const state = { ...Game.initial(), bank: empty };
-      const action = SetupAction.takeShipAction('green', 3, 'player1');
-      const nextState = SetupAction.apply(state, action);
+      const action = Action.takeShip('green', 3, 'player1');
+      const nextState = Action.apply(state, action);
       expect(nextState).toBe(state);
     });
   });
@@ -69,15 +69,15 @@ describe('Setup Actions', () => {
   describe('Validation', () => {
     it('should allow a player taking a star', () => {
       const state = Game.initial();
-      const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeStar('yellow', 1, 'player1');
+      const result = Action.validate(state, action);
       expect(result.valid).toBe(true);
     });
 
     it('should prevent the inactive player from making a move', () => {
       const state = Game.initial();
-      const action = SetupAction.takeStarAction('yellow', 1, 'player2');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeStar('yellow', 1, 'player2');
+      const result = Action.validate(state, action);
 
       if (result.valid) throw new Error('Expected validation to fail');
 
@@ -92,15 +92,15 @@ describe('Setup Actions', () => {
       // player 1 takes 2 small yellow stars
       // player 2 takes 1 small yellow star
       const state = [
-        SetupAction.takeStarAction('yellow', 1, 'player1'),
-        SetupAction.takeStarAction('yellow', 1, 'player2'),
-        SetupAction.takeStarAction('yellow', 1, 'player1'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('yellow', 1, 'player1'),
+        Action.takeStar('yellow', 1, 'player2'),
+        Action.takeStar('yellow', 1, 'player1'),
+      ].reduce(Action.apply, Game.initial());
 
       // player 2 tries to take a second small yellow star piece
       // but none remain in the bank
-      const action = SetupAction.takeStarAction('yellow', 1, 'player2');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeStar('yellow', 1, 'player2');
+      const result = Action.validate(state, action);
       if (result.valid) throw new Error('Expected validation to fail');
 
       expect(result.error).toEqual({
@@ -112,14 +112,14 @@ describe('Setup Actions', () => {
 
     it('should prevent taking a ship that is not in the bank', () => {
       const state = [
-        SetupAction.takeStarAction('yellow', 1, 'player1'),
-        SetupAction.takeStarAction('yellow', 1, 'player2'),
-        SetupAction.takeStarAction('yellow', 1, 'player1'),
-        SetupAction.takeStarAction('green', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('yellow', 1, 'player1'),
+        Action.takeStar('yellow', 1, 'player2'),
+        Action.takeStar('yellow', 1, 'player1'),
+        Action.takeStar('green', 3, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
-      const action = SetupAction.takeShipAction('yellow', 1, 'player1');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeShip('yellow', 1, 'player1');
+      const result = Action.validate(state, action);
       if (result.valid) throw new Error('Expected validation to fail');
 
       expect(result.error).toEqual({
@@ -131,19 +131,19 @@ describe('Setup Actions', () => {
 
     it('should prevent setup actions during the normal phase', () => {
       const state = [
-        SetupAction.takeStarAction('blue', 3, 'player1'),
-        SetupAction.takeStarAction('yellow', 2, 'player2'),
-        SetupAction.takeStarAction('red', 1, 'player1'),
-        SetupAction.takeStarAction('green', 3, 'player2'),
-        SetupAction.takeShipAction('green', 3, 'player1'),
-        SetupAction.takeShipAction('blue', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('blue', 3, 'player1'),
+        Action.takeStar('yellow', 2, 'player2'),
+        Action.takeStar('red', 1, 'player1'),
+        Action.takeStar('green', 3, 'player2'),
+        Action.takeShip('green', 3, 'player1'),
+        Action.takeShip('blue', 3, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
       // make sure we're in the normal phase
       expect(state.tag).toBe('normal');
 
-      const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeStar('yellow', 1, 'player1');
+      const result = Action.validate(state, action);
       if (result.valid) throw new Error('Expected validation to fail');
 
       expect(result.error).toEqual({
@@ -155,14 +155,14 @@ describe('Setup Actions', () => {
 
     it('should prevent taking a third star during setup', () => {
       const state = [
-        SetupAction.takeStarAction('blue', 3, 'player1'),
-        SetupAction.takeStarAction('yellow', 2, 'player2'),
-        SetupAction.takeStarAction('red', 1, 'player1'),
-        SetupAction.takeStarAction('green', 3, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('blue', 3, 'player1'),
+        Action.takeStar('yellow', 2, 'player2'),
+        Action.takeStar('red', 1, 'player1'),
+        Action.takeStar('green', 3, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
-      const action = SetupAction.takeStarAction('yellow', 1, 'player1');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeStar('yellow', 1, 'player1');
+      const result = Action.validate(state, action);
       if (result.valid) throw new Error('Expected validation to fail');
 
       expect(result.error).toEqual({
@@ -173,12 +173,12 @@ describe('Setup Actions', () => {
 
     it('should prevent taking a ship before taking two stars', () => {
       const state = [
-        SetupAction.takeStarAction('blue', 3, 'player1'),
-        SetupAction.takeStarAction('yellow', 2, 'player2'),
-      ].reduce(SetupAction.apply, Game.initial());
+        Action.takeStar('blue', 3, 'player1'),
+        Action.takeStar('yellow', 2, 'player2'),
+      ].reduce(Action.apply, Game.initial());
 
-      const action = SetupAction.takeShipAction('green', 3, 'player1');
-      const result = SetupAction.validateSetupAction(state, action);
+      const action = Action.takeShip('green', 3, 'player1');
+      const result = Action.validate(state, action);
       if (result.valid) throw new Error('Expected validation to fail');
 
       expect(result.error).toEqual({
