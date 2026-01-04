@@ -1,5 +1,5 @@
 import * as Bank from '../models/Bank';
-import * as Game from '../models/Game';
+import { GameState, switchActivePlayer } from '../models/Game';
 import { Color, Size } from '../models/GamePiece';
 import { Player } from '../models/Player';
 import * as StarSystem from '../models/StarSystem';
@@ -49,7 +49,7 @@ export const takeShipAction = (
  * `{ valid: false, error: ValidationError }` with a typed error if invalid.
  */
 export const validate = (
-  state: Game.GameSetupState,
+  state: GameState<'setup'>,
   action: SetupAction
 ): ValidationResult.ValidationResult => {
   // Only the active player can make a move
@@ -85,9 +85,9 @@ export const validate = (
 };
 
 const applyTakeStarAction = (
-  state: Game.GameSetupState,
+  state: GameState<'setup'>,
   { color, size, player }: TakeStarAction
-): Game.GameSetupState => {
+): GameState<'setup'> => {
   const playerHomeSystem = state.homeSystems[player];
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
 
@@ -109,9 +109,9 @@ const applyTakeStarAction = (
 };
 
 const applyTakeShipAction = (
-  state: Game.GameSetupState,
+  state: GameState<'setup'>,
   { color, size, player }: TakeShipAction
-): Game.GameState => {
+): GameState => {
   const playerHomeSystem = state.homeSystems[player];
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
 
@@ -126,7 +126,7 @@ const applyTakeShipAction = (
   const newHomeSystem = StarSystem.addShip(ship, playerHomeSystem);
 
   const nextState = {
-    ...Game.switchActivePlayer(state),
+    ...switchActivePlayer(state),
     bank,
     homeSystems: { ...state.homeSystems, [player]: newHomeSystem },
   };
@@ -150,9 +150,9 @@ const applyTakeShipAction = (
 };
 
 export const apply = (
-  state: Game.GameSetupState,
+  state: GameState<'setup'>,
   action: SetupAction
-): Game.GameState => {
+): GameState => {
   switch (action.type) {
     case 'setup:take_star':
       return applyTakeStarAction(state, action);

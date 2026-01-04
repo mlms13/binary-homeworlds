@@ -9,17 +9,21 @@ type GameCommonState = {
   homeSystems: Record<Player, StarSystem>;
 };
 
-export type GameSetupState = GameCommonState & {
-  tag: 'setup';
-};
+type SetupState = GameCommonState & { tag: 'setup' };
 
-export type GameNormalState = GameCommonState & {
+type NormalState = GameCommonState & {
   tag: 'normal';
   systems: Array<StarSystem>;
   winner: Player | undefined;
 };
 
-export type GameState = GameSetupState | GameNormalState;
+type AnyState = SetupState | NormalState;
+
+type StateMap = {
+  [K in AnyState['tag']]: Extract<AnyState, { tag: K }>;
+};
+
+export type GameState<T extends keyof StateMap = keyof StateMap> = StateMap[T];
 
 /**
  * Returns a fresh initial game state. This is a function rather than a constant
@@ -33,7 +37,7 @@ export type GameState = GameSetupState | GameNormalState;
  * TypeScript's `readonly` modifiers or libraries like `immer` to prevent
  * accidental mutations of game state.
  */
-export const initial = (): GameSetupState => ({
+export const initial = (): GameState<'setup'> => ({
   tag: 'setup',
   bank: Bank.full,
   activePlayer: 'player1',
@@ -46,7 +50,9 @@ export const initial = (): GameSetupState => ({
 /**
  * Switch the active player to the next player.
  */
-export const switchActivePlayer = (state: GameState): GameState => {
+export const switchActivePlayer = <State extends AnyState>(
+  state: State
+): State => {
   return {
     ...state,
     activePlayer: state.activePlayer === 'player1' ? 'player2' : 'player1',
@@ -56,7 +62,10 @@ export const switchActivePlayer = (state: GameState): GameState => {
 /**
  * Add a piece to the bank.
  */
-export const addPieceToBank = (piece: Piece, state: GameState): GameState => {
+export const addPieceToBank = <State extends AnyState>(
+  piece: Piece,
+  state: State
+): State => {
   return {
     ...state,
     bank: Bank.addPiece(piece, state.bank),
@@ -67,11 +76,11 @@ export const addPieceToBank = (piece: Piece, state: GameState): GameState => {
  * Take a piece from the bank, returning the piece and the updated game state
  * with the piece removed from the bank.
  */
-export const takePieceFromBank = (
+export const takePieceFromBank = <State extends AnyState>(
   size: Size,
   color: Color,
-  state: GameState
-): [Piece | undefined, GameState] => {
+  state: State
+): [Piece | undefined, State] => {
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
   if (!piece) {
     return [undefined, state];
