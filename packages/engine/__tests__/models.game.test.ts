@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { size } from '../src/models/Bank';
 import {
   addPieceToBank,
+  findSystem,
   GameState,
   getAllSystems,
   initial,
@@ -122,6 +123,22 @@ describe('Game', () => {
         winner: undefined,
       };
       expect(getAllSystems(game)).toHaveLength(3);
+    });
+
+    it('should find a home system by id', () => {
+      expect(findSystem('player1-home', initial())).toBeDefined();
+    });
+
+    it('should find a normal system', () => {
+      const game: GameState = {
+        ...initial(),
+        tag: 'normal',
+        systems: [createNormal({ color: 'blue', size: 2, id: 'blue-2-0' })],
+        winner: undefined,
+      };
+
+      expect(findSystem('blue-2-0', game)).toBeDefined();
+      expect(findSystem('yellow-3-1', game)).toBeUndefined();
     });
   });
 });

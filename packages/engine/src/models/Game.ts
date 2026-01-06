@@ -4,6 +4,7 @@ import { Player } from './Player';
 import {
   createEmptyHomeSystem,
   StarSystem,
+  StarSystemId,
   validate as validateStarSystem,
 } from './StarSystem';
 
@@ -112,7 +113,21 @@ export const takePieceFromBank = <State extends AnyState>(
  * Get all systems, including the home systems.
  */
 export const getAllSystems = (state: GameState): Array<StarSystem> => {
-  const normalSystems = state.tag === 'normal' ? state.systems : [];
   const homeSystems = [state.homeSystems.player1, state.homeSystems.player2];
-  return [...normalSystems, ...homeSystems];
+  switch (state.tag) {
+    case 'setup':
+      return homeSystems;
+    case 'normal':
+      return [...state.systems, ...homeSystems];
+  }
+};
+
+/**
+ * Find a system by ID.
+ */
+export const findSystem = (
+  systemId: StarSystemId,
+  state: GameState
+): StarSystem | undefined => {
+  return getAllSystems(state).find(system => system.id === systemId);
 };
