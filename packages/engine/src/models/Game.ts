@@ -1,7 +1,11 @@
 import * as Bank from './Bank';
 import { Color, Piece, Size } from './GamePiece';
 import { Player } from './Player';
-import { createEmptyHomeSystem, StarSystem } from './StarSystem';
+import {
+  createEmptyHomeSystem,
+  StarSystem,
+  validate as validateStarSystem,
+} from './StarSystem';
 
 type GameCommonState = {
   bank: Bank.Bank;
@@ -48,6 +52,24 @@ export const initial = (): GameState<'setup'> => ({
 });
 
 /**
+ * `maybeToNormal` will attempt to switch the game state to a "normal" state.
+ *
+ * If the provided state is not in "setup" (i.e. already in "normal" state), or
+ * the home systems are not currently valid, the original state is returned.
+ * Otherwise, the state is switched to "normal" and the systems and winner are
+ * set to empty.
+ */
+export const maybeToNormal = (state: GameState): GameState => {
+  const homeSystemsValid =
+    validateStarSystem(state.homeSystems.player1).valid &&
+    validateStarSystem(state.homeSystems.player2).valid;
+
+  if (state.tag !== 'setup' || !homeSystemsValid) return state;
+
+  return { ...state, tag: 'normal', systems: [], winner: undefined };
+};
+
+/**
  * Switch the active player to the next player.
  */
 export const switchActivePlayer = <State extends AnyState>(
@@ -61,15 +83,14 @@ export const switchActivePlayer = <State extends AnyState>(
 
 /**
  * Add a piece to the bank.
+ *
+ * BKMRK: should this just be internal?
  */
 export const addPieceToBank = <State extends AnyState>(
   piece: Piece,
   state: State
 ): State => {
-  return {
-    ...state,
-    bank: Bank.addPiece(piece, state.bank),
-  };
+  return { ...state, bank: Bank.addPiece(piece, state.bank) };
 };
 
 /**
@@ -82,9 +103,8 @@ export const takePieceFromBank = <State extends AnyState>(
   state: State
 ): [Piece | undefined, State] => {
   const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
-  if (!piece) {
-    return [undefined, state];
-  }
+  if (!piece) return [undefined, state];
+
   return [piece, { ...state, bank }];
 };
 

@@ -6,6 +6,7 @@ import {
   GameState,
   getAllSystems,
   initial,
+  maybeToNormal,
   switchActivePlayer,
   takePieceFromBank,
 } from '../src/models/Game';
@@ -16,8 +17,8 @@ describe('Game', () => {
     const game = initial();
     expect(size(game.bank)).toBe(36);
     expect(game.activePlayer).toBe('player1');
-    expect(game.homeSystems.player1.stars.length).toBe(0);
-    expect(game.homeSystems.player2.stars.length).toBe(0);
+    expect(game.homeSystems.player1.stars).toHaveLength(0);
+    expect(game.homeSystems.player2.stars).toHaveLength(0);
   });
 
   it('should switch the active player', () => {
@@ -27,6 +28,48 @@ describe('Game', () => {
     expect(switchActivePlayer(switchActivePlayer(game)).activePlayer).toBe(
       'player1'
     );
+  });
+
+  // BKMRK: testing this directly is painful, and eventually we'll cover this
+  // indirectly through action tests and state-setup helpers.
+  it('should switch to normal state when home systems are valid', () => {
+    const game: GameState = {
+      ...initial(),
+      tag: 'setup',
+
+      // This star system is nonsense, but it's valid, which is enough to
+      // allow the game state to switch to normal.
+      homeSystems: {
+        player1: createNormal({ color: 'blue', size: 2, id: 'blue-2-0' }, [
+          { color: 'yellow', size: 1, id: 'yellow-1-0', owner: 'player1' },
+        ]),
+        player2: createNormal({ color: 'green', size: 1, id: 'green-1-0' }, [
+          { color: 'yellow', size: 1, id: 'yellow-1-0', owner: 'player2' },
+        ]),
+      },
+    };
+
+    expect(game.tag).toBe('setup');
+    expect(maybeToNormal(game).tag).toBe('normal');
+  });
+
+  it('should not switch to normal state when home systems are invalid', () => {
+    const game = initial();
+    expect(maybeToNormal(game)).toBe(game);
+  });
+
+  it('should not update an already-normal game state', () => {
+    const game: GameState = {
+      ...initial(),
+      tag: 'normal',
+      systems: [
+        createNormal({ color: 'blue', size: 2, id: 'blue-2-0' }, [
+          { color: 'yellow', size: 1, id: 'yellow-1-0', owner: 'player1' },
+        ]),
+      ],
+      winner: undefined,
+    };
+    expect(maybeToNormal(game)).toBe(game);
   });
 
   describe('Bank', () => {
@@ -68,9 +111,7 @@ describe('Game', () => {
 
   describe('Systems', () => {
     it('should get all systems during setup', () => {
-      const game: GameState = initial();
-      const systems = getAllSystems(game);
-      expect(systems.length).toBe(2);
+      expect(getAllSystems(initial())).toHaveLength(2);
     });
 
     it('should get all systems during normal phase', () => {
@@ -80,8 +121,7 @@ describe('Game', () => {
         systems: [createNormal({ color: 'blue', size: 2, id: 'blue-2-0' })],
         winner: undefined,
       };
-      const systems = getAllSystems(game);
-      expect(systems.length).toBe(3);
+      expect(getAllSystems(game)).toHaveLength(3);
     });
   });
 });
