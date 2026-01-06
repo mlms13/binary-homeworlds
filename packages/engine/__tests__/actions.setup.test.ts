@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as Action from '../src/actions/GameAction';
 import { empty, size } from '../src/models/Bank';
 import * as Game from '../src/models/Game';
+import { normalTestState } from './utils';
 
 describe('Setup Actions', () => {
   describe('Apply Actions', () => {
@@ -49,6 +50,12 @@ describe('Setup Actions', () => {
 
       expect(state.tag).toBe('normal');
       expect(state.activePlayer).toBe('player1');
+    });
+
+    it('should no-op if the game state is not setup', () => {
+      const action = Action.takeStar('green', 2, 'player1');
+      const nextState = Action.apply(normalTestState, action);
+      expect(nextState).toBe(normalTestState);
     });
 
     it('should no-op if the star is not found in the bank', () => {

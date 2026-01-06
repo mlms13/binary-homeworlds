@@ -1,8 +1,11 @@
 import * as Bank from './Bank';
-import { Color, Piece, Size } from './GamePiece';
+import { Color, Piece, Ship, Size, Star } from './GamePiece';
 import { Player } from './Player';
 import {
+  addShip,
+  addStar,
   createEmptyHomeSystem,
+  createNormal as createNormalStarSystem,
   StarSystem,
   StarSystemId,
   validate as validateStarSystem,
@@ -130,4 +133,164 @@ export const findSystem = (
   state: GameState
 ): StarSystem | undefined => {
   return getAllSystems(state).find(system => system.id === systemId);
+};
+
+/**
+ * Set the stars and ships at a players home system to the provided values. This
+ * does not validate the resulting state of the home system.
+ */
+const setHomeSystem = <State extends AnyState>(
+  player: Player,
+  stars: Array<Star>,
+  ships: Array<Ship>,
+  state: State
+): State => {
+  return {
+    ...state,
+    homeSystems: {
+      ...state.homeSystems,
+      [player]: { ...state.homeSystems[player], stars, ships },
+    },
+  };
+};
+
+/**
+ * This is an "unsafe" internal helper that will return an updated state with
+ * the provided system replacing the existing system. If provided system doesn't
+ * exist in the current state, the original state is returned.
+ *
+ * While this is useful internally, the outside world will always prefer
+ * `setSystemWithCleanup` which determines when the new system is invalid and
+ * returns its pieces to the bank.
+ */
+const setSystem = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  if (system.id === 'player1-home')
+    return setHomeSystem('player1', system.stars, system.ships, state);
+
+  if (system.id === 'player2-home')
+    return setHomeSystem('player2', system.stars, system.ships, state);
+
+  // no normal systems can be set during setup
+  if (state.tag === 'setup') return state;
+
+  // if the target system can't be found, also return the original state
+  if (!findSystem(system.id, state)) return state;
+
+  return {
+    ...state,
+    systems: state.systems.map(s => (s.id === system.id ? system : s)),
+  };
+};
+
+/**
+ * Add a system to the game state
+ *
+ * BKMRK: if this is only internal, we should un-export it
+ */
+export const addSystem = (
+  system: StarSystem,
+  state: GameState<'normal'>
+): GameState<'normal'> => {
+  return { ...state, systems: [...state.systems, system] };
+};
+
+/**
+ * Given a "normal" game state, this adds a new star system using the provided
+ * color and size. It returns an updated state with both the systems and bank
+ * set appropriately.
+ *
+ * If the bank doesn't contain a piece of the requested color/size, the original
+ * state is returned.
+ */
+export const createSystem = (
+  state: GameState<'normal'>,
+  size: Size,
+  color: Color,
+  ships?: Array<Ship>
+): [StarSystemId | undefined, GameState<'normal'>] => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+
+  if (!piece) return [undefined, state];
+
+  const newSystem = createNormalStarSystem(piece, ships);
+  return [newSystem.id, addSystem(newSystem, updated)];
+};
+
+/**
+ * Remove a system by ID. If the provided system ID is a homeworld, all ships
+ * and star pieces will be removed, but the homeworld will still exist
+ */
+export const removeSystemById = <State extends AnyState>(
+  id: StarSystemId,
+  state: State
+): State => {
+  if (id === 'player1-home') return setHomeSystem('player1', [], [], state);
+  if (id === 'player2-home') return setHomeSystem('player2', [], [], state);
+
+  // if we're trying to remove a normal system and we're still in setup, that
+  // doesn't make sense, so we just return the unchanged state
+  if (state.tag === 'setup') return state;
+
+  return {
+    ...state,
+    systems: state.systems.filter(s => s.id !== id),
+  };
+};
+
+/**
+ * Immutably update a system in the game state. If the provided system is not
+ * found in the game state, the provided game state is returned unchanged. If
+ * the provided system is invalid, it is removed from the game state and its
+ * pieces are returned to the bank.
+ */
+export const setSystemWithCleanup = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  // attempt to set the system
+  const updated = setSystem(system, state);
+
+  // if no change was made, there should also be nothing to clean up
+  if (updated === state) return state;
+
+  // if we made a change, we need to check to see if the new system is invalid.
+  // if so, we remove it from the state and return its pieces to the bank.
+  const validation = validateStarSystem(system);
+
+  // if valid, return the updated state
+  if (validation.valid) return updated;
+
+  // but if the system is invalid, remove it and return its pieces
+  return removeSystemById(system.id, {
+    ...updated,
+    bank: Bank.addPieces(validation.piecesToCleanUp, state.bank),
+  });
+};
+
+export const addStarToHomeSystem = <State extends AnyState>(
+  player: Player,
+  size: Size,
+  color: Color,
+  state: State
+): State => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+  if (!piece) return state;
+
+  return setSystem(addStar(piece, state.homeSystems[player]), updated);
+};
+
+export const addShipToHomeSystem = <State extends AnyState>(
+  player: Player,
+  size: Size,
+  color: Color,
+  state: State
+): State => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+  if (!piece) return state;
+
+  const ship = { ...piece, owner: player };
+  return setSystem(addShip(ship, state.homeSystems[player]), updated);
 };

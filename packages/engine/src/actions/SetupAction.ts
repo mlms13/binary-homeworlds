@@ -1,8 +1,12 @@
 import * as Bank from '../models/Bank';
-import { GameState, switchActivePlayer } from '../models/Game';
+import {
+  addShipToHomeSystem,
+  addStarToHomeSystem,
+  GameState,
+  maybeToNormal,
+} from '../models/Game';
 import { Color, Size } from '../models/GamePiece';
-import { Player } from '../models/Player';
-import * as StarSystem from '../models/StarSystem';
+import { getOtherPlayer, Player } from '../models/Player';
 import * as ValidationResult from '../models/ValidationResult';
 
 export type TakeStarAction = {
@@ -88,64 +92,26 @@ const applyTakeStarAction = (
   state: GameState<'setup'>,
   { color, size, player }: TakeStarAction
 ): GameState<'setup'> => {
-  const playerHomeSystem = state.homeSystems[player];
-  const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
-
   // We don't validate actions here. If the piece isn't in the bank, we expect
-  // the caller of this function to have already caught that in validation, so
-  // we just return the unchanged state.
-  if (!piece) {
-    return state;
-  }
+  // that to have already been caught. If the bank doesn't have the piece, our
+  // call to `addStarToHomeSystem` will return an unchanged state, which we also
+  // return here (without switching players).
+  const updated = addStarToHomeSystem(player, size, color, state);
 
-  const newHomeSystem = StarSystem.addStar(piece, playerHomeSystem);
-
-  return {
-    ...state,
-    activePlayer: state.activePlayer === 'player1' ? 'player2' : 'player1',
-    bank,
-    homeSystems: { ...state.homeSystems, [player]: newHomeSystem },
-  };
+  if (updated === state) return state;
+  return { ...updated, activePlayer: getOtherPlayer(state.activePlayer) };
 };
 
 const applyTakeShipAction = (
   state: GameState<'setup'>,
   { color, size, player }: TakeShipAction
 ): GameState => {
-  const playerHomeSystem = state.homeSystems[player];
-  const [piece, bank] = Bank.takePieceBySizeAndColor(size, color, state.bank);
+  const updated = addShipToHomeSystem(player, size, color, state);
 
-  // We don't validate actions here. If the piece isn't in the bank, we expect
-  // the caller of this function to have already caught that in validation, so
-  // we just return the unchanged state.
-  if (!piece) {
-    return state;
-  }
-
-  const ship = { ...piece, owner: player };
-  const newHomeSystem = StarSystem.addShip(ship, playerHomeSystem);
-
-  const nextState = {
-    ...switchActivePlayer(state),
-    bank,
-    homeSystems: { ...state.homeSystems, [player]: newHomeSystem },
-  };
-
-  // if both home systems are valid (particularly if they each have a ship),
-  // the setup phase is over and we switch to the normal phase.
-  const allHomeSystemsValid =
-    StarSystem.validate(nextState.homeSystems.player1).valid &&
-    StarSystem.validate(nextState.homeSystems.player2).valid;
-
-  if (!allHomeSystemsValid) {
-    return nextState;
-  }
-
+  if (updated === state) return state;
   return {
-    ...nextState,
-    tag: 'normal',
-    systems: [],
-    winner: undefined,
+    ...maybeToNormal(updated),
+    activePlayer: getOtherPlayer(state.activePlayer),
   };
 };
 
