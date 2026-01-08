@@ -17,8 +17,8 @@ describe('Action Validation', () => {
       { color: 'blue', size: 2, id: 'blue-2-0' },
       [ship]
     );
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
     // Current player is player1
 
     // Player 2 tries to move player 1's ship
@@ -61,14 +61,11 @@ describe('Action Validation', () => {
     const result = engine.applyAction(setupAction);
 
     expect(result.valid).toBe(false);
-    expect(result.error).toContain(
-      'Setup actions only allowed during setup phase'
-    );
+    expect(result.error).toContain('wrong_phase');
   });
 
   it('should reject normal actions during setup', () => {
     const engine = new GameEngine();
-    const gameState = engine.getGameState();
 
     // Game starts in setup phase
     const ship = createShip('yellow', 1, 'player1');
@@ -76,9 +73,14 @@ describe('Action Validation', () => {
       { color: 'blue', size: 2, id: 'blue-2-0' },
       [ship]
     );
-    gameState.addSystem(system);
 
-    const moveAction = createMoveAction('player1', ship.id, system.id);
+    const moveAction = createMoveAction(
+      'player1',
+      ship.id,
+      system.id,
+      undefined,
+      'blue-1-0'
+    );
     const result = engine.applyAction(moveAction);
 
     expect(result.valid).toBe(false);

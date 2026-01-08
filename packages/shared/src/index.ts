@@ -26,11 +26,9 @@ export {
   GameAction,
   GamePhase,
   GameResult,
-  GameState,
   GrowAction,
   MoveAction,
   OverpopulationAction,
   SacrificeAction,
-  SetupAction,
   TradeAction,
 } from './types';

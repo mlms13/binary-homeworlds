@@ -1,5 +1,5 @@
 import * as Bank from './Bank';
-import { Color, Piece, Size } from './GamePiece';
+import { Color, Piece, Ship, Size, Star } from './GamePiece';
 import { Player } from './Player';
 import {
   createEmptyHomeSystem,
@@ -130,4 +130,104 @@ export const findSystem = (
   state: GameState
 ): StarSystem | undefined => {
   return getAllSystems(state).find(system => system.id === systemId);
+};
+
+/**
+ * Determine whether a system is in the game state.
+ */
+export const hasSystem = (system: StarSystem, state: GameState): boolean => {
+  return getAllSystems(state).some(s => s.id === system.id);
+};
+
+export const addSystem = (
+  system: StarSystem,
+  state: GameState<'normal'>
+): GameState<'normal'> => {
+  return {
+    ...state,
+    systems: [...state.systems, system],
+  };
+};
+
+const setHomeSystem = <State extends AnyState>(
+  player: Player,
+  stars: Array<Star>,
+  ships: Array<Ship>,
+  state: State
+): State => {
+  return {
+    ...state,
+    homeSystems: {
+      ...state.homeSystems,
+      [player]: { ...state.homeSystems[player], stars, ships },
+    },
+  };
+};
+
+/**
+ * Add a system to the game state.
+ */
+const removeSystem = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  if (system.id === 'player1-home')
+    return setHomeSystem('player1', [], [], state);
+  if (system.id === 'player2-home')
+    return setHomeSystem('player2', [], [], state);
+
+  if (state.tag === 'setup') return state;
+
+  return {
+    ...state,
+    systems: state.systems.filter(s => s.id !== system.id),
+  };
+};
+
+const setSystem = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  if (system.id === 'player1-home')
+    return setHomeSystem('player1', system.stars, system.ships, state);
+  if (system.id === 'player2-home')
+    return setHomeSystem('player2', system.stars, system.ships, state);
+
+  if (state.tag === 'setup') return state;
+
+  return {
+    ...state,
+    systems: state.systems.map(s => (s.id === system.id ? system : s)),
+  };
+};
+
+/**
+ * Immutably update a system in the game state. If the provided system is not
+ * found in the game state, the provided game state is returned unchanged. If
+ * the provided system is invalid, it is removed from the game state and its
+ * pieces are returned to the bank.
+ */
+export const setSystemWithCleanup = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  // if the system is not found in the state, return the original game state
+  if (!hasSystem(system, state)) {
+    return state;
+  }
+
+  // if the system is invalid, return an updated game state with the system
+  // filtered out and its pieces returned to the bank
+  const validation = validateStarSystem(system);
+  if (!validation.valid) {
+    // return the pieces to the bank
+    return removeSystem(system, {
+      ...state,
+      bank: Bank.addPieces(validation.piecesToCleanUp, state.bank),
+    });
+  }
+
+  // if the system *is* valid, replace the system in the game state with the new
+  // system and return the updated game state
+  return setSystem(system, state);
 };

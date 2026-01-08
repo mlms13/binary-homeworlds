@@ -19,8 +19,8 @@ export const validate = (
   action: Action
 ): ValidationResult.ValidationResult => {
   switch (action.type) {
-    case 'setup:take_ship':
     case 'setup:take_star':
+    case 'setup:take_ship':
       // Check that we're in the appropriate phase
       if (state.tag !== 'setup') {
         return ValidationResult.wrongPhase({
@@ -28,7 +28,6 @@ export const validate = (
           actual: state.tag,
         });
       }
-
       return validateSetupAction(state, action);
   }
 };

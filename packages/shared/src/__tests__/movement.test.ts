@@ -27,9 +27,9 @@ describe('Movement Edge Cases', () => {
       []
     );
 
+    gameState.setPhase('normal');
     gameState.addSystem(originSystem);
     gameState.addSystem(destSystem);
-    gameState.setPhase('normal');
 
     const moveAction = createMoveActionExisting(
       'player1',
@@ -54,8 +54,8 @@ describe('Movement Edge Cases', () => {
       [ship]
     );
 
-    gameState.addSystem(originSystem);
     gameState.setPhase('normal');
+    gameState.addSystem(originSystem);
 
     const bankPieces = gameState.getBankPieces();
     const newStarPiece = bankPieces.find(p => p.size === 1);
@@ -95,9 +95,9 @@ describe('Movement Edge Cases', () => {
       []
     );
 
+    gameState.setPhase('normal');
     gameState.addSystem(system);
     gameState.addSystem(destSystem);
-    gameState.setPhase('normal');
 
     const moveAction = createMoveActionExisting(
       'player1',

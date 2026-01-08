@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { GamePiece, Player } from '@binary-homeworlds/engine';
+import { Game, GameAction, GamePiece, Player } from '@binary-homeworlds/engine';
 import {
   bankToPieces,
   BinaryHomeworldsGameState,
@@ -8,9 +8,8 @@ import {
 } from '@binary-homeworlds/shared';
 import {
   CaptureAction,
-  GameAction,
+  GameAction as SharedGameAction,
   MoveAction,
-  SetupAction,
   TradeAction,
 } from '@binary-homeworlds/shared';
 import {
@@ -62,10 +61,26 @@ export default function GameBoard({
   const [gameController, setGameController] = useState<GameController | null>(
     null
   );
-  const [setupState, setSetupState] = useState<
-    'star1' | 'star2' | 'ship' | null
-  >(null);
-  const [pendingAction, setPendingAction] = useState<GameAction | null>(null);
+  const gameState = gameEngine.getGameState();
+  const state = gameState.getState();
+  const currentPlayer = state.activePlayer;
+
+  // Determine current setup state from game state
+  const setupState = useMemo(() => {
+    if (state.tag !== 'setup') return null;
+
+    const currentPlayer = state.activePlayer;
+    const homeSystem = gameState.getHomeSystem(currentPlayer);
+
+    if (!homeSystem) return 'star1';
+    if (homeSystem.stars.length === 1) return 'star2';
+    if (homeSystem.stars.length === 2 && homeSystem.ships.length === 0)
+      return 'ship';
+    return null;
+  }, [state.tag, state.activePlayer, gameState]);
+  const [pendingAction, setPendingAction] = useState<SharedGameAction | null>(
+    null
+  );
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Trade action state
@@ -99,7 +114,7 @@ export default function GameBoard({
 
   // Game loss warning state
   const [gameLossWarning, setGameLossWarning] = useState<{
-    action: GameAction;
+    action: SharedGameAction;
     warningMessage: string;
   } | null>(null);
 
@@ -110,10 +125,6 @@ export default function GameBoard({
     currentPlayerPrompted: boolean;
     otherPlayerPrompted: boolean;
   } | null>(null);
-
-  const gameState = gameEngine.getGameState();
-  const state = gameState.getState();
-  const currentPlayer = state.activePlayer;
 
   // Initialize game controller
   useEffect(() => {
@@ -151,25 +162,6 @@ export default function GameBoard({
     applyAction: applyActionWithHistory,
     getAvailableActions,
   } = useGameActions(gameEngine);
-
-  // Determine current setup state
-  const getCurrentSetupState = useCallback(() => {
-    if (state.tag !== 'setup') return null;
-
-    const currentPlayer = state.activePlayer;
-    const homeSystem = gameState.getHomeSystem(currentPlayer);
-
-    if (!homeSystem) return 'star1';
-    if (homeSystem.stars.length === 1) return 'star2';
-    if (homeSystem.stars.length === 2 && homeSystem.ships.length === 0)
-      return 'ship';
-    return null;
-  }, [state.tag, state.activePlayer, gameState]);
-
-  // Update setup state when game state changes
-  useEffect(() => {
-    setSetupState(getCurrentSetupState());
-  }, [getCurrentSetupState]);
 
   const confirmAction = useCallback(() => {
     if (pendingAction) {
@@ -228,7 +220,7 @@ export default function GameBoard({
       clearAllPendingActions();
 
       // Calculate valid destinations and bank pieces for move
-      const allSystems = state.systems;
+      const allSystems = Game.getAllSystems(state);
       const fromSystem = allSystems.find(s => s.id === fromSystemId);
       const ship = fromSystem?.ships.find(s => s.id === shipId);
 
@@ -261,7 +253,7 @@ export default function GameBoard({
         validBankPieceIds,
       });
     },
-    [gameState, state.systems, state.bank, clearAllPendingActions]
+    [gameState, clearAllPendingActions, state]
   );
 
   // Handle move cancellation
@@ -446,7 +438,7 @@ export default function GameBoard({
   // Handle sacrifice initiation from StarSystem
   const handleSacrificeInitiate = useCallback(
     (sacrificedShipId: GamePiece.PieceId, systemId: string) => {
-      const system = state.systems.find(s => s.id === systemId);
+      const system = Game.getAllSystems(state).find(s => s.id === systemId);
       const ship = system?.ships.find(s => s.id === sacrificedShipId);
 
       if (!ship) return;
@@ -471,12 +463,7 @@ export default function GameBoard({
         });
       }
     },
-    [
-      state.systems,
-      currentPlayer,
-      applyActionWithHistory,
-      getActionTypeForColor,
-    ]
+    [state, currentPlayer, applyActionWithHistory, getActionTypeForColor]
   );
 
   // Handle sacrifice action execution
@@ -488,7 +475,7 @@ export default function GameBoard({
       const currentPlayer = state.activePlayer;
 
       // Create the appropriate action based on sacrifice type
-      let action: GameAction;
+      let action: SharedGameAction;
 
       switch (actionType) {
         case 'move': {
@@ -503,7 +490,7 @@ export default function GameBoard({
         }
         case 'grow': {
           // For grow, we can execute immediately
-          const system = state.systems.find(s => s.id === systemId);
+          const system = Game.getAllSystems(state).find(s => s.id === systemId);
           const ship = system?.ships.find(s => s.id === shipId);
           if (!ship) return;
 
@@ -526,7 +513,9 @@ export default function GameBoard({
         }
         case 'trade': {
           // For trade, we need piece selection - this will be handled by existing trade flow
-          const tradeSystem = state.systems.find(s => s.id === systemId);
+          const tradeSystem = Game.getAllSystems(state).find(
+            s => s.id === systemId
+          );
           const tradeShip = tradeSystem?.ships.find(s => s.id === shipId);
           if (tradeShip) {
             const validPieceIds = bankToPieces(state.bank)
@@ -559,13 +548,11 @@ export default function GameBoard({
     },
     [
       pendingSacrifice,
-      state.systems,
-      state.bank,
-      state.activePlayer,
+      state,
+      applyActionWithHistory,
       handleMoveInitiate,
       handleCaptureInitiate,
       handleTradeInitiate,
-      applyActionWithHistory,
     ]
   );
 
@@ -614,24 +601,20 @@ export default function GameBoard({
       // Handle setup phase
       if (state.tag !== 'setup' || !setupState) return;
 
-      const setupAction: SetupAction = {
-        type: 'setup',
-        player: state.activePlayer,
-        color: piece.color,
-        size: piece.size,
-        role: setupState,
-        timestamp: Date.now(),
-      };
+      const setupAction: GameAction.Action =
+        setupState === 'ship'
+          ? GameAction.takeShip(piece.color, piece.size, state.activePlayer)
+          : GameAction.takeStar(piece.color, piece.size, state.activePlayer);
 
       applyActionWithHistory(setupAction);
     },
     [
       state.tag,
-      setupState,
       state.activePlayer,
-      applyActionWithHistory,
       pendingTrade,
       pendingMove,
+      setupState,
+      applyActionWithHistory,
     ]
   );
 
