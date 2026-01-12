@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { size } from '../src/models/Bank';
 import {
   addPieceToBank,
+  createSystem,
   findSystem,
   GameState,
   getAllSystems,
@@ -12,6 +13,7 @@ import {
   takePieceFromBank,
 } from '../src/models/Game';
 import { createNormal } from '../src/models/StarSystem';
+import { normalTestState } from './utils';
 
 describe('Game', () => {
   it('should create an initial game state', () => {
@@ -116,12 +118,8 @@ describe('Game', () => {
     });
 
     it('should get all systems during normal phase', () => {
-      const game: GameState = {
-        ...initial(),
-        tag: 'normal',
-        systems: [createNormal({ color: 'blue', size: 2, id: 'blue-2-0' })],
-        winner: undefined,
-      };
+      const system = createNormal({ color: 'blue', size: 2, id: 'blue-2-0' });
+      const game = { ...normalTestState, systems: [system] };
       expect(getAllSystems(game)).toHaveLength(3);
     });
 
@@ -130,15 +128,39 @@ describe('Game', () => {
     });
 
     it('should find a normal system', () => {
-      const game: GameState = {
-        ...initial(),
-        tag: 'normal',
-        systems: [createNormal({ color: 'blue', size: 2, id: 'blue-2-0' })],
-        winner: undefined,
-      };
+      const system = createNormal({ color: 'blue', size: 2, id: 'blue-2-0' });
+      const game = { ...normalTestState, systems: [system] };
 
       expect(findSystem('blue-2-0', game)).toBeDefined();
       expect(findSystem('yellow-3-1', game)).toBeUndefined();
+    });
+
+    it('should create a new system with the correct bank', () => {
+      // first, we assert the count of large green ships in the bank given our
+      // normal test state
+      expect(normalTestState.bank.green[3]).toHaveLength(1);
+
+      // then, create a new system using a large green ship
+      const [system, updated] = createSystem(normalTestState, 3, 'green');
+      if (!system) throw new Error('test should have created a new system');
+
+      // we expect this to succeed in creating the system, and it should also
+      // remove the piece from the bank
+      expect(findSystem(system.id, updated)).toBeDefined();
+      expect(updated.bank.green[3]).toHaveLength(0);
+    });
+
+    it('should not create a new system when the bank is missing the piece', () => {
+      // our bank initially has a single large green piece remaining, which we
+      // use
+      const [system1, state2] = createSystem(normalTestState, 3, 'green');
+      expect(system1).toBeDefined();
+
+      //then, our second attempt should fail
+      const [system2, state3] = createSystem(state2, 3, 'green');
+      expect(system2).toBeUndefined();
+      expect(state3.systems).toHaveLength(1);
+      expect(state3).toBe(state2);
     });
   });
 });

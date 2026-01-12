@@ -1,8 +1,9 @@
 import * as Bank from './Bank';
-import { Color, Piece, Size } from './GamePiece';
+import { Color, Piece, Ship, Size } from './GamePiece';
 import { Player } from './Player';
 import {
   createHomeSystem,
+  createNormal as createNormalStarSystem,
   StarSystem,
   StarSystemId,
   validate as validateStarSystem,
@@ -130,4 +131,25 @@ export const findSystem = (
   state: GameState
 ): StarSystem | undefined => {
   return getAllSystems(state).find(system => system.id === systemId);
+};
+
+/**
+ * Given a "normal" game state, this adds a new star system using the provided
+ * color and size. It returns an updated state with both the systems and bank
+ * set appropriately.
+ *
+ * If the bank doesn't contain a piece of the requested color/size, the original
+ * state is returned.
+ */
+export const createSystem = (
+  state: GameState<'normal'>,
+  size: Size,
+  color: Color,
+  ships?: Array<Ship>
+): [StarSystem | undefined, GameState<'normal'>] => {
+  const [piece, updated] = takePieceFromBank(size, color, state);
+  if (!piece) return [undefined, state];
+
+  const newSystem = createNormalStarSystem(piece, ships);
+  return [newSystem, { ...updated, systems: [...updated.systems, newSystem] }];
 };
