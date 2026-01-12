@@ -27,11 +27,15 @@ export type SystemValidationResult =
   | { valid: true }
   | { valid: false; piecesToCleanUp: Array<Piece> };
 
-export const createEmptyHomeSystem = (player: Player): StarSystem => {
+export const createHomeSystem = (
+  player: Player,
+  stars: Array<Star> = [],
+  ships: Array<Ship> = []
+): StarSystem => {
   return {
     id: `${player}-home`,
-    stars: [],
-    ships: [],
+    stars,
+    ships,
   };
 };
 

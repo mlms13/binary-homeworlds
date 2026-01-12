@@ -38,8 +38,8 @@ export class BinaryHomeworldsGameState {
       systems: [],
       bank,
       homeSystems: {
-        player1: StarSystem.createEmptyHomeSystem('player1'),
-        player2: StarSystem.createEmptyHomeSystem('player2'),
+        player1: StarSystem.createHomeSystem('player1'),
+        player2: StarSystem.createHomeSystem('player2'),
       },
       gameHistory: [],
     };

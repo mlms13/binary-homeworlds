@@ -2,7 +2,7 @@ import * as Bank from './Bank';
 import { Color, Piece, Size } from './GamePiece';
 import { Player } from './Player';
 import {
-  createEmptyHomeSystem,
+  createHomeSystem,
   StarSystem,
   StarSystemId,
   validate as validateStarSystem,
@@ -47,8 +47,8 @@ export const initial = (): GameState<'setup'> => ({
   bank: Bank.full,
   activePlayer: 'player1',
   homeSystems: {
-    player1: createEmptyHomeSystem('player1'),
-    player2: createEmptyHomeSystem('player2'),
+    player1: createHomeSystem('player1'),
+    player2: createHomeSystem('player2'),
   },
 });
 
