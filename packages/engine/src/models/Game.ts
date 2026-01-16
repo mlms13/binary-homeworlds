@@ -1,5 +1,5 @@
 import * as Bank from './Bank';
-import { Color, Piece, Ship, Size } from './GamePiece';
+import { Color, Piece, Ship, Size, Star } from './GamePiece';
 import { Player } from './Player';
 import {
   createHomeSystem,
@@ -74,9 +74,7 @@ export const maybeToNormal = (state: GameState): GameState => {
 /**
  * Switch the active player to the next player.
  */
-export const switchActivePlayer = <State extends AnyState>(
-  state: State
-): State => {
+export const switchPlayer = <State extends AnyState>(state: State): State => {
   return {
     ...state,
     activePlayer: state.activePlayer === 'player1' ? 'player2' : 'player1',
@@ -152,4 +150,102 @@ export const createSystem = (
 
   const newSystem = createNormalStarSystem(piece, ships);
   return [newSystem, { ...updated, systems: [...updated.systems, newSystem] }];
+};
+
+/**
+ * Set the stars and ships at a players home system to the provided values. This
+ * does not validate the resulting state of the home system.
+ */
+const setHomeSystem = <State extends AnyState>(
+  state: State,
+  player: Player,
+  stars: Array<Star> = [],
+  ships: Array<Ship> = []
+): State => {
+  return {
+    ...state,
+    homeSystems: {
+      ...state.homeSystems,
+      [player]: { ...state.homeSystems[player], stars, ships },
+    },
+  };
+};
+
+/**
+ * This is an "unsafe" internal helper that will return an updated state with
+ * the provided system replacing the existing system. If provided system doesn't
+ * exist in the current state, the original state is returned.
+ *
+ * While this is useful internally, the outside world will always prefer
+ * `setSystemWithCleanup` which determines when the new system is invalid and
+ * returns its pieces to the bank.
+ */
+const setSystem = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  if (system.id === 'player1-home')
+    return setHomeSystem(state, 'player1', system.stars, system.ships);
+
+  if (system.id === 'player2-home')
+    return setHomeSystem(state, 'player2', system.stars, system.ships);
+
+  // no normal systems can be set during setup
+  if (state.tag === 'setup') return state;
+
+  // if the target system can't be found, also return the original state
+  if (!findSystem(system.id, state)) return state;
+
+  return {
+    ...state,
+    systems: state.systems.map(s => (s.id === system.id ? system : s)),
+  };
+};
+
+/**
+ * Remove a system by ID. If the provided system ID is a homeworld, all ships
+ * and star pieces will be removed, but the homeworld will still exist
+ */
+const removeSystem = <State extends AnyState>(
+  id: StarSystemId,
+  state: State
+): State => {
+  if (id === 'player1-home') return setHomeSystem(state, 'player1');
+  if (id === 'player2-home') return setHomeSystem(state, 'player2');
+
+  // if we're trying to remove a normal system and we're still in setup, that
+  // doesn't make sense, so we just return the unchanged state
+  if (state.tag === 'setup') return state;
+
+  return { ...state, systems: state.systems.filter(s => s.id !== id) };
+};
+
+/**
+ * Immutably update a system in the game state. If the provided system is not
+ * found in the game state, the provided game state is returned unchanged. If
+ * the provided system is invalid, it is removed from the game state and its
+ * pieces are returned to the bank.
+ */
+export const updateSystem = <State extends AnyState>(
+  system: StarSystem,
+  state: State
+): State => {
+  // attempt to set the system
+  const updated = setSystem(system, state);
+
+  // if no change was made, there should also be nothing to clean up
+  if (updated === state) return state;
+
+  // if we made a change, we need to check to see if the new system is invalid.
+  // if so, we remove it from the state and return its pieces to the bank.
+  const validation = validateStarSystem(system);
+
+  // if valid, return the updated state
+  if (validation.valid) return updated;
+
+  // but if the system is invalid, remove it and return its pieces
+  return removeSystem(system.id, {
+    ...updated,
+    bank: Bank.addPieces(validation.piecesToCleanUp, updated.bank),
+  });
 };

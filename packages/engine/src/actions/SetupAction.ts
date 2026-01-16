@@ -1,5 +1,5 @@
 import * as Bank from '../models/Bank';
-import { GameState, switchActivePlayer } from '../models/Game';
+import { GameState, switchPlayer } from '../models/Game';
 import { Color, Size } from '../models/GamePiece';
 import { Player } from '../models/Player';
 import * as StarSystem from '../models/StarSystem';
@@ -126,7 +126,7 @@ const applyTakeShipAction = (
   const newHomeSystem = StarSystem.addShip(ship, playerHomeSystem);
 
   const nextState = {
-    ...switchActivePlayer(state),
+    ...switchPlayer(state),
     bank,
     homeSystems: { ...state.homeSystems, [player]: newHomeSystem },
   };
