@@ -57,18 +57,14 @@ export default function ActionLog({
 
         const fromSystem = findSystemWithShip(stateBefore, action.shipId);
         const toSystem = action.toSystemId
-          ? (stateAfter.systems.find(
-              (s: StarSystem.StarSystem) => s.id === action.toSystemId
-            ) ?? null)
-          : null;
+          ? stateAfter.systems.find(s => s.id === action.toSystemId)
+          : undefined;
 
         const shipDesc = `${ship.size === 1 ? 'small' : ship.size === 2 ? 'medium' : 'large'} ${ship.color} ship`;
 
         if (action.toSystemId) {
           const fromName = getSystemName(fromSystem);
-          const toName = getSystemName(
-            toSystem && 'id' in toSystem ? toSystem : null
-          );
+          const toName = getSystemName(toSystem);
           return `${playerName} moved ${shipDesc} from ${fromName} to ${toName}`;
         } else {
           const newStar = bankPiecesBefore.find(
@@ -143,8 +139,7 @@ export default function ActionLog({
       }
 
       case 'overpopulation': {
-        const system =
-          stateBefore.systems.find(s => s.id === action.systemId) ?? null;
+        const system = stateBefore.systems.find(s => s.id === action.systemId);
         const systemName = getSystemName(system);
 
         return `${playerName} declared ${action.color} overpopulation at ${systemName}`;
@@ -159,14 +154,12 @@ export default function ActionLog({
     state: { systems: Array<StarSystem.StarSystem> },
     shipId: GamePiece.PieceId
   ) => {
-    return (
-      state.systems.find(system =>
-        system.ships.some(ship => ship.id === shipId)
-      ) ?? null
+    return state.systems.find(system =>
+      system.ships.some(ship => ship.id === shipId)
     );
   };
 
-  const getSystemName = (system: StarSystem.StarSystem | null) => {
+  const getSystemName = (system: StarSystem.StarSystem | undefined) => {
     if (!system) return 'unknown system';
 
     if (system.id === 'player1-home') {

@@ -279,7 +279,7 @@ export class ActionValidator {
       gameState.bank,
       actingShip.color
     );
-    if (smallestSize === null || newShipPiece.size !== smallestSize) {
+    if (smallestSize === undefined || newShipPiece.size !== smallestSize) {
       return {
         valid: false,
         error: 'New ship must be smallest available size of that color',

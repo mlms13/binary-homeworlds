@@ -157,7 +157,7 @@ export class BinaryHomeworldsGameState {
   }
 
   // Remove piece from bank
-  removePieceFromBank(pieceId: GamePiece.PieceId): GamePiece.Piece | null {
+  removePieceFromBank(pieceId: GamePiece.PieceId): GamePiece.Piece | undefined {
     const [piece, newBank] = removePieceFromBankById(this.state.bank, pieceId);
     if (piece) {
       this.state.bank = newBank;

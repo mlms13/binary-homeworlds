@@ -35,7 +35,7 @@ export function bankToPieces(bank: Bank.Bank): Array<GamePiece.Piece> {
 export function findPieceInBank(
   bank: Bank.Bank,
   pieceId: GamePiece.PieceId
-): GamePiece.Piece | null {
+): GamePiece.Piece | undefined {
   const colors: Array<GamePiece.Color> = ['yellow', 'green', 'blue', 'red'];
   const sizes: Array<GamePiece.Size> = [1, 2, 3];
 
@@ -51,7 +51,7 @@ export function findPieceInBank(
     }
   }
 
-  return null;
+  return undefined;
 }
 
 /**
@@ -60,10 +60,10 @@ export function findPieceInBank(
 export function removePieceFromBankById(
   bank: Bank.Bank,
   pieceId: GamePiece.PieceId
-): [GamePiece.Piece | null, Bank.Bank] {
+): [GamePiece.Piece | undefined, Bank.Bank] {
   const piece = findPieceInBank(bank, pieceId);
   if (!piece) {
-    return [null, bank];
+    return [undefined, bank];
   }
 
   // Create a new bank with the piece removed
@@ -122,14 +122,14 @@ export function addPiecesToEngineBank(
 export function getSmallestAvailableSize(
   bank: Bank.Bank,
   color: GamePiece.Color
-): GamePiece.Size | null {
+): GamePiece.Size | undefined {
   const pieces = bankToPieces(bank);
   const availableSizes = pieces
     .filter(piece => piece.color === color)
     .map(piece => piece.size)
     .sort((a, b) => a - b);
 
-  return availableSizes.length > 0 ? (availableSizes[0] ?? null) : null;
+  return availableSizes[0];
 }
 
 export function getAllSystems(
@@ -183,18 +183,16 @@ export function hasStarsAtHome(
 }
 
 // Check if the game has ended and return the winner
-export function checkGameEnd(gameState: GameState): Player.Player | null {
+export function checkGameEnd(gameState: GameState): Player.Player | undefined {
   for (const player of ['player1', 'player2'] as const) {
     const hasShips = hasShipsAtHome(gameState, player);
     const hasStars = hasStarsAtHome(gameState, player);
 
     // Player loses if they have no ships at home OR no stars at home
-    if (!hasShips || !hasStars) {
-      return player === 'player1' ? 'player2' : 'player1';
-    }
+    if (!hasShips || !hasStars) return Player.getOtherPlayer(player);
   }
 
-  return null;
+  return undefined;
 }
 
 // Deep clone a game state (for immutability)
