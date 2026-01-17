@@ -17,8 +17,8 @@ describe('Action Validation', () => {
       { color: 'blue', size: 2, id: 'blue-2-0' },
       [ship]
     );
-    gameState.addSystem(system);
     gameState.setPhase('normal');
+    gameState.addSystem(system);
     // Current player is player1
 
     // Player 2 tries to move player 1's ship

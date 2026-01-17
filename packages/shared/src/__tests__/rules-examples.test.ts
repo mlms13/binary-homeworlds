@@ -47,9 +47,10 @@ describe('RULES.md Examples', () => {
         { color: 'green', size: 2, id: 'green-2-0' },
         [redShip]
       );
-      gameState.addSystem(otherSystem);
 
       gameState.setPhase('normal');
+      gameState.addSystem(otherSystem);
+
       // Ensure it's player1's turn
       if (gameState.getCurrentPlayer() !== 'player1') {
         gameState.switchPlayer();
@@ -101,8 +102,8 @@ describe('RULES.md Examples', () => {
         [greenShip]
       );
 
-      gameState.addSystem(originSystem);
       gameState.setPhase('normal');
+      gameState.addSystem(originSystem);
 
       // Valid destinations: systems with only small stars
       const validDestSystem = StarSystem.createNormal(
@@ -132,9 +133,9 @@ describe('RULES.md Examples', () => {
       // Reset for next test
       const engine2 = new GameEngine();
       const gameState2 = engine2.getGameState();
+      gameState2.setPhase('normal');
       gameState2.addSystem(originSystem);
       gameState2.addSystem(invalidDestSystem);
-      gameState2.setPhase('normal');
 
       // Invalid move to system with medium star (same size as origin)
       const invalidMoveAction = createMoveAction(
@@ -182,9 +183,9 @@ describe('RULES.md Examples', () => {
       ]);
       const destSystem1 = StarSystem.createNormal(largeStar2, []);
 
+      gameState.setPhase('normal');
       gameState.addSystem(originSystem1);
       gameState.addSystem(destSystem1);
-      gameState.setPhase('normal');
 
       const invalidMoveAction1 = createMoveAction(
         'player1',
@@ -222,9 +223,9 @@ describe('RULES.md Examples', () => {
       );
       const destSystem2 = StarSystem.createBinary('player1', red3, mediumStar2);
 
+      gameState2.setPhase('normal');
       gameState2.addSystem(originSystem2);
       gameState2.addSystem(destSystem2);
-      gameState2.setPhase('normal');
 
       const invalidMoveAction2 = createMoveAction(
         'player1',
@@ -254,9 +255,9 @@ describe('RULES.md Examples', () => {
       ]);
       const destSystem3 = StarSystem.createNormal(red3);
 
+      gameState3.setPhase('normal');
       gameState3.addSystem(originSystem3);
       gameState3.addSystem(destSystem3);
-      gameState3.setPhase('normal');
 
       const validMoveAction = createMoveAction(
         'player1',
@@ -291,9 +292,9 @@ describe('RULES.md Examples', () => {
         []
       ); // Size 1 matches small star in origin
 
+      gameState4.setPhase('normal');
       gameState4.addSystem(originSystem4);
       gameState4.addSystem(destSystem4);
-      gameState4.setPhase('normal');
 
       const invalidMoveAction4 = createMoveAction(
         'player1',
@@ -318,8 +319,8 @@ describe('RULES.md Examples', () => {
       const yellowShip = createShip('yellow', 2, 'player1');
       const system = StarSystem.createNormal(red3, [yellowShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       // Create destination system
       const destStar: GamePiece.Star = {
@@ -371,8 +372,8 @@ describe('RULES.md Examples', () => {
         playerBShip1,
         playerBShip2,
       ]);
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       // Player A can capture either of Player B's ships (both are smaller than large)
       const captureAction1 = createCaptureAction(
@@ -393,8 +394,8 @@ describe('RULES.md Examples', () => {
         playerBShip1,
         playerBShip2,
       ]);
-      gameState2.addSystem(system2);
       gameState2.setPhase('normal');
+      gameState2.addSystem(system2);
 
       const captureAction2 = createCaptureAction(
         'player1',
@@ -419,8 +420,8 @@ describe('RULES.md Examples', () => {
         playerAShip3,
         playerBShip3,
       ]);
-      gameState3.addSystem(system3);
       gameState3.setPhase('normal');
+      gameState3.addSystem(system3);
       gameState3.switchPlayer(); // Make it player2's turn
 
       const invalidCaptureAction = createCaptureAction(
@@ -477,8 +478,8 @@ describe('RULES.md Examples', () => {
       };
       const system = StarSystem.createNormal(greenStar, [redShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       // Ensure it's player1's turn
       if (gameState.getCurrentPlayer() !== 'player1') {
@@ -535,8 +536,8 @@ describe('RULES.md Examples', () => {
       };
       const system = StarSystem.createNormal(greenStar, [redShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       // Try to grow - should fail because no red pieces in bank
       const growAction = createGrowAction(
@@ -575,8 +576,8 @@ describe('RULES.md Examples', () => {
         blueShip4,
         yellowShip,
       ]);
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const initialBankSize = gameState.getBankPieces().length;
 
@@ -622,8 +623,8 @@ describe('RULES.md Examples', () => {
         greenShip,
         yellowShip,
       ]);
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
       gameState.switchPlayer(); // Make it player2's turn
 
       // Player B moves a small red ship to the star and declares overpopulation
@@ -704,12 +705,12 @@ describe('RULES.md Examples', () => {
       };
       const destSystem3 = StarSystem.createNormal(largeBlueStar, []);
 
+      gameState.setPhase('normal');
       gameState.addSystem(system1);
       gameState.addSystem(system2);
       gameState.addSystem(destSystem1);
       gameState.addSystem(destSystem2);
       gameState.addSystem(destSystem3);
-      gameState.setPhase('normal');
 
       // Sacrifice large yellow ship for 3 yellow (move) actions
       const sacrificeAction = createSacrificeAction(

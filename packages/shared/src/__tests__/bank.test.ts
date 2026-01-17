@@ -22,7 +22,7 @@ describe('Bank depletion edge cases', () => {
   it('should return a validation error when trying to grow a yellow ship with no yellow pieces left in the bank', () => {
     const engine = new GameEngine();
     const gameState = engine.getGameState();
-    // Setup: Both players set up homeworlds with green and yellow stars, and a yellow ship
+    // Setup: Both players set up homeworlds with a green star, a yellow star, and a yellow ship
     engine.applyAction(createSetupAction('player1', 'green', 1, 'star1'));
     engine.applyAction(createSetupAction('player2', 'green', 1, 'star1'));
     engine.applyAction(createSetupAction('player1', 'yellow', 1, 'star2'));

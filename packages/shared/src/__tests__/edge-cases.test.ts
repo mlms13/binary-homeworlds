@@ -177,8 +177,8 @@ describe('Edge Cases and Error Conditions', () => {
       const ship = createShip('yellow', 1, 'player1');
       const star = { color: 'blue', size: 2, id: 'blue-2-0' } as const;
       const system = StarSystem.createNormal(star, [ship]);
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
       // Current player is player1
 
       // Player 2 tries to move player 1's ship
@@ -266,9 +266,9 @@ describe('Edge Cases and Error Conditions', () => {
         [player2Ship]
       );
 
+      gameState.setPhase('normal');
       gameState.setHomeSystem('player1', player1Home);
       gameState.setHomeSystem('player2', player2Home);
-      gameState.setPhase('normal');
 
       // Player 2 captures player 1's ship at home
       const captureAction = createCaptureAction(
@@ -357,9 +357,9 @@ describe('Edge Cases and Error Conditions', () => {
         [createShip('red', 1, 'player2')]
       );
 
+      gameState.setPhase('normal');
       gameState.setHomeSystem('player1', player1Home);
       gameState.setHomeSystem('player2', player2Home);
-      gameState.setPhase('normal');
 
       // Make sure it's player1's turn
       if (gameState.getCurrentPlayer() !== 'player1') {
@@ -405,9 +405,9 @@ describe('Edge Cases and Error Conditions', () => {
       };
       const destSystem = StarSystem.createNormal(destStar, []);
 
+      gameState.setPhase('normal');
       gameState.addSystem(originSystem);
       gameState.addSystem(destSystem);
-      gameState.setPhase('normal');
 
       const moveAction = createMoveAction(
         'player1',
@@ -434,8 +434,8 @@ describe('Edge Cases and Error Conditions', () => {
       const ship = createShip('yellow', 1, 'player1');
       const originSystem = StarSystem.createNormal(originStar, [ship]);
 
-      gameState.addSystem(originSystem);
       gameState.setPhase('normal');
+      gameState.addSystem(originSystem);
 
       // Get a piece from bank for new star
       const bankPieces = gameState.getBankPieces();
@@ -477,9 +477,9 @@ describe('Edge Cases and Error Conditions', () => {
       };
       const destSystem = StarSystem.createNormal(destStar, []);
 
+      gameState.setPhase('normal');
       gameState.addSystem(system);
       gameState.addSystem(destSystem);
-      gameState.setPhase('normal');
 
       const moveAction = createMoveAction(
         'player1',
@@ -504,8 +504,8 @@ describe('Edge Cases and Error Conditions', () => {
       const ship2 = createShip('blue', 2, 'player1');
       const system = StarSystem.createNormal(redStar, [ship1, ship2]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const captureAction = createCaptureAction(
         'player1',
@@ -528,8 +528,8 @@ describe('Edge Cases and Error Conditions', () => {
       const enemyShip = createShip('green', 2, 'player2');
       const system = StarSystem.createNormal(blueStar, [playerShip, enemyShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const captureAction = createCaptureAction(
         'player1',
@@ -553,8 +553,8 @@ describe('Edge Cases and Error Conditions', () => {
       const blueShip = createShip('blue', 2, 'player1');
       const system = StarSystem.createNormal(redStar, [blueShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const bluePiece = bankPieces.find(
@@ -581,8 +581,8 @@ describe('Edge Cases and Error Conditions', () => {
       const redShip = createShip('red', 2, 'player1');
       const system = StarSystem.createNormal(greenStar, [redShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const bluePiece = bankPieces.find(
@@ -611,8 +611,8 @@ describe('Edge Cases and Error Conditions', () => {
       const yellowShip = createShip('yellow', 2, 'player1');
       const system = StarSystem.createNormal(redStar, [yellowShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const greenPiece = bankPieces.find(
@@ -639,8 +639,8 @@ describe('Edge Cases and Error Conditions', () => {
       const yellowShip = createShip('yellow', 2, 'player1');
       const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const greenPiece = bankPieces.find(
@@ -667,8 +667,8 @@ describe('Edge Cases and Error Conditions', () => {
       const yellowShip = createShip('yellow', 2, 'player1');
       const system = StarSystem.createNormal(blueStar, [yellowShip]);
 
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const yellowPiece = bankPieces.find(
@@ -697,8 +697,8 @@ describe('Edge Cases and Error Conditions', () => {
       const ship = createShip('yellow', 1, 'player1');
       const star = { color: 'blue', size: 2, id: 'blue-2-0' } as const;
       const system = StarSystem.createNormal(star, [ship]);
-      gameState.addSystem(system);
       gameState.setPhase('normal');
+      gameState.addSystem(system);
 
       const bankPieces = gameState.getBankPieces();
       const newStarPiece = bankPieces.find(p => p.size === 1);
