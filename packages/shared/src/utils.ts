@@ -195,6 +195,64 @@ export function checkGameEnd(gameState: GameState): Player.Player | undefined {
   return undefined;
 }
 
+// ============================================================================
+// Utility functions to deal with system updates
+// ============================================================================
+
+export function setHomeSystem(
+  gameState: GameState,
+  player: Player.Player,
+  system: StarSystem.StarSystem
+): GameState {
+  return {
+    ...gameState,
+    homeSystems: {
+      ...gameState.homeSystems,
+      [player]: system,
+    },
+  };
+}
+
+export function removeSystem(
+  gameState: GameState,
+  systemId: string
+): GameState {
+  return {
+    ...gameState,
+    systems: gameState.systems.filter(system => system.id !== systemId),
+  };
+}
+
+export function setSystem(
+  gameState: GameState,
+  systemId: string,
+  system: StarSystem.StarSystem
+) {
+  if (systemId === 'player1-home')
+    return setHomeSystem(gameState, 'player1', system);
+
+  if (systemId === 'player2-home')
+    return setHomeSystem(gameState, 'player2', system);
+
+  const index = gameState.systems.findIndex(s => s.id === systemId);
+  if (index === -1) throw new Error('System not found');
+
+  return {
+    ...gameState,
+    systems: gameState.systems.map((s, i) => (i === index ? system : s)),
+  };
+}
+
+export function addSystem(
+  gameState: GameState,
+  system: StarSystem.StarSystem
+): GameState {
+  return {
+    ...gameState,
+    systems: [...gameState.systems, system],
+  };
+}
+
 // Deep clone a game state (for immutability)
 export function cloneGameState(gameState: GameState): GameState {
   return JSON.parse(JSON.stringify(gameState));

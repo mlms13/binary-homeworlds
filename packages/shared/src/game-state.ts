@@ -8,12 +8,16 @@ import { GameAction, GamePhase, GameState } from './types';
 import {
   addPiecesToEngineBank,
   addPieceToEngineBank,
+  addSystem,
   bankToPieces,
   checkGameEnd,
   cloneGameState,
   findSystem,
   getAllSystems,
   removePieceFromBankById,
+  removeSystem,
+  setHomeSystem,
+  setSystem,
 } from './utils';
 
 export class BinaryHomeworldsGameState {
@@ -126,34 +130,22 @@ export class BinaryHomeworldsGameState {
 
   // Add a new system
   addSystem(system: StarSystem.StarSystem): void {
-    this.state.systems.push(system);
+    this.state = addSystem(this.state, system);
   }
 
   // Replace an existing system by ID with a new system
   setSystem(systemId: string, system: StarSystem.StarSystem): void {
-    if (systemId === 'player1-home') {
-      this.setHomeSystem('player1', system);
-    } else if (systemId === 'player2-home') {
-      this.setHomeSystem('player2', system);
-    } else {
-      const index = this.state.systems.findIndex(s => s.id === systemId);
-      if (index === -1) {
-        throw new Error('System not found');
-      }
-      this.state.systems[index] = system;
-    }
+    this.state = setSystem(this.state, systemId, system);
   }
 
   // Remove a system
   removeSystem(systemId: string): void {
-    this.state.systems = this.state.systems.filter(
-      system => system.id !== systemId
-    );
+    this.state = removeSystem(this.state, systemId);
   }
 
   // Set player's home system
   setHomeSystem(player: Player.Player, system: StarSystem.StarSystem): void {
-    this.state.homeSystems[player] = system;
+    this.state = setHomeSystem(this.state, player, system);
   }
 
   // Remove piece from bank
