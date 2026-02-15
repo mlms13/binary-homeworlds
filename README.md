@@ -150,27 +150,9 @@ npm run typecheck             # Run TypeScript type checking
 binary-homeworlds/
 ├── packages/
 │   ├── shared/              # Game logic and rules engine
-│   │   ├── src/
-│   │   │   ├── game-engine.ts
-│   │   │   ├── game-state.ts
-│   │   │   ├── action-validator.ts
-│   │   │   ├── types.ts
-│   │   │   └── utils.ts
-│   │   └── package.json
 │   ├── server/              # Backend server
-│   │   ├── src/
-│   │   │   ├── index.ts
-│   │   │   ├── services/
-│   │   │   └── types.ts
-│   │   └── package.json
 │   └── ui-client/           # React frontend
-│       ├── src/
-│       │   ├── components/
-│       │   ├── services/
-│       │   └── hooks/
-│       └── package.json
-├── RULES.md                 # Game rules documentation
-└── package.json
+└── RULES.md                 # Game rules documentation
 ```
 
 ## Testing
