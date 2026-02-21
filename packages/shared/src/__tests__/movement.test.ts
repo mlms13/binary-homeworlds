@@ -64,7 +64,8 @@ describe('Movement Edge Cases', () => {
       'player1',
       ship.id,
       originSystem.id,
-      newStarPiece!.id
+      newStarPiece!.size,
+      newStarPiece!.color
     );
 
     const result = engine.applyAction(moveAction);

@@ -61,14 +61,11 @@ describe('Action Validation', () => {
     const result = engine.applyAction(setupAction);
 
     expect(result.valid).toBe(false);
-    expect(result.error).toContain(
-      'Setup actions only allowed during setup phase'
-    );
+    expect(result.error).toContain('wrong_phase');
   });
 
   it('should reject normal actions during setup', () => {
     const engine = new GameEngine();
-    const gameState = engine.getGameState();
 
     // Game starts in setup phase
     const ship = createShip('yellow', 1, 'player1');
@@ -76,9 +73,15 @@ describe('Action Validation', () => {
       { color: 'blue', size: 2, id: 'blue-2-0' },
       [ship]
     );
-    gameState.addSystem(system);
 
-    const moveAction = createMoveAction('player1', ship.id, system.id);
+    const moveAction = createMoveAction(
+      'player1',
+      ship.id,
+      system.id,
+      undefined,
+      1,
+      'blue'
+    );
     const result = engine.applyAction(moveAction);
 
     expect(result.valid).toBe(false);

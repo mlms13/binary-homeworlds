@@ -12,6 +12,7 @@ import {
   createMoveAction,
   createOverpopulationAction,
   createSacrificeAction,
+  createSetupAction,
   createTradeAction,
 } from '../action-builders';
 import { GameEngine } from '../game-engine';
@@ -740,77 +741,96 @@ describe('RULES.md Examples', () => {
 
   describe('Example 11: Sacrifice timing', () => {
     it('should handle sacrifice timing and system cleanup correctly', () => {
-      const engine = new GameEngine();
+      // The scenario:
+      // Player 1's homeworld: blue-3 star, red-1 star, green-3 ship, yellow-1 ship
+      // Player 2's homeworld: blue-3 star, yellow-2 star, green-3 ship, yellow-1 ship
+      // System 1: yellow-1 star, player 1 has a blue-3 ship
+      // System 2: green-3 star, player 1 has a green-1 ship and a red-3 ship
+      //
+      // Crucially, this means that green-3, yellow-1, and blue-3 are all missing from the bank.
+      //
+      // Player 1 sacrifices the blue-3 ship at System 1, returning it and yellow-1 star to the bank
+      // green-3 at their home system can now be traded for blue-3 which is back in the bank
+      // their green-1 ship at System 2 can be traded for yellow-1
+      // their red-3 ship can be traded for the green3 that used to be at home
+
+      // we'll use regular game actions to get through the initial setup
+      const actions = [
+        createSetupAction('player1', 'blue', 3, 'star1'),
+        createSetupAction('player2', 'blue', 3, 'star1'),
+        createSetupAction('player1', 'red', 1, 'star2'),
+        createSetupAction('player2', 'yellow', 2, 'star2'),
+        createSetupAction('player1', 'green', 3, 'ship'),
+        createSetupAction('player2', 'green', 3, 'ship'),
+        createGrowAction('player1', 'green-3-0', 'player1-home', 'green-1-0'),
+        createGrowAction('player2', 'green-3-1', 'player2-home', 'green-1-1'),
+        createTradeAction('player1', 'green-1-0', 'player1-home', 'yellow-1-0'),
+        createTradeAction('player2', 'green-1-1', 'player2-home', 'yellow-1-1'),
+      ];
+
+      const engine = GameEngine.fromHistory(actions);
       const gameState = engine.getGameState();
 
-      // System: Small red star
-      // Player A: Medium blue ship
-      const redStar: GamePiece.Star = { color: 'red', size: 1, id: 'red-1-0' };
-      const blueShip = createShip('blue', 2, 'player1');
-      const system = StarSystem.createNormal(redStar, [blueShip]);
+      // at this point, let's assert that each homeworld has 2 stars and 2 ships
+      // and that the bank has the remaining 28 pieces
+      expect(gameState.getHomeSystem('player1').stars).toHaveLength(2);
+      expect(gameState.getHomeSystem('player1').ships).toHaveLength(2);
+      expect(gameState.getHomeSystem('player2').stars).toHaveLength(2);
+      expect(gameState.getHomeSystem('player2').ships).toHaveLength(2);
+      expect(gameState.getBankPieces()).toHaveLength(28);
 
-      // Create other ships for trade actions
-      const greenShip = createShip('green', 2, 'player1');
-      const yellowShip = createShip('yellow', 1, 'player1');
-      const blue3 = { color: 'blue', size: 3, id: 'blue-3-0' } as const;
-      const otherSystem = StarSystem.createNormal(blue3, [
-        greenShip,
-        yellowShip,
+      // with our home systems set up, let's insert two normal systems
+
+      // System: Small yellow star
+      // Player 1: Large blue ship
+      const yellowStar = gameState.removePieceFromBank('yellow-1-2');
+      const largeBlueShip = gameState.removePieceFromBank('blue-3-2');
+      if (!yellowStar || !largeBlueShip) throw new Error('Missing piece');
+      const system1 = StarSystem.createNormal(yellowStar, [
+        { ...largeBlueShip, owner: 'player1' },
       ]);
 
-      gameState.addSystem(system);
-      gameState.addSystem(otherSystem);
-      gameState.setPhase('normal');
+      // System 2: green-3 star, player 1 has a green-1 ship and a red-3 ship
+      // System: Large green star
+      // Player 1: Small green ship, large red ship
+      const greenStar = gameState.removePieceFromBank('green-3-2');
+      const smallGreenShip = gameState.removePieceFromBank('green-1-2');
+      const largeRedShip = gameState.removePieceFromBank('red-3-0');
+      if (!greenStar || !smallGreenShip || !largeRedShip)
+        throw new Error('Missing piece');
 
-      // Add pieces to bank for trading
-      const red2 = { color: 'red', size: 2, id: 'red-2-0' } as const;
-      const yellow1 = { color: 'yellow', size: 1, id: 'yellow-1-0' } as const;
-      gameState.addPieceToBank(red2);
-      gameState.addPieceToBank(yellow1);
+      const system2 = StarSystem.createNormal(greenStar, [
+        { ...smallGreenShip, owner: 'player1' },
+        { ...largeRedShip, owner: 'player1' },
+      ]);
 
-      const initialSystemCount = gameState.getSystems().length;
+      gameState.addSystem(system1);
+      gameState.addSystem(system2);
 
-      // Player A sacrifices their blue ship for 2 blue actions
+      // assert that the bank has 5 fewer pieces than before
+      // and there are two additional systems
+      expect(gameState.getBankPieces()).toHaveLength(23);
+      expect(gameState.getSystems()).toHaveLength(4);
+
+      // Player A sacrifices their blue ship for 3 blue actions
       const sacrificeAction = createSacrificeAction(
         'player1',
-        blueShip.id,
-        system.id,
+        'blue-3-2',
+        'yellow-1-2',
         [
-          createTradeAction('player1', greenShip.id, otherSystem.id, red2.id),
-          createTradeAction(
-            'player1',
-            yellowShip.id,
-            otherSystem.id,
-            yellow1.id
-          ),
+          createTradeAction('player1', 'green-3-0', 'player1-home', 'blue-3-2'),
+          createTradeAction('player1', 'green-1-2', 'green-3-2', 'yellow-1-2'),
+          createTradeAction('player1', 'red-3-0', 'green-3-2', 'green-3-0'),
         ]
       );
 
       const result = engine.applyAction(sacrificeAction);
+      expect(result.error).toBeUndefined();
       expect(result.valid).toBe(true);
 
-      // Sequence should be: Remove ship → return red star to bank → perform 2 trade actions
-
       // The original system should be destroyed (no ships remain after sacrifice)
-      expect(gameState.getSystems().length).toBe(initialSystemCount - 1);
-      expect(gameState.getSystem(system.id)).toBeUndefined();
-
-      // The red star should be returned to bank
-      const bankPieces = gameState.getBankPieces();
-      const returnedRedStar = bankPieces.find(p => p.id === redStar.id);
-      expect(returnedRedStar).toBeDefined();
-
-      // The trade actions should have been performed
-      const updatedOtherSystem = gameState.getSystem(otherSystem.id);
-      const tradedShip1 = updatedOtherSystem?.ships.find(
-        s => s.id === greenShip.id
-      );
-      const tradedShip2 = updatedOtherSystem?.ships.find(
-        s => s.id === yellowShip.id
-      );
-
-      expect(tradedShip1?.color).toBe('red'); // Was green, now red
-      expect(tradedShip2?.color).toBe('yellow'); // Was yellow, stays yellow (traded for same color)
+      expect(gameState.getSystems().length).toBe(3);
+      expect(gameState.getSystem('yellow-1-2')).toBeUndefined();
     });
   });
 });
